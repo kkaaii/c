@@ -1,44 +1,49 @@
 #include <stdio.h>
 
-double _[] = { 
-         -2, 1, -1.3, 1.3     /* <-- Configure here: X1, X2, Y1, Y2 */
+#define H   50
+#define W   80
 
-,0, 0,0,0,0 ,0, 5 * 10 ,(10 
-- 2) * 10, 0,0,0,2*5*5*5+5,8, 0 };
+#define N   255
 
-main(int argc)
+#define V   8.0
+
+/* <-- Configure here: X1, X2, Y1, Y2 */
+#define X1 -2.0
+#define X2  1.0
+#define Y1 -1.3
+#define Y2  1.3
+
+int mandelbrot(double x0, double y0)
 {
-    if (argc == 1) {
-        if (_[10 + 2] > _[10])
-            _[10 + 7] = 1;
+    int i;
+    double xx, x = 0.0;
+    double yy, y = 0.0;
+
+    for (i = 1; i < N; ++i) {
+        xx = x * x;
+        yy = y * y;
+        if (xx + yy >= V)
+            break;
+        y  = y0 + 2 * x * y;
+        x  = x0 + (xx - yy);
+    } 
+
+    return i;
+}
+
+int main()
+{
+    int ix, iy;
+
+    for (iy = 0; iy <= H; ++iy) {
+        for (ix = 0; ix <= W; ++ix) {
+            double x0 = ix * (X2 - X1) / W + X1;
+            double y0 = iy * (Y2 - Y1) / H + Y1;
+            putchar(" +@-.*"[mandelbrot(x0, y0) % 5]);
+        }
+        putchar('\n');
     }
 
-    if (_[10 + 3] > _[10+ 1] || _[10 + 7] == 1)
-        return 0;
-    _[6] = _[7+6]/_[5+6]*(_[1] - _[0])+_[ 0 ];
-    _[7] = _[7+5]/_[10]*(_[3]-_[2] )+_[2];
-    _[8] = _[10 - 1] = _[5+ 10-1]  =  0;
-_f:
-    _[4] = _[8] * _[8];
-    _[5] = _[10 - 1]*_[10 - 1];
-    _[9] = 2*_[8]*_[10 -1]+ _[7];
-    _[8] = _[4]-_[5]+_[6];
-    _[10 + 4]++;
-    if ((_[10 + 4] < _[10+ 5]) && (_[4]+ _[5] < _[10 +6]))
-        goto _f;
-
-    char imau[] = {
-         3 * 10 + 2, 4 * 10 + 3,6 * 10 + 4,4*10 + 5,4 * 10 + 6,4 * 10 + 2};
-
-    putchar(imau[(int) _[10 + 4]%5]);
-    _[7 + 6]++;
-    {};
-     main ( 0) ;
-    _[10+ 2]++;
-    _[10 + 3] = 0;
-    if(_ [7 + 10] != 1)
-        putchar(10) ;
-    {  };
-     main(1);
-     return 0;
+    return 0;
 }
+
