@@ -249,10 +249,9 @@ int main(int i, char**a, char**e)
     m.d = calloc(1, sizeof(m));
     m.e = calloc(1, sizeof(m));
     m.c = calloc(1, sizeof(m));
-    char p[] = "NBLF\1Nblfgjmf\1", *q = p;
 
-    for (; (*q++)--; )
-        ;
+    char p[] = "MAKE\0Makefile\0", *q = p;
+
     J(p, 4, 0, newnode(*a++, -1));
     for (i = 0; i < 3; i += 2) {
         for (; *a; ) {
