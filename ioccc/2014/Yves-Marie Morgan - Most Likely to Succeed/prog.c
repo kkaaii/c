@@ -108,43 +108,43 @@ int M(_ b, int p, char *t, int g) {
                 p++;
             }
             c = o[p++];
-            if (c ^ 10 || !l %  2 || !g) {
-                d = c == 35 && !i && !g || c == 10 && g ^ 2;
+            if (c != '\n' || !l %  2 || !g) {
+                d = c == '#' && !i && !g || c == '\n' && g ^ 2;
                 if (d || strchr(t, c)) {
                     r = newnode(o + k, p - k - d * l / 2 - 1);
                     if (d && l % 2) {
-                        r->a[r->i - 1] = c ^ 35 ? 32 : c;
-                        c = 0;
+                        r->a[r->i - 1] = c != '#' ? ' ' : c;
+                        c = '\0';
                     }
                     break;
                 }
             }
-            c = 0;
+            c = '\0';
         }
 
         if (!j)
             addchild(f->e, r ? r : newnode(o + k, n - k));
         r = calloc(1, sizeof(m));
         switch(c) {
-        case 35:
+        case '#':
             j++;
-        case 0:
+        case '\0':
             break;
-        case 10:
+        case '\n':
             goto O;
-        case 36:
+        case '$':
             switch(d = o[p++]) {
-            case 36:
+            case '$':
                 I(f->e, d);
                 break;
             default:
                 I(r->c = calloc(1, sizeof(m)),d);
                 goto o;
-            case 40:
-            case 123:
+            case '(':
+            case '{':
                 r->f = f;
                 r->e = calloc(1, sizeof(m));
-                r->a = d ^ 40 ? "}$" : ")$";
+                r->a = d != '(' ? "}$" : ")$";
                 f = r;
             }
             break;
@@ -244,7 +244,7 @@ void trim(_ b)
     }
 }
 
-int main(int i, char**a, char**e)
+int main(int i, char**argv, char**e)
 {
     m.d = calloc(1, sizeof(m));
     m.e = calloc(1, sizeof(m));
@@ -252,32 +252,32 @@ int main(int i, char**a, char**e)
 
     char p[] = "MAKE\0Makefile\0", *q = p;
 
-    J(p, 4, 0, newnode(*a++, -1));
+    J(p, 4, 0, newnode(*argv++, -1));
     for (i = 0; i < 3; i += 2) {
-        for (; *a; ) {
-            q = *a;
-            for (; *q && *q ^ 61; )
+        for (; *argv; ) {
+            q = *argv;
+            for (; *q && *q != '='; )
                 q++;
             if (*q)
-                J(*a, q - *a, i + 1, newnode(q + 1, -1));
+                J(*argv, q - *argv, i + 1, newnode(q + 1, -1));
             else if (!i)
-                addchild(m.c, newnode(*a, -1));
-            a++;
+                addchild(m.c, newnode(*argv, -1));
+            argv++;
         }
-        a = e;
+        argv = e;
     }
     stat(p + 5, &z);
     i = z.st_size;
     _ b = newnode(H, 0), c, d;
     b->i = read(open(p + 5, 0), b->a = malloc(i), i);
     for (; u < i; ) {
-        if (b->a[u] ^ 9) {
+        if (b->a[u] != '\t') {
             for (; u < i && isspace(b->a[u]); )
                 u++;
             u = M(b, u, "=:$", 0);
             y = x;
             switch(x.t) {
-            case 58:
+            case ':':
                 u = M(b, u, "$", 0);
                 m.f = c = calloc(1, sizeof(m));
                 c->d = E(N(x.c));
@@ -286,7 +286,7 @@ int main(int i, char**a, char**e)
                 for (; d->i--; )
                     addchild(O(*d->b++)->d, c);
                 break;
-            case 61:
+            case '=':
                 u = M(b, u, "", 0);
                 trim(c = N(x.c));
                 trim(d = N(y.c));
