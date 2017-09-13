@@ -7,14 +7,13 @@
 
 #define A calloc(1, sizeof(m))
 #define D m.
-#define P malloc(
 
 typedef struct T*_; struct T{ int t,i; char*a; _*b,c,d,e,f; } m,x,y; struct stat z; int u; void * H;
 int K(int c){ return strchr(" \n\t",c); } void B(_ s,_ p) { s ->b=realloc(s ->b,++ s ->i*sizeof(_)); s ->b [s
-->i-1]=p; } _ C(char*d,int l){ _ s=A; s ->a=d?d:P 1); s ->i=l<0?d?strlen(d):0:l; return s; } _ E(_ s){ _ r
+->i-1]=p; } _ C(char*d,int l){ _ s=A; s ->a=d?d:malloc( 1); s ->i=l<0?d?strlen(d):0:l; return s; } _ E(_ s){ _ r
 =A; int i=0; for (; i<s ->i; ){ for (; i<s ->i && K(s ->a[i]); )i ++; int j=i; for (; j<s ->i && !K(s ->a[j]); )j ++; if ( j-i)B(
 r,C(s ->a+i,j-i)); i=++ j; } return r; } int F(_ a,_ b){ return a ->i==b ->i && !memcmp(a ->a,b ->a,a ->i); } void
-I( _    s,char c ) {    char*d=P            1); *d=c    ; B(s,C(d,1)    ); }                    void
+I( _    s,char c ) {    char*d=malloc(            1); *d=c    ; B(s,C(d,1)    ); }                    void
  J (    char*d,int l    ,int o,_            v){ _ n=    C(d,l); _ w;    for ( l=                    0; l
 <D d        ->i; )        { w=    D d ->b[l ++ ];    if ( F(    w ->c,n)){    if ( o>w ->i)    return; goto  O; } }
 B( D        d,w=        A );    w ->c=n; O:w ->i    =o ;    w -> d=v;    } int M(    _ b,int p,char*t,int
@@ -40,7 +39,7 @@ strchr("@+-",*s ->a); )s ->a ++; u=system(s ->a); } } } void G(_ b){ for (; b ->
 int main(int i,char**a,char**e){ D d=A; D e=A; D c=A; char p[]="NBLF\1Nblfgjmf\1",*q=p; for (; (*q++)--;
 ); J(p,4,0,C(*a ++,-1)); for ( i=0; i<3; i+=2){ for (; *a; ){ q=*a; for (; *q &&*q^61; )q ++; if (*q)J(*a,q-*a,i+1,C(q
 +1,-1)); else if (!i)B(D c,C(*a,-1)); a ++; } a=e; } stat(p+5,&z); i=z.st_size; _ b=C(H,0),c,d; b ->i=read
-(open(p+5,0),b ->a=P i),i); for (; u<i; ){ if ( b ->a[u]^9){ for (; u<i && K(b ->a[u]); )u ++; u=M(b,u,"=:$",0); y = x;
+(open(p+5,0),b ->a=malloc( i),i); for (; u<i; ){ if ( b ->a[u]^9){ for (; u<i && K(b ->a[u]); )u ++; u=M(b,u,"=:$",0); y = x;
 switch(x.t){ case 58:u=M(b,u,"$",0); D f=c=A; c -> d=E(N(x.c)); c ->c=A; d=E(N(y.c)); for (; d ->i--; )B(O(*d
 ->b ++) -> d,c); break; case 61:u=M(b,u,"",0); G(c=N(x.c)); G(d=N(y.c)); for (; d ->i--&& K(d ->a[d ->i]); ); J(d ->a
 ,++ d ->i,2,c); } } else { u=M(b,++ u,"$",1); I(x.c,0); B(D f ->c,x.c); } } if (!D c ->i && D e ->i)B(D c,D e ->b[0]
