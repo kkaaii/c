@@ -16,18 +16,18 @@ struct stat z;
 int u;
 void * H;
 
-int K(int c)
+int isspace(int c)
 {
     return strchr(" \n\t",c);
 }
 
-void B(_ s, _ p)
+void addchild(_ s, _ p)
 {
     s->b = realloc(s->b, ++s->i * sizeof(_));
     s->b[s->i - 1] = p;
 }
 
-_ C(char *d, int l)
+_ newnode(char *d, int l)
 {
     _ s = calloc(1, sizeof(m));
     s->a = d ? d : malloc(1);
@@ -41,21 +41,21 @@ _ E(_ s)
     int i = 0;
 
     for (; i < s->i; ) {
-        for (; i < s->i && K(s->a[i]); )
+        for (; i < s->i && isspace(s->a[i]); )
             i++;
 
         int j = i;
-        for (; j < s->i && !K(s ->a[j]); )
+        for (; j < s->i && !isspace(s ->a[j]); )
             j++;
 
         if (j - i)
-            B(r, C(s->a + i, j - i));
+            addchild(r, newnode(s->a + i, j - i));
         i = ++j;
     }
     return r;
 }
 
-int F(_ a, _ b)
+int equal(_ a, _ b)
 {
     return a->i == b->i && !memcmp(a->a, b->a, a->i);
 }
@@ -64,25 +64,25 @@ void I(_ s, char c)
 {
     char *d = malloc(1);
     *d = c;
-    B(s, C(d, 1));
+    addchild(s, newnode(d, 1));
 }
 
 void J(char *d, int l, int o, _ v)
 {
-    _ n = C(d, l);
+    _ n = newnode(d, l);
     _ w;
 
     for (l = 0; l < m.d->i; ) {
         w = m.d->b[l++];
 
-        if (F(w->c, n)) {
+        if (equal(w->c, n)) {
             if (o > w->i)
                 return;
             goto O;
         }
     }
 
-    B(m.d, w = calloc(1, sizeof(m)));
+    addchild(m.d, w = calloc(1, sizeof(m)));
     w->c = n;
 O:
     w->i = o;
@@ -111,7 +111,7 @@ int M(_ b, int p, char *t, int g) {
             if (c ^ 10 || !l %  2 || !g) {
                 d = c == 35 && !i && !g || c == 10 && g ^ 2;
                 if (d || strchr(t, c)) {
-                    r = C(o + k, p - k - d * l / 2 - 1);
+                    r = newnode(o + k, p - k - d * l / 2 - 1);
                     if (d && l % 2) {
                         r->a[r->i - 1] = c ^ 35 ? 32 : c;
                         c = 0;
@@ -123,7 +123,7 @@ int M(_ b, int p, char *t, int g) {
         }
 
         if (!j)
-            B(f->e, r ? r : C(o + k, n - k));
+            addchild(f->e, r ? r : newnode(o + k, n - k));
         r = calloc(1, sizeof(m));
         switch(c) {
         case 35:
@@ -154,7 +154,7 @@ int M(_ b, int p, char *t, int g) {
                 f = f->f;
 o:
                 r->t++;
-                B(f->e, r);
+                addchild(f->e, r);
             } else
                 goto O;
         }
@@ -169,15 +169,15 @@ O:
 
 _ N(_ s)
 {
-    _ o = C(H, 0);
+    _ o = newnode(H, 0);
     for (int i = 0; i < s->i; ) {
         _ p = s->b[i++];
         if (p-> t) {
             _ n = N(p->c);
-            p = C(H, 0);
+            p = newnode(H, 0);
             for (int j = 0; j < m.d->i; ) {
                 _ w = m.d->b[j++];
-                if (F(w->c, n)) {
+                if (equal(w->c, n)) {
                     M(w->d, 0, "$", 2);
                     p = N(x.c);
                     break;
@@ -194,14 +194,14 @@ _ O(_ t)
 {
     for (int i = 0; i < m.e->i; ) {
         _ s = m.e->b[i++];
-        if (F(s->c, t))
+        if (equal(s->c, t))
             return s;
     }
     _ s = calloc(1, sizeof(m));
     s->c = t;
     s->d = calloc(1, sizeof(m));
     s->t--;
-    B(m.e, s);
+    addchild(m.e, s);
     return s;
 }
 
@@ -236,9 +236,9 @@ void Q(_ s)
     }
 }
 
-void G(_ b)
+void trim(_ b)
 {
-    for (; b->i && K(*b->a); ) {
+    for (; b->i && isspace(*b->a); ) {
         b->a++;
         b->i--;
     }
@@ -253,27 +253,27 @@ int main(int i, char**a, char**e)
 
     for (; (*q++)--; )
         ;
-    J(p, 4, 0, C(*a++, -1));
+    J(p, 4, 0, newnode(*a++, -1));
     for (i = 0; i < 3; i += 2) {
         for (; *a; ) {
             q = *a;
             for (; *q && *q ^ 61; )
                 q++;
             if (*q)
-                J(*a, q - *a, i + 1, C(q + 1, -1));
+                J(*a, q - *a, i + 1, newnode(q + 1, -1));
             else if (!i)
-                B(m.c, C(*a, -1));
+                addchild(m.c, newnode(*a, -1));
             a++;
         }
         a = e;
     }
     stat(p + 5, &z);
     i = z.st_size;
-    _ b = C(H, 0), c, d;
+    _ b = newnode(H, 0), c, d;
     b->i = read(open(p + 5, 0), b->a = malloc(i), i);
     for (; u < i; ) {
         if (b->a[u] ^ 9) {
-            for (; u < i && K(b->a[u]); )
+            for (; u < i && isspace(b->a[u]); )
                 u++;
             u = M(b, u, "=:$", 0);
             y = x;
@@ -285,24 +285,24 @@ int main(int i, char**a, char**e)
                 c->c = calloc(1, sizeof(m));
                 d = E(N(y.c));
                 for (; d->i--; )
-                    B(O(*d->b++)->d, c);
+                    addchild(O(*d->b++)->d, c);
                 break;
             case 61:
                 u = M(b, u, "", 0);
-                G(c = N(x.c));
-                G(d = N(y.c));
-                for (; d->i-- && K(d->a[d->i]); )
+                trim(c = N(x.c));
+                trim(d = N(y.c));
+                for (; d->i-- && isspace(d->a[d->i]); )
                     ;
                 J(d->a, ++d->i, 2, c);
             }
         } else {
             u = M(b, ++u, "$", 1);
             I(x.c, 0);
-            B(m.f->c, x.c);
+            addchild(m.f->c, x.c);
         }
     }
     if (!m.c->i && m.e->i)
-        B(m.c, m.e->b[0]->c);
+        addchild(m.c, m.e->b[0]->c);
     for (u = 0; !u && m.c->i--; )
         Q(O(*m.c->b++));
     return u;
