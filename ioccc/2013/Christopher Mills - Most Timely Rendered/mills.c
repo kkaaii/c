@@ -6,7 +6,6 @@ typedef float A[3];
 float D, M[999] = { LT }, *L = NL + M, *P, b, t, *h, *i;
 
 A
-#define S(x,y,z)float  x(float*d,float z s){ float t=y; t+=y; return t+=y; }
   E, Q, U, V, C, c, I =
 {
 EY};
@@ -103,12 +102,7 @@ G (float x, int p)
   return p;
 }
 
-void
-K ()
-{
-  write (k, g, p - g);
-  p = g;
-} float *
+ float *
 
 d ()
 {
@@ -185,7 +179,8 @@ Y (int N)
 void
 Z (char *s)
 {
-  K ();
+  write (k, g, p - g);
+  p = g;
   p += 4;
   u (s ? s : "TADI");
 } void
@@ -203,7 +198,8 @@ J ()
 	c = c / 2 ^ c % 2 * 3988292384;
     }
   r (~c);
-  K ();
+  write (k, g, p - g);
+  p = g;
 }
 
 void
