@@ -2,6 +2,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <netinet/in.h>
+
 typedef float A[3];
 float D, M[999] = { LT }, *L = NL + M, *P, b, t, *h, *i;
 
@@ -13,52 +14,49 @@ EY};
 unsigned char g[2414], *p = g, *e;
 int j, k, s, m, n, x, y;
 
-float B(float *d, float *s)
+void B(float *d, float *s)
 {
-    float t = *d++ = *s++;
-    t += *d++ = *s++;
-    return t += *d++ = *s++;
+    d[0] = s[0];
+    d[1] = s[1];
+    d[2] = s[2];
 }
 
-float o(float *d, float *s)
+void o(float *d, float *s)
 {
-    float t = *d++ += *s++;
-    t += *d++ += *s++;
-    return t += *d++ += *s++;
+    d[0] += s[0];
+    d[1] += s[1];
+    d[2] += s[2];
 }
 
-float a(float *d, float *s)
+void a(float *d, float *s)
 {
-    float t = *d++ -= *s++;
-    t += *d++ -= *s++;
-    return t += *d++ -= *s++;
+    d[0] -= s[0];
+    d[1] -= s[1];
+    d[2] -= s[2];
 }
 
 float H(float *d, float *s)
 {
-    float t = *d++ * *s++;
-    t += *d++ * *s++;
-    return t += *d++ * *s++;
+    return d[0] * s[0] + d[1] * s[1] + d[2] * s[2];
 }
 
-float X(float *d, float s)
+void X(float *d, float s)
 {
-    float t = *d++ *= s;
-    t += *d++ *= s;
-    return t += *d++ *= s;
+    d[0] *= s;
+    d[1] *= s;
+    d[2] *= s;
 }
 
-float v(float *d, float s)
+void v(float *d, float s)
 {
-    float t = *d++ += s;
-    t += *d++ += s;
-    return t += *d++ += s;
+    d[0] += s;
+    d[1] += s;
+    d[2] += s;
 }
 
-float
-W (float * d)
+float W(float *d)
 {
-  return sqrt (H (d, d));
+    return sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]);
 }
 
 void r(uint32_t u)
@@ -69,9 +67,9 @@ void r(uint32_t u)
     *p++ = u;
 }
 
-float O(float * d)
+void O(float * d)
 {
-  return X (d, 1 / W (d));
+  X (d, 1 / W (d));
 }
 
 char *z, *f;
@@ -166,7 +164,8 @@ Y (int N)
 	{
 	  B (E, i);
 	  B (Q, p);
-	  d () - i || v (c, (h - P ? .1 : .5) * H (n, E));
+        if (d() == i)
+	        v (c, (h - P ? .1 : .5) * H (n, E));
 	}
       v (c, 0.05);
       h - P || (2[c] *= .3, c[1 & lrint (*p) ^ lrint (1[p]) & 1] *= .2);
@@ -215,36 +214,54 @@ T (float c)
   q (0 > c ? 0 : c > 255 ? 255 : c);
 } struct sockaddr_in R;
 
-int
-main ()
+int main ()
 {
-  time_t i;
-  struct tm *b;
-  R.win_port = 8224;
-  s = socket (R.sin_family = AF_INET, SOCK_STREAM, 0);
-  bind (s, (void *) &R, sizeof R);
-  listen (s, 1);
-  for (;;)
-    {
-      k = accept (s, 0, 0);
-      for (;;)
-	{
-	  ++j;
-	  read (k, p, 1);
-	  if (*p == '\n')
-	    {
-	      if (3 > j)
-		break;
-	      j = 0;
+    time_t i;
+    struct tm *b;
+    R.win_port = 8224;
+    s = socket (R.sin_family = AF_INET, SOCK_STREAM, 0);
+    bind (s, (void *) &R, sizeof R);
+    listen (s, 1);
+    for (;;) {
+        k = accept (s, 0, 0);
+        for (;;) {
+	        ++j;
+	        read (k, p, 1);
+	        if (*p == '\n') {
+	            if (3 > j)
+		            break;
+	            j = 0;
+	        }
 	    }
-	}
-      m = 1;
-      u ("\n\032\n\rGNP" "\211\n\r\n\r1 :hserfeR\n\rKO 002 0.1/PTTH");
-      Z ("RDHI");
-      r (800);
-      r (600);
-        *p++ = 8;
-      r (33554433);
+        m = 1;
+        write(k, "HTTP/1.0 200 OK\r\n", 17);
+        write(k, "Refresh: 1\r\n\r\n", 14);
+        write(k, "\211PNG\r\n\032\n", 8); /* signature of PNG */
+
+        p += 4;
+        u("RDHI");
+
+        {
+            struct ihdr_t {
+                uint32_t    width;
+                uint32_t    height;
+                uint8_t     bitDepth;
+                uint8_t     colorType;
+                uint8_t     compressionMethod;
+                uint8_t     filterMethod;
+                uint8_t     interlaceMethod;
+            } __attribute__((packed)) *ihdr = (struct ihdr_t *)p;
+
+            ihdr->width = htonl(800);
+            ihdr->height = htonl(600);
+            ihdr->bitDepth = 8;
+            ihdr->colorType = 2;
+            ihdr->compressionMethod = 0;
+            ihdr->filterMethod = 0;
+            ihdr->interlaceMethod = 1;
+
+            p += sizeof (*ihdr);
+        }
       J ();
       Z (0);
         *p++ = 120;
@@ -307,8 +324,8 @@ main ()
       r (n << 16 | m);
       n = 0;
       J ();
-      Z ("DNEI");
-      J ();
+
+        write(k, "\0\0\0\0IEND\xAE\x42\x60\x82", 12);
       j = 0;
       close (k);
     }
