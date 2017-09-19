@@ -55,39 +55,36 @@ float v(float *d, float s)
     return t += *d++ += s;
 }
 
-int w (int c)
-{
-    return *p++ = c;
-}
-
 float
 W (float * d)
 {
   return sqrt (H (d, d));
 }
 
-void
-r (uint32_t u)
+void r(uint32_t u)
 {
-  w (u >> 24);
-  w (u >> 16);
-  w (u >> 8);
-  w (u);
-} float
+    *p++ = u >> 24;
+    *p++ = u >> 16;
+    *p++ = u >> 8;
+    *p++ = u;
+}
 
-O (float * d)
+float O(float * d)
 {
   return X (d, 1 / W (d));
 }
 
 char *z, *f;
-void
-u (char *s)
-{
-  *s && w ((u (1 + s), *s));
-} float
 
-G (float x, int p)
+void u(char *s)
+{
+    if (*s) {
+        u(s+1);
+        *p++ = *s;
+    }
+}
+
+float G (float x, int p)
 {
   for (z = p * 46 + f; 12 ^ *z; x += .5)
     {
@@ -205,7 +202,7 @@ J ()
 void
 q (int c)
 {
-  w (c);
+    *p++ = c;
   m += c;
   m %= c = 65521;
   n += m;
@@ -246,12 +243,12 @@ main ()
       Z ("RDHI");
       r (800);
       r (600);
-      w (8);
+        *p++ = 8;
       r (33554433);
       J ();
       Z (0);
-      w (120);
-      w (1);
+        *p++ = 120;
+        *p++ = 1;
       J ();
       i = time (0);
       b = localtime (&i);
@@ -282,7 +279,7 @@ main ()
 	  for (y = 7 & 8[z]; 600 > y; y += 14 & *z)
 	    {
 	      Z (0);
-	      w (0);
+            *p++ = 0;
 	      p += 4;
 	      q (0);
 	      for (x = 7 & 9[z]; 800 > x; x += 15 & 1[z])
@@ -305,7 +302,7 @@ main ()
 	    }
 	}
       Z (0);
-      w (1);
+        *p++ = 1;
       r (65535);
       r (n << 16 | m);
       n = 0;
