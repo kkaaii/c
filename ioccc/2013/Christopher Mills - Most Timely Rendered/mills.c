@@ -2,31 +2,67 @@
 #include <time.h>
 #include <unistd.h>
 #include <netinet/in.h>
-typedef float F, A[3];
-F D, M[999] = { LT }, *L = NL + M, *P, b, t, *h, *i;
+typedef float A[3];
+float D, M[999] = { LT }, *L = NL + M, *P, b, t, *h, *i;
 
 A
-#define S(x,y,z)F  x(F*d,F z s){ F t=y; t+=y; return t+=y; }
+#define S(x,y,z)float  x(float*d,float z s){ float t=y; t+=y; return t+=y; }
   E, Q, U, V, C, c, I =
 {
 EY};
 
 unsigned char g[2414], *p = g, *e;
 int j, k, s, m, n, x, y;
-S (B, *d++ = *s++, *)S (o, *d++ += *s++, *)S (a, *d++ -= *s++, *)S (H, *d++
-								    ** s++,
-								    *)S (X,
-									 *d++
-									 *=
-									 s,)
-S (v, *d++ += s,)
-     int w (int c)
+
+float B(float *d, float *s)
 {
-  return *p++ = c;
+    float t = *d++ = *s++;
+    t += *d++ = *s++;
+    return t += *d++ = *s++;
 }
 
-F
-W (F * d)
+float o(float *d, float *s)
+{
+    float t = *d++ += *s++;
+    t += *d++ += *s++;
+    return t += *d++ += *s++;
+}
+
+float a(float *d, float *s)
+{
+    float t = *d++ -= *s++;
+    t += *d++ -= *s++;
+    return t += *d++ -= *s++;
+}
+
+float H(float *d, float *s)
+{
+    float t = *d++ * *s++;
+    t += *d++ * *s++;
+    return t += *d++ * *s++;
+}
+
+float X(float *d, float s)
+{
+    float t = *d++ *= s;
+    t += *d++ *= s;
+    return t += *d++ *= s;
+}
+
+float v(float *d, float s)
+{
+    float t = *d++ += s;
+    t += *d++ += s;
+    return t += *d++ += s;
+}
+
+int w (int c)
+{
+    return *p++ = c;
+}
+
+float
+W (float * d)
 {
   return sqrt (H (d, d));
 }
@@ -38,9 +74,9 @@ r (uint32_t u)
   w (u >> 16);
   w (u >> 8);
   w (u);
-} F
+} float
 
-O (F * d)
+O (float * d)
 {
   return X (d, 1 / W (d));
 }
@@ -50,9 +86,9 @@ void
 u (char *s)
 {
   *s && w ((u (1 + s), *s));
-} F
+} float
 
-G (F x, int p)
+G (float x, int p)
 {
   for (z = p * 46 + f; 12 ^ *z; x += .5)
     {
@@ -72,7 +108,7 @@ K ()
 {
   write (k, g, p - g);
   p = g;
-} F *
+} float *
 
 d ()
 {
@@ -96,7 +132,7 @@ d ()
 void
 Y (int N)
 {
-  F *h, *i;
+  float *h, *i;
   A p, n;
   if (!(h = d ()))
     *c = 1[c] = (2[c] = 2[E] / 2) / 2;
@@ -180,7 +216,7 @@ q (int c)
   n %= c;
 } void
 
-T (F c)
+T (float c)
 {
   c = .5 + 255 * c;
   q (0 > c ? 0 : c > 255 ? 255 : c);
