@@ -15,6 +15,8 @@ struct node {
 
 struct list {
 	struct node *head;
+	unsigned int wmax;
+	unsigned int wcur;
 };
 
 static void addNode(struct list *list, struct node *node)
@@ -52,18 +54,58 @@ static void RR_addTask(struct list *list, struct task *task)
 
 static struct task *RR_getTask(struct list *list)
 {
-    return getNode(list)->task;
+	struct node *node = NULL;
+
+	if (0 != list->wcur) {
+		node = getNode(list);
+	}
+
+	return node ? node->task : NULL;
 }
 
 struct list wrrs[3] = {};
+enum weight w = eWeightH;
+
+void WRR_setWeight(enum weight w, unsigned int wmax)
+{
+	struct list *list = &wrrs[w];
+	list->wmax = wmax;
+	list->wcur = wmax;
+}
 
 void WRR_addTask(struct task *task, enum weight w)
 {
-	RR_addTask(&wrrs[w], task);
+	struct list *list = &wrrs[w];
+	RR_addTask(list, task);
 }
 
 struct task *WRR_getTask(void)
 {
-	return RR_getTask(&wrrs[0]);
+	struct list *list = &wrrs[w];
+	struct task *task = NULL;
+	enum weight wcur = w;
+
+	for (; w < eWeightMax; ++w, ++list) {
+		task = RR_getTask(list);
+		if (NULL != task) {
+			--list->wcur;
+			break;
+		}
+		list->wcur = list->wmax;
+	}
+
+	if (NULL == task) {
+		list = &wrrs[0];
+		for (w = 0; w <= wcur; ++w, ++list) {
+			task = RR_getTask(list);
+			if (NULL != task) {
+				--list->wcur;
+				break;
+			}
+			list->wcur = list->wmax;
+		}
+	}
+
+	return task;
 }
 

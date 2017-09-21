@@ -6,42 +6,57 @@
 #include <stdio.h>
 #include "arbitration.h"
 
-#define N   3
+#define N   4
 
 struct task {
-    void (*run)(void);
+	char	c;
 };
 
-static void A(void)
+int main(int argc, char *argv[])
 {
-    putchar('A');
-}
+	struct task tasksH[] = {'A', 'B', 'C', 'D'};
+	struct task tasksM[] = {'a', 'b', 'c', 'd'};
+	struct task tasksL[] = {'0', '1', '2', '3'};
+    int i, n;
 
-static void B(void)
-{
-    putchar('B');
-}
+	if (argc < 2 || 1 != sscanf(argv[1], "%d", &n)) {
+		n = N * 6;
+	}
 
-static void C(void)
-{
-    putchar('C');
-}
-
-int main()
-{
-    struct task tasks[3] = {A, B, C}, *task;
-    int i;
+	WRR_setWeight(eWeightH, 3);
+	WRR_setWeight(eWeightM, 2);
+	WRR_setWeight(eWeightL, 1);
 
     for (i = 0; i < N; ++i) {
-        WRR_addTask(&tasks[i], 0);
+        WRR_addTask(&tasksM[i], eWeightM);
     }
 
-    for (i = 0; i < N * 3; ++i) {
-        task = WRR_getTask();
-        (*task->run)();
+    for (i = 0; i < n; ++i) {
+        struct task *task = WRR_getTask();
+		putchar(task->c);
+    }
+	putchar('\n');
+
+    for (i = 0; i < N; ++i) {
+        WRR_addTask(&tasksL[i], eWeightL);
     }
 
+    for (i = 0; i < n; ++i) {
+        struct task *task = WRR_getTask();
+		putchar(task->c);
+    }
+	putchar('\n');
+
+    for (i = 0; i < N; ++i) {
+        WRR_addTask(&tasksH[i], eWeightH);
+    }
+
+    for (i = 0; i < n; ++i) {
+        struct task *task = WRR_getTask();
+		putchar(task->c);
+    }
     putchar('\n');
+
     return 0;
 }
 

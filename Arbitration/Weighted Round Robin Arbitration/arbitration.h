@@ -16,6 +16,7 @@ enum weight {
 	eWeightMax
 };
 
+void WRR_setWeight(enum weight w, unsigned int wmax);
 void WRR_addTask(struct task *task, enum weight w);
 struct task *WRR_getTask(void);
 
