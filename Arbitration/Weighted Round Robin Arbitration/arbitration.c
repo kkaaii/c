@@ -13,15 +13,18 @@ struct node {
     struct task *task;
 };
 
-static struct node *head = NULL;
+struct list {
+	struct node *head;
+};
 
-static void addNode(struct node *node)
+static void addNode(struct list *list, struct node *node)
 {
+	struct node *head = list->head;
     struct node *prev;
 
     if (NULL == head) {
-        head = node;
-        node->prev = head;
+        list->head = node;
+        node->prev = node;
     } else {
         prev = head->prev;
         node->prev = prev;
@@ -31,22 +34,36 @@ static void addNode(struct node *node)
     node->next = head;
 }
 
-static struct node *getNode(void)
+static struct node *getNode(struct list *list)
 {
-    struct node *node = head;
-    head = head->next;
+    struct node *node = list->head;
+	if (NULL != node) {
+		list->head = node->next;
+	}
     return node;
 }
 
-void RR_addTask(struct task *task)
+static void RR_addTask(struct list *list, struct task *task)
 {
     struct node *node = malloc(sizeof (*node));
     node->task = task;
-    addNode(node);
+    addNode(list, node);
 }
 
-struct task *RR_getTask(void)
+static struct task *RR_getTask(struct list *list)
 {
-    return getNode()->task;
+    return getNode(list)->task;
+}
+
+struct list wrrs[3] = {};
+
+void WRR_addTask(struct task *task, enum weight w)
+{
+	RR_addTask(&wrrs[w], task);
+}
+
+struct task *WRR_getTask(void)
+{
+	return RR_getTask(&wrrs[0]);
 }
 

@@ -8,8 +8,16 @@
 
 struct task;
 
-void RR_addTask(struct task *task);
-struct task *RR_getTask(void);
+enum weight {
+	eWeightH = 0,
+	eWeightM,
+	eWeightL,
+
+	eWeightMax
+};
+
+void WRR_addTask(struct task *task, enum weight w);
+struct task *WRR_getTask(void);
 
 #endif /* _ARBITRATION_H */
 

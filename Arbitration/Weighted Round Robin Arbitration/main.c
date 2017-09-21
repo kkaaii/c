@@ -33,11 +33,11 @@ int main()
     int i;
 
     for (i = 0; i < N; ++i) {
-        RR_addTask(&tasks[i]);
+        WRR_addTask(&tasks[i], 0);
     }
 
     for (i = 0; i < N * 3; ++i) {
-        task = RR_getTask();
+        task = WRR_getTask();
         (*task->run)();
     }
 
