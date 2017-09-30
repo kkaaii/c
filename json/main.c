@@ -105,6 +105,7 @@ static void testObject(void)
 	addUint8(&next, "age", offsetof(struct person, age), 1);
 	addUint16(&next, "birthday", offsetof(struct person, birthday), 3);
 	addString(&next, "name", offsetof(struct person, name), 2);
+	next.size = sizeof (struct person);
 
 	addObject(&desc, "data", 0, 2, &next);
 	puts(json(&desc, data, buf));
@@ -112,8 +113,8 @@ static void testObject(void)
 
 int main(void)
 {
-	if (0) testBoolean();
-	if (0) testBooleanArray();
+	if (1) testBoolean();
+	if (1) testBooleanArray();
 	if (1) testInt8();
 	if (1) testIntArray();
 	if (1) testString();

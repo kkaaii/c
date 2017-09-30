@@ -11,108 +11,57 @@
 
 #define	JSON_DELIMITER	','
 
-typedef char *(*encode_t)(char *buf, void *data, size_t n, json_desc_t *next);
+#define	CC_UNUSED		__attribute__((unused))
 
-#define	encodeArray(size, expr)					\
-	size_t i;									\
-												\
-	if (n != 1) *buf++ = JSON_ARR_HEADER;		\
-	for (i = 0; i < n; ++i) {					\
-		if (i != 0) *buf++ = JSON_DELIMITER;	\
-		buf = expr;								\
-		data = (char *)data + (size);			\
-	}											\
-	if (n != 1) *buf++ = JSON_ARR_FOOTER;		\
-	*buf = '\0';								\
-	return buf;									\
-
-static char *encodeBool(char *buf, void *data)
+static char *encodeBool(char *buf, void *data, json_desc_t *next CC_UNUSED)
 {
 	bool value = *(bool *)data;
 	return buf += sprintf(buf, value ? "true" : "false");
 }
 
-static char *encodeInt8(char *buf, void *data)
+static char *encodeInt8(char *buf, void *data, json_desc_t *next CC_UNUSED)
 {
 	int8_t value = *(int8_t *)data;
 	return buf += sprintf(buf, "%d", value);
 }
 
-static char *encodeInt16(char *buf, void *data)
+static char *encodeInt16(char *buf, void *data, json_desc_t *next CC_UNUSED)
 {
 	int16_t value = *(int16_t *)data;
 	return buf += sprintf(buf, "%d", value);
 }
 
-static char *encodeInt32(char *buf, void *data)
+static char *encodeInt32(char *buf, void *data, json_desc_t *next CC_UNUSED)
 {
 	int32_t value = *(int32_t *)data;
 	return buf += sprintf(buf, "%d", value);
 }
 
-static char *encodeUint8(char *buf, void *data)
+static char *encodeUint8(char *buf, void *data, json_desc_t *next CC_UNUSED)
 {
 	uint8_t value = *(uint8_t *)data;
 	return buf += sprintf(buf, "%u", value);
 }
 
-static char *encodeUint16(char *buf, void *data)
+static char *encodeUint16(char *buf, void *data, json_desc_t *next CC_UNUSED)
 {
 	uint16_t value = *(uint16_t *)data;
 	return buf += sprintf(buf, "%u", value);
 }
 
-static char *encodeUint32(char *buf, void *data)
+static char *encodeUint32(char *buf, void *data, json_desc_t *next CC_UNUSED)
 {
 	uint32_t value = *(uint32_t *)data;
 	return buf += sprintf(buf, "%u", value);
 }
 
-static char *encodeString(char *buf, void *data)
+static char *encodeString(char *buf, void *data, json_desc_t *next CC_UNUSED)
 {
 	char *value = *(char **)data;
 	return buf += sprintf(buf, "\"%s\"", value);
 }
 
-static char *encodeBoolArr(char *buf, void *data, size_t n, json_desc_t *next)
-{
-	encodeArray(sizeof (bool), encodeBool(buf, data));
-}
-
-static char *encodeInt8Arr(char *buf, void *data, size_t n, json_desc_t *next)
-{
-	encodeArray(sizeof (int8_t), encodeInt8(buf, data));
-}
-
-static char *encodeInt16Arr(char *buf, void *data, size_t n, json_desc_t *next)
-{
-	encodeArray(sizeof (int16_t), encodeInt16(buf, data));
-}
-
-static char *encodeInt32Arr(char *buf, void *data, size_t n, json_desc_t *next)
-{
-	encodeArray(sizeof (int32_t), encodeInt32(buf, data));
-}
-
-static char *encodeUint8Arr(char *buf, void *data, size_t n, json_desc_t *next)
-{
-	encodeArray(sizeof (uint8_t), encodeUint8(buf, data));
-}
-
-static char *encodeUint16Arr(char *buf, void *data, size_t n, json_desc_t *next)
-{
-	encodeArray(sizeof (uint16_t), encodeUint16(buf, data));
-}
-
-static char *encodeUint32Arr(char *buf, void *data, size_t n, json_desc_t *next)
-{
-	encodeArray(sizeof (uint32_t), encodeUint32(buf, data));
-}
-
-static char *encodeStringArr(char *buf, void *data, size_t n, json_desc_t *next)
-{
-	encodeArray(sizeof (char *), encodeString(buf, data));
-}
+typedef char *(*encode_t)(char *buf, void *data, size_t n, json_desc_t *next);
 
 static char *encodeObject(char *buf, void *data, json_desc_t *next)
 {
@@ -135,9 +84,67 @@ static char *encodeObject(char *buf, void *data, json_desc_t *next)
 	return buf;
 }
 
+typedef char *(*encodeElement_t)(char *buf, void *data, json_desc_t *next);
+
+static char *encodeArray(char *buf, void *data, size_t n, json_desc_t *next,
+    size_t size, encodeElement_t encodeElement)
+{
+	size_t i;
+
+	if (n != 1) *buf++ = JSON_ARR_HEADER;
+	for (i = 0; i < n; ++i) {
+		if (i != 0) *buf++ = JSON_DELIMITER;
+		buf = (*encodeElement)(buf, data, next);
+		data = (char *)data + (size);
+	}
+	if (n != 1) *buf++ = JSON_ARR_FOOTER;
+	*buf = '\0';
+	return buf;
+}
+
+static char *encodeBoolArr(char *buf, void *data, size_t n, json_desc_t *next)
+{
+	return encodeArray(buf, data, n, next, sizeof (bool), encodeBool);
+}
+
+static char *encodeInt8Arr(char *buf, void *data, size_t n, json_desc_t *next)
+{
+	return encodeArray(buf, data, n, next, sizeof (int8_t), encodeInt8);
+}
+
+static char *encodeInt16Arr(char *buf, void *data, size_t n, json_desc_t *next)
+{
+	return encodeArray(buf, data, n, next, sizeof (int16_t), encodeInt16);
+}
+
+static char *encodeInt32Arr(char *buf, void *data, size_t n, json_desc_t *next)
+{
+	return encodeArray(buf, data, n, next, sizeof (int32_t), encodeInt32);
+}
+
+static char *encodeUint8Arr(char *buf, void *data, size_t n, json_desc_t *next)
+{
+	return encodeArray(buf, data, n, next, sizeof (uint8_t), encodeUint8);
+}
+
+static char *encodeUint16Arr(char *buf, void *data, size_t n, json_desc_t *next)
+{
+	return encodeArray(buf, data, n, next, sizeof (uint16_t), encodeUint16);
+}
+
+static char *encodeUint32Arr(char *buf, void *data, size_t n, json_desc_t *next)
+{
+	return encodeArray(buf, data, n, next, sizeof (uint32_t), encodeUint32);
+}
+
+static char *encodeStringArr(char *buf, void *data, size_t n, json_desc_t *next)
+{
+	return encodeArray(buf, data, n, next, sizeof (char *), encodeString);
+}
+
 static char *encodeObjectArr(char *buf, void *data, size_t n, json_desc_t *next)
 {
-	encodeArray(next->size, encodeObject(buf, data, next));
+	return encodeArray(buf, data, n, next, next->size, encodeObject);
 }
 
 char *json(json_desc_t *desc, void *data, char *buf)
