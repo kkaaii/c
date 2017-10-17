@@ -31,13 +31,13 @@ int load_config(const char *config)
 	if (NULL == fp)
 		return 0;
 
-	puts("loading colors...");
+	DEBUG_MSG("loading colors...\n");
 	for (grp = 1; grp <= GRPS; ++grp) {
 		c[grp] = fgetc(fp) - '0';
 	}
 	fgetc(fp);
 
-	puts("loading grps...");
+	DEBUG_MSG("loading grps...\n");
 	fgetc(fp);
 	for (row = 0; row < ROWS; ++row) {
 		for (col = 0; col < COLS; ++col) {
@@ -47,7 +47,7 @@ int load_config(const char *config)
 		fgetc(fp);
 	}
 
-	puts("loading data...");
+	DEBUG_MSG("loading data...\n");
 	fgetc(fp);
 	for (row = 0; row < ROWS; ++row) {
 		for (col = 0; col < COLS; ++col) {

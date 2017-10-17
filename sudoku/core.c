@@ -6,18 +6,16 @@
 #include "config.h"
 #include "core.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#define	DEBUG_MSG	printf
+typedef union cell_t {
+	unsigned all;
+	struct {
+		unsigned	num : BITS;
+		unsigned	grp : BITS;
+		unsigned	bmp : N + 1;
+	};
+} cell_t;
 
-#define	DEBUG_ASSERT(x)	do {												\
-	if (!(x)) {																\
-		DEBUG_MSG("Assertion: \"%s\", %s:%d\n", #x, __FILE__, __LINE__);	\
-		exit(-1);															\
-	}																		\
-} while (0)
-
-static unsigned cells[ROWS][COLS];
+static cell_t cells[ROWS][COLS];
 
 static unsigned _ctz(unsigned x)
 {
@@ -29,7 +27,7 @@ static int is_set(unsigned row, unsigned col)
 	DEBUG_ASSERT(row < ROWS);
 	DEBUG_ASSERT(col < COLS);
 
-	return 0 != (cells[row][col] & BIT(0));
+	return 0 != cells[row][col].num;
 }
 
 static void _clr(unsigned row, unsigned col, unsigned num, ESetType t)
@@ -41,8 +39,7 @@ static void _clr(unsigned row, unsigned col, unsigned num, ESetType t)
 	DEBUG_ASSERT(0 < num && num <= N);
 
 	if (!is_set(row, col)) {
-		cells[row][col] &= ~BIT(num);
-		cell = cells[row][col] & ALL;
+		cell = cells[row][col].bmp &= ~BIT(num);
 		DEBUG_ASSERT(0 != cell);
 
 		if (0 == (cell & (cell - 1))) {
@@ -59,8 +56,8 @@ static void _set(unsigned row, unsigned col, unsigned num)
 	DEBUG_ASSERT(col < COLS);
 	DEBUG_ASSERT(num - 1 < N);
 
-	cell = cells[row][col];
-	cells[row][col] = (cell & ~ALL) | BIT(num) | BIT(0);
+	cells[row][col].bmp = BIT(num);
+	cells[row][col].num = num;
 }
 
 static void row_update(unsigned row, unsigned num)
@@ -108,7 +105,7 @@ unsigned get_grp(unsigned row, unsigned col)
 	DEBUG_ASSERT(row < ROWS);
 	DEBUG_ASSERT(col < COLS);
 
-	return cells[row][col] >> (N + 1);
+	return cells[row][col].grp;
 }
 
 unsigned get_num(unsigned row, unsigned col)
@@ -116,7 +113,7 @@ unsigned get_num(unsigned row, unsigned col)
 	DEBUG_ASSERT(row < ROWS);
 	DEBUG_ASSERT(col < COLS);
 
-	return is_set(row, col) ? _ctz(cells[row][col] & ALL) : 0;
+	return cells[row][col].num;
 }
 
 void set_grp(unsigned row, unsigned col, unsigned grp)
@@ -125,7 +122,7 @@ void set_grp(unsigned row, unsigned col, unsigned grp)
 	DEBUG_ASSERT(col < COLS);
 	DEBUG_ASSERT(grp - 1 < GRPS);
 
-	cells[row][col] |= grp << (N + 1);
+	cells[row][col].grp = grp;
 }
 
 void set_num(unsigned row, unsigned col, unsigned num, ESetType t)
@@ -150,7 +147,8 @@ void init(void)
 
 	for (row = 0; row < ROWS; ++row) {
 		for (col = 0; col < COLS; ++col) {
-			cells[row][col] = ALL;
+			cells[row][col].all = 0;
+			cells[row][col].bmp = ALL;
 		}
 	}
 }

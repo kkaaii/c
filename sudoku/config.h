@@ -11,11 +11,30 @@
 
 #define	N		9
 
+#define	BITS	4
+
 #define	ROWS	N
 #define	COLS	N
 #define	GRPS	N
 
 #define	ALL		MASK(1, N)
+
+#ifdef DEBUG
+	#include <stdio.h>
+	#include <stdlib.h>
+
+	#define	DEBUG_MSG	printf
+
+	#define	DEBUG_ASSERT(x)	do {											\
+		if (!(x)) {															\
+			DEBUG_MSG("Assertion: \"%s\", %s:%d\n", #x, __FILE__, __LINE__);\
+			exit(-1);														\
+		}																	\
+	} while (0)
+#else
+	#define	DEBUG_MSG(...)
+	#define	DEBUG_ASSERT(...)
+#endif
 
 const char *get_color(unsigned grp);
 int load_config(const char *config);
