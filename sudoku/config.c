@@ -53,7 +53,7 @@ int load_config(const char *config)
 		for (col = 0; col < COLS; ++col) {
 			num = fgetc(fp);
 			if ('-' != num) {
-				set_num(row, col, num - '0');
+				set_num(row, col, num - '0', eInit);
 			}
 		}
 		fgetc(fp);
