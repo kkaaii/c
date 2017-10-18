@@ -39,30 +39,30 @@ int main(void)
 	return 0;
 }
 
-unsigned W;
 int f[N * M + 1];
 
 int dp(void)
 {
 	unsigned v;
+	unsigned c;
 
-	W = 0;
+	c = 0;
 	for (v = 1; v <= M; ++v) {
-		W += v * marbles[v];
+		c += v * marbles[v];
 	}
 
-	if (W & 1) {
+	if (c & 1) {
 		return 0;
 	}
 
-	memset(f, 0x80, sizeof (f));
+	memset(f, 0, sizeof (f));
 	f[0] = 0;
 
-	W /= 2; 
+	c /= 2; 
 	for (v = 1; v <= M; ++v) {
-		bounded_knapsack(f, v, v, marbles[v]);
+		bkp(f, c, v, v, marbles[v]);
 	}
 
-	return f[W] == W;
+	return f[c] == c;
 }
 

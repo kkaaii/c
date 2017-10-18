@@ -14,3 +14,8 @@ clean:
 clobber: clean
 	$(RM) $(TARGET)
 
+run: $(TARGET)
+	@echo "********** expected output **********"
+	@cat 1014.out
+	@echo "**********  actual output  **********"
+	@./$(TARGET) < 1014.in

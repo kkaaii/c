@@ -38,16 +38,14 @@
 **    subject to sigma(w[i] * x[i]) <= W and x[i] >= 0
 */
 
-extern int W;
-
 /*
 ** f[i][W] = max{f[i-1][W-k*w[i]] + k*v[i] | 0 <= k*c[i] <= W}
 */
-void unbounded_knapsack(int f[], int wi, int vi)
+void ukp(unsigned f[], unsigned c, unsigned wi, unsigned vi)
 {
 	int w;
 
-	for (w = wi; w <= W; ++w) {
+	for (w = wi; w <= c; ++w) {
 		int temp = f[w - wi] + vi;
 		if (f[w] < temp)
 			f[w] = temp;
@@ -57,33 +55,31 @@ void unbounded_knapsack(int f[], int wi, int vi)
 /*
 ** f[i][W] = max{f[i-1][W], f[i-1][W-w[i]] + v[i]}
 */
-void zero_one_knapsack(int f[], int wi, int vi)
+void kp(unsigned f[], unsigned c, unsigned wi, unsigned vi)
 {
-	int w;
-
-	for (w = W; w >= wi; --w) {
-		int temp = f[w - wi] + vi;
-		if (f[w] < temp)
-			f[w] = temp;
+	for (; c >= wi; --c) {
+		int temp = f[c - wi] + vi;
+		if (f[c] < temp)
+			f[c] = temp;
 	}
 }
 
 /*
 ** f[i][W] = max{f[i-1][W-k*w[i]] + k*v[i] | 0 <= k <= x[i]}
 */
-void bounded_knapsack(int f[], int wi, int vi, int xi)
+void bkp(unsigned f[], unsigned c, unsigned wi, unsigned vi, unsigned xi)
 {
 	int k;
 
-	if (wi * xi >= W) {
-		unbounded_knapsack(f, wi, vi);
+	if (wi * xi >= c) {
+		ukp(f, c, wi, vi);
 	} else {
 		for (k = 1; k < xi; k <<= 1) {
-			zero_one_knapsack(f, wi * k, vi * k);
+			kp(f, c, wi * k, vi * k);
 			xi -= k;
 		}
 		if (0 != xi)
-			zero_one_knapsack(f, wi * xi, vi * xi);
+			kp(f, c, wi * xi, vi * xi);
 	}
 }
 
