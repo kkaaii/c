@@ -43,24 +43,26 @@ int main(void)
 ** f[i][j] = sigma(f[i - 1][j - t[i][1..c])
 */
 
-int f[G + 1][Z + 1 + Z];
+int f[2][Z + 1 + Z];
 
 int dp(void)
 {
 	int i, j, k;
+	int cur = 0;
 
 	memset(f, 0, sizeof f);
 	for (k = 1; k <= c; ++k)
-		f[1][Z + t[1][k]] = 1;
+		f[cur][Z + t[1][k]] = 1;
 
 	for (i = 2; i <= g; ++i) {
+		cur ^= 1;
 		for (j = Z; j >= -Z; --j) {
 			for (k = 1; k <= c; ++k) {
-				f[i][Z + j] += f[i - 1][Z + j - t[i][k]];
+				f[cur][Z + j] += f[cur ^ 1][Z + j - t[i][k]];
 			}
 		}
 	}
 
-	return f[g][Z];
+	return f[cur][Z];
 }
 
