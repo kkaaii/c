@@ -2,7 +2,7 @@ CC=gcc
 RM=rm -f
 
 TARGET=1014
-SOURCES=knapsack.c 1014.c
+SOURCES=knapsack.c $(TARGET).c
 OBJS=$(SOURCES:.c=.o)
 
 $(TARGET): $(OBJS)
@@ -16,6 +16,6 @@ clobber: clean
 
 run: $(TARGET)
 	@echo "********** expected output **********"
-	@cat 1014.out
+	@cat $(TARGET).out
 	@echo "**********  actual output  **********"
-	@./$(TARGET) < 1014.in
+	@./$(TARGET) < $(TARGET).in
