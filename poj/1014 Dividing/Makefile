@@ -2,20 +2,28 @@ CC=gcc
 RM=rm -f
 
 TARGET=1014
-SOURCES=knapsack.c $(TARGET).c
+SOURCES=$(TARGET).c knapsack.c
+CFLAGS +=
+LDFLAGS +=
+LDLIBS=
+
 OBJS=$(SOURCES:.c=.o)
 
+.PHONY: all clean clobber run
+
+all: run clobber
+
 $(TARGET): $(OBJS)
-	$(CC) $^ -o $@
 
 clean:
-	$(RM) $(OBJS)
+	-$(RM) $(OBJS)
 
 clobber: clean
-	$(RM) $(TARGET)
+	-$(RM) $(TARGET)
 
 run: $(TARGET)
 	@echo "********** expected output **********"
 	@cat $(TARGET).out
 	@echo "**********  actual output  **********"
 	@./$(TARGET) < $(TARGET).in
+	@echo "**********  end of output  **********"

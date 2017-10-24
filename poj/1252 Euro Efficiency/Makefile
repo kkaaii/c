@@ -1,11 +1,11 @@
 CC=gcc
 RM=rm -f
 
-TARGET=1948
+TARGET=1252
 SOURCES=$(TARGET).c
 CFLAGS +=
 LDFLAGS +=
-LDLIBS = -lm
+LDLIBS=
 
 OBJS=$(SOURCES:.c=.o)
 
