@@ -11,7 +11,7 @@
 #define	P	100		/* number of passengers per coach ranges [1..P] */
 
 int n;				/* number of coaches */
-int	p[N + 1];		/* passengers for each coach */
+int	p[N + 1];		/* number of total passengers in first i coaches */
 int m;				/* number of coaches a mini locomotive can pull */
 
 static void pre(void);
@@ -25,36 +25,17 @@ int main(void)
 	scanf("%d", &t);
 	while (t--) {
 		scanf("%d", &n);
-		for (i = 1; i <= n; ++i)
+		p[0] = 0;
+		for (i = 1; i <= n; ++i) {
 			scanf("%d", &p[i]);
+			p[i] += p[i - 1];
+		}
 		scanf("%d", &m);
-
-		pre();
 
 		printf("%d\n", dp());
 	}
 
 	return 0;
-}
-
-/* sum of passengers in current and previous m-1 coaches */
-int v[N + 1];
-
-void pre(void)
-{
-	int i;
-	int sum;
-
-	v[0] = 0;
-	for (i = 1; i <= m; ++i)
-		v[i] = v[i - 1] + p[i];
-
-	sum = v[m];
-	for (; i <= n; ++i) {
-		sum += p[i];
-		sum -= p[i - m];
-		v[i] = sum;
-	}
 }
 
 /*
@@ -77,13 +58,15 @@ int f[N + 1][L + 1];
 int dp(void)
 {
 	int i, j, k;
+	int v;
 
 	memset(f, 0, sizeof f);
 
 	for (i = 1; i <= n; ++i) {
 		k = (i <= m) ? 0 : i - m;
+		v = p[i] - p[k];
 		for (j = 1; j <= L; ++j) {
-			f[i][j] = max(f[i - 1][j], f[k][j - 1] + v[i]);
+			f[i][j] = max(f[i - 1][j], f[k][j - 1] + v);
 		}
 	}
 
