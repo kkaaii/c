@@ -2,6 +2,9 @@
 ** File Name: 1252.c
 ** Author:
 ** Creation Time: Mon Oct 23 08:20:03 2017
+**
+** Result	Memory	Time	Language	Code Length	Submit Time
+** Accepted	436K	0MS	GCC		926B		2017-10-28 00:09:01
 */
 #include <stdio.h>
 #include <string.h>
@@ -73,4 +76,3 @@ void dp(void)
 		}
 	}
 }
-
