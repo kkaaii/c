@@ -2,6 +2,9 @@
 ** File Name: 3132.c
 ** Author:
 ** Creation Time: Sat Oct 21 23:04:27 2017
+**
+** Result	Memory	Time	Language	Code Length	Submit Time
+** Accepted	496K	219MS	GCC		735B	2017-10-28 12:35:15
 */
 #include <stdio.h>
 #include <string.h>
