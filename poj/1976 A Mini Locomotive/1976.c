@@ -2,6 +2,10 @@
 ** File Name: 1976.c
 ** Author:
 ** Creation Time: Wed Oct 25 00:46:29 2017
+**
+** Result	Memory	Time	Language	Code Length	Submit Time
+** Accepted	1256K	16MS	GCC		1584B	2017-10-28 12:16:31
+**
 */
 #include <stdio.h>
 #include <string.h>
