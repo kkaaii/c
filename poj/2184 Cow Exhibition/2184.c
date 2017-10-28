@@ -2,6 +2,9 @@
 ** File Name: 2184.c
 ** Author:
 ** Creation Time: Fri Oct 20 07:05:00 2017
+**
+** Result	Memory	Time	Language	Code Length	Submit Time
+** Accepted	1212K	329MS	GCC		972B	2017-10-28 12:31:48
 */
 #include <stdio.h>
 #include <string.h>
