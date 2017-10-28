@@ -2,6 +2,9 @@
 ** File Name: 3628.c
 ** Author:
 ** Creation Time: Mon Oct 23 07:17:06 2017
+**
+** Result	Memory	Time	Language	Code Length	Submit Time
+** Accepted	20012K	47MS	GCC		711B	2017-10-28 12:44:36
 */
 #include <stdio.h>
 #include <string.h>
@@ -33,7 +36,7 @@ int main(void)
 	return 0;
 }
 
-int f[S + 1];
+char f[S + 1];
 
 int dp(void)
 {
@@ -55,4 +58,3 @@ int dp(void)
 
 	return j - b;
 }
-
