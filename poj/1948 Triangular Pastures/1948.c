@@ -2,6 +2,9 @@
 ** File Name: 1948.c
 ** Author:
 ** Creation Time: Fri Oct 20 02:38:25 2017
+**
+** Result	Memory	Time	Language	Code Length	Submit Time
+** Accepted	2940K	125MS	GCC		1285B		2017-10-28 12:00:16
 */
 #include <stdio.h>
 #include <string.h>
