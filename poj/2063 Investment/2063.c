@@ -2,6 +2,9 @@
 ** File Name: 2063.c
 ** Author:
 ** Creation Time: Tue Oct 24 01:07:52 2017
+**
+** Result	Memory	Time	Language	Code Length	Submit Time
+** Accepted	604K	63MS	GCC		984B	2017-10-28 12:26:34
 */
 #include <stdio.h>
 #include <string.h>
