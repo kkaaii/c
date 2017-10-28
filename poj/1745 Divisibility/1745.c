@@ -2,6 +2,9 @@
 ** File Name: 1745.c
 ** Author:
 ** Creation Time: Wed Oct 25 02:00:09 2017
+**
+** Result	Memory	Time	Language	Code Length	Submit Time
+** Accepted	1428K	141MS	GCC		689B		2017-10-28 11:41:04
 */
 #include <stdio.h>
 #include <string.h>
