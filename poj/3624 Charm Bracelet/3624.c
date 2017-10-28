@@ -2,6 +2,9 @@
 ** File Name: 3624 Charm Bracelet/3624.c
 ** Author:
 ** Creation Time: Mon Oct 23 06:49:16 2017
+**
+** Result	Memory	Time	Language	Code Length	Submit Time
+** Accepted	504K	157MS	GCC		740B	2017-10-28 12:39:49
 */
 #include <stdio.h>
 #include <string.h>
@@ -54,4 +57,3 @@ int dp(void)
 
 	return f[m];
 }
-
