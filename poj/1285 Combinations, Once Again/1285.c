@@ -2,6 +2,9 @@
 ** File Name: 1285.c
 ** Author:
 ** Creation Time: Fri Nov  3 01:02:27 2017
+**
+** Result	Memory	Time	Language	Code Length	Submit Time
+** Accepted	428K	0MS	GCC		872B	2017-11-03 13:43:40
 */
 #include <stdio.h>
 #include <string.h>
