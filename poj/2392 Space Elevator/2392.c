@@ -7,13 +7,13 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define	K	400		/* type of blocks ranges [1..K] */
-#define	H	100		/* height of block ranges [1..H] */
-#define	C	10		/* quantity of block ranes [1..C] */
+#define	K	400	/* type of blocks ranges [1..K] */
+#define	H	100	/* height of block ranges [1..H] */
+#define	C	10	/* quantity of block ranes [1..C] */
 #define	A	40000	/* allowed altitude of block ranges [1..A] */
 
 struct block {
-	int	h;	/* height */
+	int h;	/* height */
 	int a;	/* altitude */
 	int c;	/* quantity */
 };
@@ -38,7 +38,7 @@ int main(void)
 	scanf("%d", &k);
 	for (i = 1; i <= k; ++i)
 		scanf("%d%d%d", &b[i].h, &b[i].a, &b[i].c);
-	qsort(b, k, sizeof b[0], cmp);
+	qsort(&b[1], k, sizeof b[0], cmp);
 
 	printf("%d\n", dp());
 	return 0;
@@ -62,14 +62,14 @@ void unbounded_knapsack(int f[], int c, int w, int v)
 
 void bounded_knapsack(int f[], int c, int w, int v, int n)
 {
-	int k;
+	int m;
 
 	if (w * n >= c) {
 		unbounded_knapsack(f, c, w, v);
 	} else {
-		for (k = 1; k < n; k <<= 1) {
-			knapsack(f, c, w * k, v * k);
-			n -= k;
+		for (m = 1; m < n; m <<= 1) {
+			knapsack(f, c, w * m, v * m);
+			n -= m;
 		}
 		if (0 != n)
 			knapsack(f, c, w * n, v * n);
@@ -81,12 +81,15 @@ int f[A + 1];
 int dp(void)
 {
 	int i;
+	int ans = 0;
 
 	memset(f, 0, sizeof f);
 
 	for (i = 1; i <= k; ++i)
 		bounded_knapsack(f, b[i].a, b[i].h, b[i].h, b[i].c);
 
-	return f[b[k].a];
-}
+	for (i = 0; i <= b[k].a; ++i)
+		ans = max(ans, f[i]);
 
+	return ans;
+}
