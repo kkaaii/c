@@ -2,6 +2,9 @@
 ** File Name: 2392.c
 ** Author:
 ** Creation Time: Fri Nov  3 02:03:28 2017
+**
+** Result	Memory	Time	Language	Code Length	Submit Time
+** Accepted	592K	172MS	GCC		1527B	2017-11-03 16:53:35
 */
 #include <stdio.h>
 #include <string.h>
