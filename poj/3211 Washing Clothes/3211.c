@@ -2,6 +2,9 @@
 ** File Name: 3211.c
 ** Author:
 ** Creation Time: Tue Nov  7 01:40:31 2017
+**
+** Result	Memory	Time	Language	Code Length	Submit Time
+** Accepted	824K	16MS	GCC		1219B	2017-11-07 19:00:46
 */
 #include <stdio.h>
 #include <string.h>
