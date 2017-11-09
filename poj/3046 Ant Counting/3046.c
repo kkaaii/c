@@ -2,6 +2,9 @@
 ** File Name: 3046.c
 ** Author:
 ** Creation Time: Tue Nov  7 06:17:30 2017
+**
+** Result	Memory	Time	Language	Code Length	Submit Time
+** Accepted	496K	47MS	GCC		989B	2017-11-09 09:50:04
 */
 #include <stdio.h>
 #include <string.h>
@@ -41,7 +44,7 @@ int main(void)
 } while (0)
 
 int sum[T * N + 1];
-int f[2][N + 1];
+int f[2][MOD + 1];
 
 int dp(void)
 {
@@ -57,7 +60,7 @@ int dp(void)
 
 		sum[0] = pre[0];
 		for (j = 1; j <= c; ++j)
-			sum[j] = sum[j - 1] + pre[j];
+			sum[j] = (sum[j - 1] + pre[j]) % MOD;
 
 		for (j = 0; j <= c; ++j) {
 			cur[j] = (j > num[i]) ?
@@ -73,4 +76,3 @@ int dp(void)
 
 	return ans;
 }
-
