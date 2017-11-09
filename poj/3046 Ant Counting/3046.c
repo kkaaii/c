@@ -4,7 +4,7 @@
 ** Creation Time: Tue Nov  7 06:17:30 2017
 **
 ** Result	Memory	Time	Language	Code Length	Submit Time
-** Accepted	496K	47MS	GCC		989B	2017-11-09 09:50:04
+** Accepted	496K	32MS	GCC		1005B	2017-11-09 10:06:26
 */
 #include <stdio.h>
 #include <string.h>
@@ -62,11 +62,12 @@ int dp(void)
 		for (j = 1; j <= c; ++j)
 			sum[j] = (sum[j - 1] + pre[j]) % MOD;
 
-		for (j = 0; j <= c; ++j) {
-			cur[j] = (j > num[i]) ?
-				(sum[j] - sum[j - num[i] - 1] + MOD) % MOD :
-				sum[j];
-		}
+		for (j = 0; j <= num[i]; ++j)
+			cur[j] = sum[j];
+
+		for (; j <= c; ++j)
+			cur[j] = (sum[j] - sum[j - num[i] - 1] + MOD) % MOD;
+
 		swap(pre, cur);
 	}
 
