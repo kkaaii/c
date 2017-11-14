@@ -2,6 +2,10 @@
 ** File Name: 1155.c
 ** Author:
 ** Creation Time: Mon Nov 13 07:53:28 2017
+**
+** Result	Memory	Time	Language	Code Length	Submit Time
+** Accepted	35768K	282MS	GCC		1245B	2017-11-14 15:27:16
+**
 */
 #include <stdio.h>
 #include <string.h>
