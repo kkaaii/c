@@ -2,6 +2,9 @@
 ** File Name: 3345.c
 ** Author:
 ** Creation Time: Tue Nov 14 04:40:29 2017
+**
+** Result	Memory	Time	Language	Code Length	Submit Time
+** Accepted	612K	16MS	GCC		1810B	2017-11-15 19:31:27
 */
 #include <stdio.h>
 #include <string.h>
