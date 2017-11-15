@@ -23,24 +23,17 @@ struct country {
 	int	cost;
 } c[N + 1];
 
-int find(const char *name)
+int add_country(const char *name)
 {
 	int i = nc;
 
-	while (--i && strcmp(c[i].name, name)) {
-	}
+	while (i > 0 && strcmp(c[i].name, name))
+		--i;
 
-	return i;
-}
-
-int add_country(const char *name)
-{
-	int i = find(name);
 	if (0 == i) {
-		i = nc++;
+		i = ++nc;
 		strcpy(c[i].name, name);
 		c[i].root = TRUE;
-		c[i].vote = 1;
 	}
 
 	return i;
@@ -70,7 +63,7 @@ int main(void)
 	while (2 == scanf("%d%d", &n, &m)) {
 		memset(head, 0, sizeof head);
 		t = 1;
-		nc = 1;
+		nc = 0;
 
 		for (i = 1; i <= n; ++i) {
 			scanf("%s%d", name, &cost);
@@ -90,47 +83,53 @@ int main(void)
 	return 0;
 }
 
+#define	min(a, b)	((a) < (b) ? (a) : (b))
+
+int f[N + 1][N + 1];
+
 void dfs(int u)
 {
-	int i;
+	int i, j, k;
 	int v;
 
+	f[u][0] = 0;
+	for (i = 1; i <= n; ++i)
+		f[u][i] = c[u].cost;
+
+	c[u].vote = 0;
 	for (i = head[u]; i > 0; i = next[i]) {
 		v = edge[i];
 		dfs(v);
 		c[u].vote += c[v].vote;
+
+		for (j = c[u].vote; j > 0; --j) {
+			for (k = 1; k <= c[v].vote && k <= j; ++k)
+				f[u][j] = min(f[u][j], f[u][j - k] + f[v][k]);
+		}
 	}
+	j = ++c[u].vote;
+	f[u][j] = c[u].cost;
 }
-
-#define	min(a, b)	((a) < (b) ? (a) : (b))
-
-void knapsack(int f[], int c, int w, int v)
-{
-	for (; c >= w; --c)
-		f[c] = min(f[c], f[c - w] + v);
-}
-
-#define	INF	0x3F
-
-int f[N + 1];
 
 int dp(void)
 {
 	int i;
+	int ans;
 
-	memset(f, INF, sizeof f);
-	f[0] = 0;
-
+	c[0].cost = 0;
 	for (i = 1; i <= n; ++i) {
 		if (c[i].root) {
-			dfs(i);
-			knapsack(f, N, c[i].vote, c[i].cost);
+			c[0].cost += c[i].cost;
+			add_edge(0, i);
 		}
 	}
 
-	for (i = m; i < n && f[i] < m; ++i) {
-	}
+	dfs(0);
 
-	return f[i];
+	ans = f[0][m];
+	for (i = m + 1; i <= n; ++i)
+		ans = min(ans, f[0][i]);
+
+	return ans;
 }
 
