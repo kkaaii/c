@@ -2,6 +2,9 @@
 ** File Name: 2486.c
 ** Author:
 ** Creation Time: Wed Nov 15 07:11:51 2017
+**
+** Result	Memory	Time	Language	Code Length	Submit Time
+** Accepted	628K	47MS	GCC		1327B	2017-11-15 21:18:01
 */
 #include <stdio.h>
 #include <string.h>
