@@ -2,6 +2,9 @@
 ** File Name: 1787.c
 ** Author:
 ** Creation Time: Thu Nov 16 05:01:07 2017
+**
+** Result	Memory	Time	Language	Code Length	Submit Time
+** Accepted	552K	94MS	GCC		1151B	2017-11-16 20:23:38
 */
 #include <stdio.h>
 #include <string.h>
