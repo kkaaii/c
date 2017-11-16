@@ -2,6 +2,9 @@
 ** File Name: 2923.c
 ** Author:
 ** Creation Time: Thu Nov 16 04:06:03 2017
+**
+** Result	Memory	Time	Language	Code Length	Submit Time
+** Accepted	440K	125MS	GCC		1344B	2017-11-16 17:32:31
 */
 #include <stdio.h>
 #include <string.h>
