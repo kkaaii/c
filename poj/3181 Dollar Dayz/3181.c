@@ -4,7 +4,7 @@
 ** Creation Time: Tue Oct 24 01:46:39 2017
 **
 ** Result	Memory	Time	Language	Code Length	Submit Time
-** Accepted	2008K	297MS	GCC		829B	2017-11-17 16:22:25
+** Accepted	444K	0MS	GCC		702B	2017-11-17 16:39:13
 */
 #include <stdio.h>
 #include <string.h>
