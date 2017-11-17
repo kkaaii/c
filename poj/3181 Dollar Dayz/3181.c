@@ -2,6 +2,9 @@
 ** File Name: 3181.c
 ** Author:
 ** Creation Time: Tue Oct 24 01:46:39 2017
+**
+** Result	Memory	Time	Language	Code Length	Submit Time
+** Accepted	2008K	297MS	GCC		829B	2017-11-17 16:22:25
 */
 #include <stdio.h>
 #include <string.h>
