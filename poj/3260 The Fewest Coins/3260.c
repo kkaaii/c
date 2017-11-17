@@ -2,6 +2,8 @@
 ** File Name: 3260.c
 ** Author:
 ** Creation Time: Fri Nov 17 00:42:15 2017
+** Result	Memory	Time	Language	Code Length	Submit Time
+** Accepted	620K	79MS	GCC		1578B	2017-11-17 13:59:02
 */
 #include <stdio.h>
 #include <string.h>
