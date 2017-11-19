@@ -2,6 +2,9 @@
 ** File Name: 1083.c
 ** Author:
 ** Creation Time: Sun Nov 19 03:09:43 2017
+**
+** Result	Memory	Time	Language	Code Length	Submit Time
+** Accepted	388K	0MS	GCC		640B	2017-11-19 16:38:27
 */
 #include <stdio.h>
 #include <string.h>
