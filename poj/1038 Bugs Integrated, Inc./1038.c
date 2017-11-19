@@ -2,6 +2,8 @@
 ** File Name: 1038.c
 ** Author:
 ** Creation Time: Sun Nov 19 04:14:15 2017
+** Result	Memory	Time	Language	Code Length	Submit Time
+** Accepted	852K	1407MS	GCC		2029B	2017-11-19 21:29:04
 */
 #include <stdio.h>
 #include <string.h>
