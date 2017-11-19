@@ -31,7 +31,7 @@ int main(void)
 			s = (s - 1) / 2;
 			t = (t - 1) / 2;
 			if (s > t) SWAP(s, t);
-			for (i = s / 2; i <= t / 2; ++i)
+			for (i = s; i <= t; ++i)
 				++c[i];
 		}
 
