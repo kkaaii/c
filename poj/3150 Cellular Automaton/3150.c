@@ -2,6 +2,9 @@
 ** File Name: 3150.c
 ** Author:
 ** Creation Time: Mon Nov 20 02:09:16 2017
+**
+** Result	Memory	Time	Language	Code Length	Submit Time
+** Accepted	400K	2157MS	GCC		923B	2017-11-20 16:28:07
 */
 #include <stdio.h>
 #include <string.h>
