@@ -2,6 +2,9 @@
 ** File Name: 3233.c
 ** Author:
 ** Creation Time: Mon Nov 20 03:42:51 2017
+**
+** Result	Memory	Time	Language	Code Length	Submit Time
+** Accepted	432K	641MS	GCC		1086B	2017-11-20 19:05:00
 */
 #include <stdio.h>
 
