@@ -2,6 +2,9 @@
 ** File Name: 3070.c
 ** Author:
 ** Creation Time: Mon Nov 20 00:45:36 2017
+**
+** Result	Memory	Time	Language	Code Length	Submit Time
+** Accepted	388K	16MS	GCC		926B	2017-11-20 14:44:33
 */
 #include <stdio.h>
 
