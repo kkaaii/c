@@ -19,8 +19,8 @@ int	k;
 Matrix	a;
 
 #define	each(var)	var = 0; var <= n; ++var
-#define	swap(a, b)	do {	\
-	a ^= b; b ^= a; a ^= b;	\
+#define	swap(a, b)	do {		\
+	long long t = a; a = b; b = t;	\
 } while (0)
 
 static void I(Matrix *a)	/* identity */
