@@ -23,15 +23,26 @@ Matrix	a;
 	a ^= b; b ^= a; a ^= b;	\
 } while (0)
 
+static void I(Matrix *a)	/* identity */
+{
+	int	i;
+
+	memset(a, 0, sizeof *a);
+	for (each(i))
+		a->v[i][i] = 1;
+}
+
 Matrix mul(Matrix *a, Matrix *b)
 {
 	int	i, j, k;
 	Matrix	c;
 
+	memset(&c, 0, sizeof c);
+
 	for (each(i)) {
-		for (each(j)) {
-			c.v[i][j] = 0;
-			for (each(k))
+		for (each(k)) {
+			if (0 == a->v[i][k]) continue;
+			for (each(j))
 				c.v[i][j] += a->v[i][k] * b->v[k][j];
 		}
 	}
@@ -42,11 +53,8 @@ Matrix mul(Matrix *a, Matrix *b)
 Matrix mpow(Matrix *a, int k)
 {
 	Matrix	b;
-	int	i;
 
-	memset(&b, 0, sizeof b);
-	for (each(i))
-		b.v[i][i] = 1;
+	I(&b);
 
 	while (k) {
 		if (k & 1)
@@ -67,9 +75,7 @@ int main(void)
 	Matrix	b;
 
 	while (~scanf("%d%d%d", &n, &m, &k) && (n || m || k)) {
-		memset(&a, 0, sizeof a);
-		for (each(r))
-			a.v[r][r] = 1;
+		I(&a);
 
 		while (k--) {
 			scanf("%s", s);
