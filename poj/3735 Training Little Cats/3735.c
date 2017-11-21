@@ -2,6 +2,9 @@
 ** File Name: 3735.c
 ** Author:
 ** Creation Time: Mon Nov 20 06:18:36 2017
+**
+** Result	Memory	Time	Language	Code Length	Submit Time
+** Accepted	752K	110MS	GCC		1354B	2017-11-21 13:55:04
 */
 #include <stdio.h>
 #include <string.h>
