@@ -7,6 +7,50 @@
 #include "ATA_Command.h"
 #include "IdentifyDevice.h"
 
+static inline void ReportCapacity28Bit(uint32 capacity)
+{
+	int	iWord = IDFY_W060_W061_TOTAL_SECTORS_28BIT;
+	IDFY_SetDword(iWord, capacity);
+}
+
+static inline void ReportCapacity48Bit(uint64 capacity)
+{
+	int	iWord = IDFY_W100_W103_NUMBER_OF_USER_ADDRESSABLE_LOGICAL_SECTORS;
+	IDFY_SetQword(iWord, capacity);
+}
+
+static inline void ReportCapacityExtended48Bit(uint64 capacity)
+{
+	int	iWord = IDFY_W230_W233_EXTENDED_NUMBER_OF_USER_ADDRESSABLE_SECTORS;
+	IDFY_SetQword(iWord, capacity);
+}
+
+
+static void ReportCapacity(void)
+{
+	if (!ATA_BitGet(bit_48BIT_SUPPORTED)) {
+		ReportCapacity28Bit(ATA_Field(ACCESSIBLE_CAPACITY));
+	} else if (!ATA_BitGet(bit_ExtendedNumberOfUserAddressableSectorsSupported)) {
+		ReportCapacity48Bit(ATA_Field(ACCESSIBLE_CAPACITY));
+		if (ATA_Field(ACCESSIBLE_CAPACITY) <= 0x0FFFFFFF)
+			ReportCapacity28Bit(ATA_Field(ACCESSIBLE_CAPACITY));
+		else
+			ReportCapacity28Bit(0x0FFFFFFF);
+	} else {
+		ReportCapacityExtended48Bit(ATA_Field(ACCESSIBLE_CAPACITY));
+		if (ATA_Field(ACCESSIBLE_CAPACITY) <= 0x0FFFFFFF) {
+			ReportCapacity28Bit(ATA_Field(ACCESSIBLE_CAPACITY));
+			ReportCapacity48Bit(ATA_Field(ACCESSIBLE_CAPACITY));
+		} else if (ATA_Field(ACCESSIBLE_CAPACITY) <= 0xFFFFFFFF) {
+			ReportCapacity28Bit(0x0FFFFFFF);
+			ReportCapacity48Bit(ATA_Field(ACCESSIBLE_CAPACITY));
+		} else {
+			ReportCapacity28Bit(0x0FFFFFFF);
+			ReportCapacity48Bit(0xFFFFFFFF);
+		}
+	}
+}
+
 void ATA_Command_IdentifyDevice(void)
 {
 	int	iWord;
