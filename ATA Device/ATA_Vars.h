@@ -33,7 +33,7 @@ static inline void ATA_BitSet(int index)
 	gATA_Bits[w] |= BIT(b);
 }
 
-static inline int ATA_BitGet(int index)
+static inline unsigned int ATA_BitGet(int index)
 {
 	int	w = index / BMP_BITS;
 	int	b = index % BMP_BITS;
@@ -64,6 +64,7 @@ enum {
 	bit_DEVICE_SLEEP_SUPPORTED,
 	bit_DEVSLEEP_TO_REDUCEDPWRSTATE_CAPABILITY_SUPPORTED,
 	bit_DEVSLP_TIMING_VARIABLES_SUPPORTED,
+	bit_DLC_ENABLED,
 	bit_DLC_SUPPORTED,
 	bit_DM_CLEARS_NONACTIVATED_DEFERRED_DATA,
 	bit_DM_IMMEDIATE_SUPPORTED,
@@ -73,10 +74,9 @@ enum {
 	bit_DMA_SETUP_AUTO_ACTIVATION_ENABLED,
 	bit_DMA_SETUP_AUTO_ACTIVATION_SUPPORTED,
 	bit_DMA_SUPPORTED,
-	bit_DRAT_SUPPORTED,
 	bit_DOWNLOAD_MICROCODE_DMA_SUPPORTED,
 	bit_DOWNLOAD_MICROCODE_SUPPORTED,
-	bit_DLC_ENABLED,
+	bit_DRAT_SUPPORTED,
 	bit_DSN_ENABLED,
 	bit_DSN_SUPPORTED,
 	bit_ENCRYPT_ALL_SUPPORTED,
@@ -87,8 +87,8 @@ enum {
 	bit_ExtendedNumberOfUserAddressableSectorsSupported,
 	bit_FLUSH_CACHE_EXT_SUPPORTED,
 	bit_FREE_FALL_ENABLED,
-	bit_FREE_FALL_SUPPORTED,
-	bit_FW_ACTIVATION_PENDING,
+	bit_FREE_FALL_SUPPORTED,/*
+	bit_FW_ACTIVATION_PENDING,*/
 	bit_GPL_DMA_SUPPORTED,
 	bit_GPL_SUPPORTED,
 	bit_HARDWARE_FEATURE_CONTROL_IS_ENABLED,
@@ -220,7 +220,7 @@ enum {
 };
 
 typedef unsigned long long	uint64;
-typedef unsigned long		uint32;
+typedef unsigned int		uint32;
 typedef unsigned short		uint16;
 typedef unsigned char		uint8;
 

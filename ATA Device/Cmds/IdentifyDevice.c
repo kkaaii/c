@@ -3,57 +3,55 @@
 ** Author:
 ** Creation Time: Tue Nov 28 02:54:18 2017
 */
+#include <string.h>
 #include "ATA_Vars.h"
 #include "ATA_Command.h"
 #include "IdentifyDevice.h"
 
-static inline void ReportCapacity28Bit(uint32 capacity)
+static void IDFY_Copy(void *buf, int iWord, void *src, size_t bytes)
 {
-	int	iWord = IDFY_W060_W061_TOTAL_SECTORS_28BIT;
-	IDFY_SetDword(iWord, capacity);
+	buf = (uint16 *)buf + iWord;
+	memcpy(buf, src, bytes);
 }
 
-static inline void ReportCapacity48Bit(uint64 capacity)
+static void IDFY_SetBit(void *buf, int iWord, int iBit, unsigned int value)
 {
-	int	iWord = IDFY_W100_W103_NUMBER_OF_USER_ADDRESSABLE_LOGICAL_SECTORS;
-	IDFY_SetQword(iWord, capacity);
+	uint16	*word = (uint16 *)buf + iWord;
+	uint16	mask = (uint16)BIT(iBit);
+
+	*word = (uint16)(value ? *word | mask : *word & ~mask);
 }
 
-static inline void ReportCapacityExtended48Bit(uint64 capacity)
+static void IDFY_SetField(void *buf, int iWord, int iBit, unsigned int value)
 {
-	int	iWord = IDFY_W230_W233_EXTENDED_NUMBER_OF_USER_ADDRESSABLE_SECTORS;
-	IDFY_SetQword(iWord, capacity);
+	uint16	*word = (uint16 *)buf + iWord;
+
+	*word |= (uint16)(value << iBit);
 }
 
-
-static void ReportCapacity(void)
+static void IDFY_SetWord(void *buf, int iWord, uint16 value)
 {
-	if (!ATA_BitGet(bit_48BIT_SUPPORTED)) {
-		ReportCapacity28Bit(ATA_Field(ACCESSIBLE_CAPACITY));
-	} else if (!ATA_BitGet(bit_ExtendedNumberOfUserAddressableSectorsSupported)) {
-		ReportCapacity48Bit(ATA_Field(ACCESSIBLE_CAPACITY));
-		if (ATA_Field(ACCESSIBLE_CAPACITY) <= 0x0FFFFFFF)
-			ReportCapacity28Bit(ATA_Field(ACCESSIBLE_CAPACITY));
-		else
-			ReportCapacity28Bit(0x0FFFFFFF);
-	} else {
-		ReportCapacityExtended48Bit(ATA_Field(ACCESSIBLE_CAPACITY));
-		if (ATA_Field(ACCESSIBLE_CAPACITY) <= 0x0FFFFFFF) {
-			ReportCapacity28Bit(ATA_Field(ACCESSIBLE_CAPACITY));
-			ReportCapacity48Bit(ATA_Field(ACCESSIBLE_CAPACITY));
-		} else if (ATA_Field(ACCESSIBLE_CAPACITY) <= 0xFFFFFFFF) {
-			ReportCapacity28Bit(0x0FFFFFFF);
-			ReportCapacity48Bit(ATA_Field(ACCESSIBLE_CAPACITY));
-		} else {
-			ReportCapacity28Bit(0x0FFFFFFF);
-			ReportCapacity48Bit(0xFFFFFFFF);
-		}
-	}
+	uint16	*word = (uint16 *)buf + iWord;
+	*word = value;
 }
 
-void ATA_Command_IdentifyDevice(void)
+static void IDFY_SetDword(void *buf, int iWord, uint32 value)
+{
+	uint32	*dword = (uint32 *)((uint16 *)buf + iWord);
+	*dword = value;
+}
+
+static void IDFY_SetQword(void *buf, int iWord, uint64 value)
+{
+	uint64	*qword = (uint64 *)((uint16 *)buf + iWord);
+	*qword = value;
+}
+
+static void IdentifyDevice(void *buf)
 {
 	int	iWord;
+
+	memset(buf, 0, 512);
 
 	/*=====================================================================
 	** Word 0 - General Configuration
@@ -100,7 +98,7 @@ void ATA_Command_IdentifyDevice(void)
 	** Word 10..19 - Serial number
 	*/
 	iWord = IDFY_W010_W019_SERIAL_NUMBER;
-	IDFY_Copy(iWord, ATA_Field(SERIAL_NUMBER));
+	IDFY_Copy(buf, iWord, ATA_Field(SERIAL_NUMBER), 20);
 
 	/*=====================================================================
 	** Word 20..21 - Retired
@@ -114,13 +112,13 @@ void ATA_Command_IdentifyDevice(void)
 	** Word 23..26 - Firmware revision
 	*/
 	iWord = IDFY_W023_W026_FIRMWARE_REVISION;
-	IDFY_Copy(iWord, ATA_Field(FIRMWARE_REVISION));
+	IDFY_Copy(buf, iWord, ATA_Field(FIRMWARE_REVISION), 8);
 
 	/*=====================================================================
 	** Word 27..46 - Model number
 	*/
 	iWord = IDFY_W027_W046_MODEL_NUMBER;
-	IDFY_Copy(iWord, ATA_Field(MODEL_NUMBER));
+	IDFY_Copy(buf, iWord, ATA_Field(MODEL_NUMBER), 40);
 
 	/*=====================================================================
 	** Word 47 - Obsolete
@@ -134,8 +132,8 @@ void ATA_Command_IdentifyDevice(void)
 	**       0 - Trusted Computing feature set is supported
 	*/
 	iWord = IDFY_W048_TRUSTED_COMPUTING_FEATURE_SET_OPTIONS;
-	IDFY_SetBit(iWord, 14, 1);
-	IDFY_SetBit(iWord,  0, ATA_BitGet(bit_TRUSTED_COMPUTING_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 14, 1);
+	IDFY_SetBit(buf, iWord,  0, ATA_BitGet(bit_TRUSTED_COMPUTING_SUPPORTED));
 
 	/*=====================================================================
 	** Word 49 - Capabilities
@@ -153,11 +151,11 @@ void ATA_Command_IdentifyDevice(void)
 	**     1:0 - Long Physical Sector Alignment Error reporting
 	*/
 	iWord = IDFY_W049_CAPABILITIES;
-	IDFY_SetBit(iWord, 11, ATA_BitGet(bit_IORDY_SUPPORTED));
-	IDFY_SetBit(iWord, 10, ATA_BitGet(bit_IORDY_DISABLE_SUPPORTED));
-	IDFY_SetBit(iWord,  9, 1);
-	IDFY_SetBit(iWord,  8, ATA_BitGet(bit_DMA_SUPPORTED));
-	IDFY_SetField(iWord, 0, ATA_Field(ALIGNMENT_ERROR_REPORTING));
+	IDFY_SetBit(buf, iWord, 11, ATA_BitGet(bit_IORDY_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 10, ATA_BitGet(bit_IORDY_DISABLE_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  9, 1);
+	IDFY_SetBit(buf, iWord,  8, ATA_BitGet(bit_DMA_SUPPORTED));
+	IDFY_SetField(buf, iWord, 0, ATA_Field(ALIGNMENT_ERROR_REPORTING));
 
 	/*=====================================================================
 	** Word 50 - Capabilities
@@ -170,7 +168,7 @@ void ATA_Command_IdentifyDevice(void)
 	**           0 = There is no minimum Standby timer value
 	*/
 	iWord = IDFY_W050_CAPABILITIES;
-	IDFY_SetBit(iWord, 14, 1);
+	IDFY_SetBit(buf, iWord, 14, 1);
 
 	/*=====================================================================
 	** Word 51..52 - Obsolete
@@ -185,7 +183,7 @@ void ATA_Command_IdentifyDevice(void)
 	**       0 - Obsolete
 	*/
 	iWord = IDFY_W053;
-	IDFY_SetField(iWord, 8, ATA_Field(FREE_FALL_SENSITIVITY));
+	IDFY_SetField(buf, iWord, 8, ATA_Field(FREE_FALL_SENSITIVITY));
 
 	/*=====================================================================
 	** Word 54..58 - Obsolete
@@ -206,19 +204,22 @@ void ATA_Command_IdentifyDevice(void)
 	**     8:0 - Obsolete
 	*/
 	iWord = IDFY_W059;
-	IDFY_SetBit(iWord, 15, ATA_BitGet(bit_BLOCK_ERASE_SUPPORTED));
-	IDFY_SetBit(iWord, 14, ATA_BitGet(bit_OVERWRITE_SUPPORTED));
-	IDFY_SetBit(iWord, 13, ATA_BitGet(bit_CRYPTO_SCRAMBLE_SUPPORTED));
-	IDFY_SetBit(iWord, 12, ATA_BitGet(bit_SANITIZE_SUPPORTED));
-	IDFY_SetBit(iWord, 11, ATA_BitGet(bit_ACS3_COMMANDS_ALLOWED_BY_SANITIZE));
-	IDFY_SetBit(iWord, 10, ATA_BitGet(bit_SANITIZE_ANTIFREEZE_LOCK_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 15, ATA_BitGet(bit_BLOCK_ERASE_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 14, ATA_BitGet(bit_OVERWRITE_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 13, ATA_BitGet(bit_CRYPTO_SCRAMBLE_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 12, ATA_BitGet(bit_SANITIZE_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 11, ATA_BitGet(bit_ACS3_COMMANDS_ALLOWED_BY_SANITIZE));
+	IDFY_SetBit(buf, iWord, 10, ATA_BitGet(bit_SANITIZE_ANTIFREEZE_LOCK_SUPPORTED));
 
 	/*=====================================================================
 	** Word 60..61 - Total number of user addressable logical sectors for
 	**               28-bit commands
 	*/
 	iWord = IDFY_W060_W061_TOTAL_SECTORS_28BIT;
-	IDFY_SetDword(iWord, min(0x0FFFFFFF, ATA_Field(ACCESSIBLE_CAPACITY)));
+	if (0x0FFFFFFF < ATA_Field(ACCESSIBLE_CAPACITY))
+		IDFY_SetDword(buf, iWord, 0x0FFFFFFF);
+	else
+		IDFY_SetDword(buf, iWord, (uint32)ATA_Field(ACCESSIBLE_CAPACITY));
 
 	/*=====================================================================
 	** Word 62 - Obsolete
@@ -236,12 +237,12 @@ void ATA_Command_IdentifyDevice(void)
 	**       0 - Multiword DMA mode 0 is supported
 	*/
 	iWord = IDFY_W063;
-	IDFY_SetBit(iWord, 10, ATA_BitGet(bit_MULTIWORD_DMA_MODE2_ENABLED));
-	IDFY_SetBit(iWord,  9, ATA_BitGet(bit_MULTIWORD_DMA_MODE1_ENABLED));
-	IDFY_SetBit(iWord,  8, ATA_BitGet(bit_MULTIWORD_DMA_MODE0_ENABLED));
-	IDFY_SetBit(iWord,  2, ATA_BitGet(bit_MULTIWORD_DMA_MODE2_SUPPORTED));
-	IDFY_SetBit(iWord,  1, ATA_BitGet(bit_MULTIWORD_DMA_MODE1_SUPPORTED));
-	IDFY_SetBit(iWord,  0, ATA_BitGet(bit_MULTIWORD_DMA_MODE0_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 10, ATA_BitGet(bit_MULTIWORD_DMA_MODE2_ENABLED));
+	IDFY_SetBit(buf, iWord,  9, ATA_BitGet(bit_MULTIWORD_DMA_MODE1_ENABLED));
+	IDFY_SetBit(buf, iWord,  8, ATA_BitGet(bit_MULTIWORD_DMA_MODE0_ENABLED));
+	IDFY_SetBit(buf, iWord,  2, ATA_BitGet(bit_MULTIWORD_DMA_MODE2_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  1, ATA_BitGet(bit_MULTIWORD_DMA_MODE1_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  0, ATA_BitGet(bit_MULTIWORD_DMA_MODE0_SUPPORTED));
 
 	/*=====================================================================
 	** Word 64
@@ -249,33 +250,33 @@ void ATA_Command_IdentifyDevice(void)
 	**     1:0 - PIO mode 3 and mode 4 supported
 	*/
 	iWord = IDFY_W064;
-	IDFY_SetBit(iWord,  1, ATA_BitGet(bit_PIO_MODE4_IS_SUPPORTED));
-	IDFY_SetBit(iWord,  0, ATA_BitGet(bit_PIO_MODE3_IS_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  1, ATA_BitGet(bit_PIO_MODE4_IS_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  0, ATA_BitGet(bit_PIO_MODE3_IS_SUPPORTED));
 
 	/*=====================================================================
 	** Word 65 - Minimum Multiword DMA transfer cycle time per word
 	*/
 	iWord = IDFY_W065_MIN_MULTIWORD_CYCLE_TIME;
-	IDFY_SetWord(iWord, ATA_Field(MIN_MULTIWORD_CYCLE_TIME));
+	IDFY_SetWord(buf, iWord, ATA_Field(MIN_MULTIWORD_CYCLE_TIME));
 
 	/*=====================================================================
 	** Word 66 - Manufacturer's recommended Multiword DMA transfer
 	**           cycle time
 	*/
 	iWord = IDFY_W066_RECOMMENDED_MULTIWORD_CYCLE_TIME;
-	IDFY_SetWord(iWord, ATA_Field(RECOMMENDED_MULTIWORD_CYCLE_TIME));
+	IDFY_SetWord(buf, iWord, ATA_Field(RECOMMENDED_MULTIWORD_CYCLE_TIME));
 
 	/*=====================================================================
 	** Word 67 - Minimum PIO transfer cycle time without flow control
 	*/
 	iWord = IDFY_W067_MIN_PIO_TRANSFER_TIME_WITHOUT_IORDY;
-	IDFY_SetWord(iWord, ATA_Field(MIN_PIO_TRANSFER_TIME_WITHOUT_IORDY));
+	IDFY_SetWord(buf, iWord, ATA_Field(MIN_PIO_TRANSFER_TIME_WITHOUT_IORDY));
 
 	/*=====================================================================
 	** Word 68 - Minimum PIO transfer cycle time with IORDY flow control
 	*/
 	iWord = IDFY_W068_MIN_PIO_TRANSFER_TIME_WITH_IORDY;
-	IDFY_SetWord(iWord, ATA_Field(MIN_PIO_TRANSFER_TIME_WITH_IORDY));
+	IDFY_SetWord(buf, iWord, ATA_Field(MIN_PIO_TRANSFER_TIME_WITH_IORDY));
 
 	/*=====================================================================
 	** Word 69 - Additional Supported
@@ -297,16 +298,17 @@ void ATA_Command_IdentifyDevice(void)
 	**     1:0 - Zoned Capabilities
 	*/
 	iWord = IDFY_W069_ADDITIONAL_SUPPORTED;
-	IDFY_SetBit(iWord, 14, ATA_BitGet(bit_DRAT_SUPPORTED));
-	IDFY_SetBit(iWord, 13, ATA_BitGet(bit_LPS_MISALIGNMENT_REPORTING_SUPPORTED));
-	IDFY_SetBit(iWord, 11, ATA_BitGet(bit_READ_BUFFER_DMA_SUPPORTED));
-	IDFY_SetBit(iWord, 10, ATA_BitGet(bit_WRITE_BUFFER_DMA_SUPPORTED));
-	IDFY_SetBit(iWord,  8, ATA_BitGet(bit_DOWNLOAD_MICROCODE_DMA_SUPPORTED));
-	IDFY_SetBit(iWord,  6, ATA_BitGet(bit_28BIT_SUPPORTED));
-	IDFY_SetBit(iWord,  5, ATA_BitGet(bit_RZAT_SUPPORTED));
-	IDFY_SetBit(iWord,  4, ATA_BitGet(bit_ENCRYPT_ALL_SUPPORTED));
-	IDFY_SetBit(iWord,  2, ATA_BitGet(bit_NON_VOLATILE_WRITE_CACHE));
-	IDFY_SetField(iWord, 0, ATA_Field(ZONED));
+	IDFY_SetBit(buf, iWord, 14, ATA_BitGet(bit_DRAT_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 13, ATA_BitGet(bit_LPS_MISALIGNMENT_REPORTING_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 11, ATA_BitGet(bit_READ_BUFFER_DMA_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 10, ATA_BitGet(bit_WRITE_BUFFER_DMA_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  8, ATA_BitGet(bit_DOWNLOAD_MICROCODE_DMA_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  6, ATA_BitGet(bit_28BIT_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  5, ATA_BitGet(bit_RZAT_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  4, ATA_BitGet(bit_ENCRYPT_ALL_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  3, ATA_BitGet(bit_ExtendedNumberOfUserAddressableSectorsSupported));
+	IDFY_SetBit(buf, iWord,  2, ATA_BitGet(bit_NON_VOLATILE_WRITE_CACHE));
+	IDFY_SetField(buf, iWord, 0, ATA_Field(ZONED));
 
 	/*=====================================================================
 	** Word 70 - Reserved
@@ -322,7 +324,7 @@ void ATA_Command_IdentifyDevice(void)
 	**     4:0 - Maximum queue depth - 1
 	*/
 	iWord = IDFY_W075_QUEUE_DEPTH;
-	IDFY_SetField(iWord, 0, ATA_Field(QUEUE_DEPTH));
+	IDFY_SetField(buf, iWord, 0, ATA_Field(QUEUE_DEPTH));
 
 	/*=====================================================================
 	** Word 76 - Serial ATA Capabilities
@@ -341,17 +343,17 @@ void ATA_Command_IdentifyDevice(void)
 	**       0 - Shall be cleared to zero
 	*/
 	iWord = IDFY_W076_SERIAL_ATA_CAPABILITIES;
-	IDFY_SetBit(iWord, 15, ATA_BitGet(bit_READ_LOG_DMA_EXT_AS_EQUIVALENT_TO_READ_LOG_EXT_SUPPORTED));
-	IDFY_SetBit(iWord, 14, ATA_BitGet(bit_DEVICE_AUTOMATIC_PARTIAL_TO_SLUMBER_TRANSITIONS_SUPPORTED));
-	IDFY_SetBit(iWord, 13, ATA_BitGet(bit_HOST_AUTOMATIC_PARTIAL_TO_SLUMBER_TRANSITIONS_SUPPORTED));
-	IDFY_SetBit(iWord, 12, ATA_BitGet(bit_NCQ_PRIORITY_INFORMATION_SUPPORTED));
-	IDFY_SetBit(iWord, 11, ATA_BitGet(bit_UNLOAD_WHILE_NCQ_COMMANDS_ARE_OUTSTANDING_SUPPORTED));
-	IDFY_SetBit(iWord, 10, ATA_BitGet(bit_SATA_PHY_EVENT_COUNTERS_LOG_SUPPORTED));
-	IDFY_SetBit(iWord,  9, ATA_BitGet(bit_RECEIPT_OF_HOST_INITIATED_POWER_MANAGEMENT_REQUESTS_SUPPORTED));
-	IDFY_SetBit(iWord,  8, ATA_BitGet(bit_NCQ_FEATURE_SET_SUPPORTED));
-	IDFY_SetBit(iWord,  3, ATA_BitGet(bit_SATA_GEN3_SIGNALING_SPEED_SUPPORTED));
-	IDFY_SetBit(iWord,  2, ATA_BitGet(bit_SATA_GEN2_SIGNALING_SPEED_SUPPORTED));
-	IDFY_SetBit(iWord,  1, ATA_BitGet(bit_SATA_GEN1_SIGNALING_SPEED_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 15, ATA_BitGet(bit_READ_LOG_DMA_EXT_AS_EQUIVALENT_TO_READ_LOG_EXT_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 14, ATA_BitGet(bit_DEVICE_AUTOMATIC_PARTIAL_TO_SLUMBER_TRANSITIONS_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 13, ATA_BitGet(bit_HOST_AUTOMATIC_PARTIAL_TO_SLUMBER_TRANSITIONS_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 12, ATA_BitGet(bit_NCQ_PRIORITY_INFORMATION_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 11, ATA_BitGet(bit_UNLOAD_WHILE_NCQ_COMMANDS_ARE_OUTSTANDING_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 10, ATA_BitGet(bit_SATA_PHY_EVENT_COUNTERS_LOG_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  9, ATA_BitGet(bit_RECEIPT_OF_HOST_INITIATED_POWER_MANAGEMENT_REQUESTS_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  8, ATA_BitGet(bit_NCQ_FEATURE_SET_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  3, ATA_BitGet(bit_SATA_GEN3_SIGNALING_SPEED_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  2, ATA_BitGet(bit_SATA_GEN2_SIGNALING_SPEED_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  1, ATA_BitGet(bit_SATA_GEN1_SIGNALING_SPEED_SUPPORTED));
 
 	/*=====================================================================
 	** Word 77 - Serial ATA Additional Capabilities
@@ -365,12 +367,12 @@ void ATA_Command_IdentifyDevice(void)
 	**       0 - Shall be cleared to zero
 	*/
 	iWord = IDFY_W077_SERIAL_ATA_ADDITIONAL_CAPABILITIES;
-	IDFY_SetBit(iWord,  8, ATA_BitGet(bit_POWER_DISABLE_FEATURE_ALWAYS_ENABLED));
-	IDFY_SetBit(iWord,  7, ATA_BitGet(bit_DEVSLEEP_TO_REDUCEDPWRSTATE_CAPABILITY_SUPPORTED));
-	IDFY_SetBit(iWord,  6, ATA_BitGet(bit_SEND_AND_RECEIVE_QUEUED_COMMANDS_SUPPORTED));
-	IDFY_SetBit(iWord,  5, ATA_BitGet(bit_NCQ_QUEUE_MANAGEMENT_COMMAND_SUPPORTED));
-	IDFY_SetBit(iWord,  4, ATA_BitGet(bit_NCQ_STREAMING_SUPPORTED));
-	IDFY_SetField(iWord,  1, ATA_Field(CURRENT_SERIAL_ATA_SIGNAL_SPEED));
+	IDFY_SetBit(buf, iWord,  8, ATA_BitGet(bit_POWER_DISABLE_FEATURE_ALWAYS_ENABLED));
+	IDFY_SetBit(buf, iWord,  7, ATA_BitGet(bit_DEVSLEEP_TO_REDUCEDPWRSTATE_CAPABILITY_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  6, ATA_BitGet(bit_SEND_AND_RECEIVE_QUEUED_COMMANDS_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  5, ATA_BitGet(bit_NCQ_QUEUE_MANAGEMENT_COMMAND_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  4, ATA_BitGet(bit_NCQ_STREAMING_SUPPORTED));
+	IDFY_SetField(buf, iWord,  1, ATA_Field(CURRENT_SERIAL_ATA_SIGNAL_SPEED));
 
 	/*=====================================================================
 	** Word 78 - Serial ATA features supported
@@ -390,17 +392,17 @@ void ATA_Command_IdentifyDevice(void)
 	**       0 - Shall be cleared to zero
 	*/
 	iWord = IDFY_W078_SERIAL_ATA_FEATURES_SUPPORTED;
-	IDFY_SetBit(iWord, 12, ATA_BitGet(bit_POWER_DISABLE_FEATURE_SUPPORTED));
-	IDFY_SetBit(iWord, 11, ATA_BitGet(bit_REBUILD_ASSIST_SUPPORTED));
-	IDFY_SetBit(iWord,  9, ATA_BitGet(bit_HYBRID_INFORMATION_SUPPORTED));
-	IDFY_SetBit(iWord,  8, ATA_BitGet(bit_DEVICE_SLEEP_SUPPORTED));
-	IDFY_SetBit(iWord,  7, ATA_BitGet(bit_NCQ_AUTOSENSE_SUPPORTED));
-	IDFY_SetBit(iWord,  6, ATA_BitGet(bit_SOFTWARE_SETTINGS_PRESERVATION_SUPPORTED));
-	IDFY_SetBit(iWord,  5, ATA_BitGet(bit_HARDWARE_FEATURE_CONTROL_SUPPORTED));
-	IDFY_SetBit(iWord,  4, ATA_BitGet(bit_IN_ORDER_DATA_DELIVERY_SUPPORTED));
-	IDFY_SetBit(iWord,  3, ATA_BitGet(bit_DEVICE_INITIATED_POWER_MANAGEMENT_SUPPORTED));
-	IDFY_SetBit(iWord,  2, ATA_BitGet(bit_DMA_SETUP_AUTO_ACTIVATION_SUPPORTED));
-	IDFY_SetBit(iWord,  1, ATA_BitGet(bit_NONZERO_BUFFER_OFFSETS_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 12, ATA_BitGet(bit_POWER_DISABLE_FEATURE_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 11, ATA_BitGet(bit_REBUILD_ASSIST_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  9, ATA_BitGet(bit_HYBRID_INFORMATION_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  8, ATA_BitGet(bit_DEVICE_SLEEP_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  7, ATA_BitGet(bit_NCQ_AUTOSENSE_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  6, ATA_BitGet(bit_SOFTWARE_SETTINGS_PRESERVATION_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  5, ATA_BitGet(bit_HARDWARE_FEATURE_CONTROL_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  4, ATA_BitGet(bit_IN_ORDER_DATA_DELIVERY_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  3, ATA_BitGet(bit_DEVICE_INITIATED_POWER_MANAGEMENT_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  2, ATA_BitGet(bit_DMA_SETUP_AUTO_ACTIVATION_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  1, ATA_BitGet(bit_NONZERO_BUFFER_OFFSETS_SUPPORTED));
 
 	/*=====================================================================
 	** Word 79 - Serial ATA features enabled
@@ -419,17 +421,17 @@ void ATA_Command_IdentifyDevice(void)
 	**       0 - Shall be cleared to zero
 	*/
 	iWord = IDFY_W079_SERIAL_ATA_FEATURES_ENABLED;
-	IDFY_SetBit(iWord, 11, ATA_BitGet(bit_REBUILD_ASSIST_ENABLED));
-	IDFY_SetBit(iWord, 10, ATA_BitGet(bit_POWER_DISABLE_FEATURE_ENABLED));
-	IDFY_SetBit(iWord,  9, ATA_BitGet(bit_HYBRID_INFORMATION_ENABLED));
-	IDFY_SetBit(iWord,  8, ATA_BitGet(bit_DEVICE_SLEEP_ENABLED));
-	IDFY_SetBit(iWord,  7, ATA_BitGet(bit_AUTOMATIC_PARTIAL_TO_SLUMBER_TRANSITIONS_ENABLED));
-	IDFY_SetBit(iWord,  6, ATA_BitGet(bit_SOFTWARE_SETTINGS_PRESERVATION_ENABLED));
-	IDFY_SetBit(iWord,  5, ATA_BitGet(bit_HARDWARE_FEATURE_CONTROL_IS_ENABLED));
-	IDFY_SetBit(iWord,  4, ATA_BitGet(bit_IN_ORDER_DATA_DELIVERY_ENABLED));
-	IDFY_SetBit(iWord,  3, ATA_BitGet(bit_DEVICE_INITIATED_POWER_MANAGEMENT_ENABLED));
-	IDFY_SetBit(iWord,  2, ATA_BitGet(bit_DMA_SETUP_AUTO_ACTIVATION_ENABLED));
-	IDFY_SetBit(iWord,  1, ATA_BitGet(bit_NONZERO_BUFFER_OFFSETS_ENABLED));
+	IDFY_SetBit(buf, iWord, 11, ATA_BitGet(bit_REBUILD_ASSIST_ENABLED));
+	IDFY_SetBit(buf, iWord, 10, ATA_BitGet(bit_POWER_DISABLE_FEATURE_ENABLED));
+	IDFY_SetBit(buf, iWord,  9, ATA_BitGet(bit_HYBRID_INFORMATION_ENABLED));
+	IDFY_SetBit(buf, iWord,  8, ATA_BitGet(bit_DEVICE_SLEEP_ENABLED));
+	IDFY_SetBit(buf, iWord,  7, ATA_BitGet(bit_AUTOMATIC_PARTIAL_TO_SLUMBER_TRANSITIONS_ENABLED));
+	IDFY_SetBit(buf, iWord,  6, ATA_BitGet(bit_SOFTWARE_SETTINGS_PRESERVATION_ENABLED));
+	IDFY_SetBit(buf, iWord,  5, ATA_BitGet(bit_HARDWARE_FEATURE_CONTROL_IS_ENABLED));
+	IDFY_SetBit(buf, iWord,  4, ATA_BitGet(bit_IN_ORDER_DATA_DELIVERY_ENABLED));
+	IDFY_SetBit(buf, iWord,  3, ATA_BitGet(bit_DEVICE_INITIATED_POWER_MANAGEMENT_ENABLED));
+	IDFY_SetBit(buf, iWord,  2, ATA_BitGet(bit_DMA_SETUP_AUTO_ACTIVATION_ENABLED));
+	IDFY_SetBit(buf, iWord,  1, ATA_BitGet(bit_NONZERO_BUFFER_OFFSETS_ENABLED));
 
 	/*=====================================================================
 	** Word 80 - Major version number
@@ -473,14 +475,14 @@ void ATA_Command_IdentifyDevice(void)
 	**       0 - The SMART feature set is supported
 	*/
 	iWord = IDFY_W082_COMMANDS_AND_FEATURE_SETS_SUPPORTED;
-	IDFY_SetBit(iWord, 14, ATA_BitGet(bit_NOP_SUPPORTED));
-	IDFY_SetBit(iWord, 13, ATA_BitGet(bit_READ_BUFFER_SUPPORTED));
-	IDFY_SetBit(iWord, 12, ATA_BitGet(bit_WRITE_BUFFER_SUPPORTED));
-	IDFY_SetBit(iWord,  6, ATA_BitGet(bit_READ_LOOK_AHEAD_SUPPORTED));
-	IDFY_SetBit(iWord,  5, ATA_BitGet(bit_VOLATILE_WRITE_CACHE_SUPPORTED));
-	IDFY_SetBit(iWord,  3, 1);
-	IDFY_SetBit(iWord,  1, ATA_BitGet(bit_SECURITY_SUPPORTED));
-	IDFY_SetBit(iWord,  0, ATA_BitGet(bit_SMART));
+	IDFY_SetBit(buf, iWord, 14, ATA_BitGet(bit_NOP_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 13, ATA_BitGet(bit_READ_BUFFER_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 12, ATA_BitGet(bit_WRITE_BUFFER_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  6, ATA_BitGet(bit_READ_LOOK_AHEAD_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  5, ATA_BitGet(bit_VOLATILE_WRITE_CACHE_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  3, 1);
+	IDFY_SetBit(buf, iWord,  1, ATA_BitGet(bit_SECURITY_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  0, ATA_BitGet(bit_SMART));
 
 	/*=====================================================================
 	** Word 83 - Commands and feature sets supported
@@ -501,14 +503,14 @@ void ATA_Command_IdentifyDevice(void)
 	**       0 - The DOWNLOAD MICROCODE command is supported
 	*/
 	iWord = IDFY_W083_COMMANDS_AND_FEATURE_SETS_SUPPORTED;
-	IDFY_SetBit(iWord, 14, 1);
-	IDFY_SetBit(iWord, 13, ATA_BitGet(bit_FLUSH_CACHE_EXT_SUPPORTED));
-	IDFY_SetBit(iWord, 12, 1);
-	IDFY_SetBit(iWord, 10, ATA_BitGet(bit_48BIT_SUPPORTED));
-	IDFY_SetBit(iWord,  6, ATA_BitGet(bit_SPIN_UP_SUPPORTED));
-	IDFY_SetBit(iWord,  5, ATA_BitGet(bit_PUIS_SUPPORTED));
-	IDFY_SetBit(iWord,  3, ATA_BitGet(bit_APM_SUPPORTED));
-	IDFY_SetBit(iWord,  0, ATA_BitGet(bit_DOWNLOAD_MICROCODE_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 14, 1);
+	IDFY_SetBit(buf, iWord, 13, ATA_BitGet(bit_FLUSH_CACHE_EXT_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 12, 1);
+	IDFY_SetBit(buf, iWord, 10, ATA_BitGet(bit_48BIT_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  6, ATA_BitGet(bit_SPIN_UP_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  5, ATA_BitGet(bit_PUIS_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  3, ATA_BitGet(bit_APM_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  0, ATA_BitGet(bit_DOWNLOAD_MICROCODE_SUPPORTED));
 
 	/*=====================================================================
 	** Word 84 - Commands and feature sets supported
@@ -527,14 +529,14 @@ void ATA_Command_IdentifyDevice(void)
 	**       0 - SMART error logging is supported
 	*/
 	iWord = IDFY_W084_COMMANDS_AND_FEATURE_SETS_SUPPORTED;
-	IDFY_SetBit(iWord, 14, 1);
-	IDFY_SetBit(iWord, 13, ATA_BitGet(bit_UNLOAD_SUPPORTED));
-	IDFY_SetBit(iWord,  8, 1);
-	IDFY_SetBit(iWord,  6, ATA_BitGet(bit_WRITE_FUA_EXT_SUPPORTED));
-	IDFY_SetBit(iWord,  5, ATA_BitGet(bit_GPL_SUPPORTED));
-	IDFY_SetBit(iWord,  4, ATA_BitGet(bit_STREAMING_SUPPORTED));
-	IDFY_SetBit(iWord,  1, ATA_BitGet(bit_SMART_SELF_TEST_SUPPORTED));
-	IDFY_SetBit(iWord,  0, ATA_BitGet(bit_SMART_ERROR_LOGGING_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 14, 1);
+	IDFY_SetBit(buf, iWord, 13, ATA_BitGet(bit_UNLOAD_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  8, 1);
+	IDFY_SetBit(buf, iWord,  6, ATA_BitGet(bit_WRITE_FUA_EXT_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  5, ATA_BitGet(bit_GPL_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  4, ATA_BitGet(bit_STREAMING_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  1, ATA_BitGet(bit_SMART_SELF_TEST_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  0, ATA_BitGet(bit_SMART_ERROR_LOGGING_SUPPORTED));
 
 	/*=====================================================================
 	** Word 85 - Commands and feature sets supported or enabled
@@ -557,14 +559,14 @@ void ATA_Command_IdentifyDevice(void)
 	**       0 - The SMART feature set is enabled
 	*/
 	iWord = IDFY_W085_COMMANDS_AND_FEATURE_SETS_SUPPORTED_OR_ENABLED;
-	IDFY_SetBit(iWord, 14, ATA_BitGet(bit_NOP_SUPPORTED));
-	IDFY_SetBit(iWord, 13, ATA_BitGet(bit_READ_BUFFER_SUPPORTED));
-	IDFY_SetBit(iWord, 12, ATA_BitGet(bit_WRITE_BUFFER_SUPPORTED));
-	IDFY_SetBit(iWord,  6, ATA_BitGet(bit_READ_LOOK_AHEAD_ENABLED));
-	IDFY_SetBit(iWord,  5, ATA_BitGet(bit_VOLATILE_WRITE_CACHE_ENABLED));
-	IDFY_SetBit(iWord,  3, 1);
-	IDFY_SetBit(iWord,  1, ATA_BitGet(bit_SECURITY_ENABLED));
-	IDFY_SetBit(iWord,  0, ATA_BitGet(bit_SMART_ENABLED));
+	IDFY_SetBit(buf, iWord, 14, ATA_BitGet(bit_NOP_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 13, ATA_BitGet(bit_READ_BUFFER_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 12, ATA_BitGet(bit_WRITE_BUFFER_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  6, ATA_BitGet(bit_READ_LOOK_AHEAD_ENABLED));
+	IDFY_SetBit(buf, iWord,  5, ATA_BitGet(bit_VOLATILE_WRITE_CACHE_ENABLED));
+	IDFY_SetBit(buf, iWord,  3, 1);
+	IDFY_SetBit(buf, iWord,  1, ATA_BitGet(bit_SECURITY_ENABLED));
+	IDFY_SetBit(buf, iWord,  0, ATA_BitGet(bit_SMART_ENABLED));
 
 	/*=====================================================================
 	** Word 86 - Commands and feature sets supported or enabled
@@ -584,13 +586,13 @@ void ATA_Command_IdentifyDevice(void)
 	**       0 - The DOWNLOAD MICROCODE command is supported
 	*/
 	iWord = IDFY_W086_COMMANDS_AND_FEATURE_SETS_SUPPORTED_OR_ENABLED;
-	IDFY_SetBit(iWord, 13, ATA_BitGet(bit_FLUSH_CACHE_EXT_SUPPORTED));
-	IDFY_SetBit(iWord, 12, 1);
-	IDFY_SetBit(iWord, 10, ATA_BitGet(bit_48BIT_SUPPORTED));
-	IDFY_SetBit(iWord,  6, ATA_BitGet(bit_SPIN_UP_SUPPORTED));
-	IDFY_SetBit(iWord,  5, ATA_BitGet(bit_PUIS_ENABLED));
-	IDFY_SetBit(iWord,  3, ATA_BitGet(bit_APM_ENABLED));
-	IDFY_SetBit(iWord,  0, ATA_BitGet(bit_DOWNLOAD_MICROCODE_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 13, ATA_BitGet(bit_FLUSH_CACHE_EXT_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 12, 1);
+	IDFY_SetBit(buf, iWord, 10, ATA_BitGet(bit_48BIT_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  6, ATA_BitGet(bit_SPIN_UP_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  5, ATA_BitGet(bit_PUIS_ENABLED));
+	IDFY_SetBit(buf, iWord,  3, ATA_BitGet(bit_APM_ENABLED));
+	IDFY_SetBit(buf, iWord,  0, ATA_BitGet(bit_DOWNLOAD_MICROCODE_SUPPORTED));
 
 	/*=====================================================================
 	** Word 87 - Commands and feature sets supported or enabled
@@ -608,13 +610,13 @@ void ATA_Command_IdentifyDevice(void)
 	**       0 - SMART error logging is supported
 	*/
 	iWord = IDFY_W087_COMMANDS_AND_FEATURE_SETS_SUPPORTED_OR_ENABLED;
-	IDFY_SetBit(iWord, 14, 1);
-	IDFY_SetBit(iWord, 13, ATA_BitGet(bit_UNLOAD_SUPPORTED));
-	IDFY_SetBit(iWord,  8, 1);
-	IDFY_SetBit(iWord,  6, ATA_BitGet(bit_WRITE_FUA_EXT_SUPPORTED));
-	IDFY_SetBit(iWord,  5, ATA_BitGet(bit_GPL_SUPPORTED));
-	IDFY_SetBit(iWord,  1, ATA_BitGet(bit_SMART_SELF_TEST_SUPPORTED));
-	IDFY_SetBit(iWord,  0, ATA_BitGet(bit_SMART_ERROR_LOGGING_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 14, 1);
+	IDFY_SetBit(buf, iWord, 13, ATA_BitGet(bit_UNLOAD_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  8, 1);
+	IDFY_SetBit(buf, iWord,  6, ATA_BitGet(bit_WRITE_FUA_EXT_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  5, ATA_BitGet(bit_GPL_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  1, ATA_BitGet(bit_SMART_SELF_TEST_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  0, ATA_BitGet(bit_SMART_ERROR_LOGGING_SUPPORTED));
 
 	/*=====================================================================
 	** Word 88 - Ultra DMA modes
@@ -636,35 +638,35 @@ void ATA_Command_IdentifyDevice(void)
 	**       0 - Ultra DMA mode 0 is supported
 	*/
 	iWord = IDFY_W088_ULTRA_DMA_MODES;
-	IDFY_SetBit(iWord, 14, ATA_BitGet(bit_UDMA_MODE6_ENABLED));
-	IDFY_SetBit(iWord, 13, ATA_BitGet(bit_UDMA_MODE5_ENABLED));
-	IDFY_SetBit(iWord, 12, ATA_BitGet(bit_UDMA_MODE4_ENABLED));
-	IDFY_SetBit(iWord, 11, ATA_BitGet(bit_UDMA_MODE3_ENABLED));
-	IDFY_SetBit(iWord, 10, ATA_BitGet(bit_UDMA_MODE2_ENABLED));
-	IDFY_SetBit(iWord,  9, ATA_BitGet(bit_UDMA_MODE1_ENABLED));
-	IDFY_SetBit(iWord,  8, ATA_BitGet(bit_UDMA_MODE0_ENABLED));
-	IDFY_SetBit(iWord,  6, ATA_BitGet(bit_UDMA_MODE6_SUPPORTED));
-	IDFY_SetBit(iWord,  5, ATA_BitGet(bit_UDMA_MODE5_SUPPORTED));
-	IDFY_SetBit(iWord,  4, ATA_BitGet(bit_UDMA_MODE4_SUPPORTED));
-	IDFY_SetBit(iWord,  3, ATA_BitGet(bit_UDMA_MODE3_SUPPORTED));
-	IDFY_SetBit(iWord,  2, ATA_BitGet(bit_UDMA_MODE2_SUPPORTED));
-	IDFY_SetBit(iWord,  1, ATA_BitGet(bit_UDMA_MODE1_SUPPORTED));
-	IDFY_SetBit(iWord,  0, ATA_BitGet(bit_UDMA_MODE0_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 14, ATA_BitGet(bit_UDMA_MODE6_ENABLED));
+	IDFY_SetBit(buf, iWord, 13, ATA_BitGet(bit_UDMA_MODE5_ENABLED));
+	IDFY_SetBit(buf, iWord, 12, ATA_BitGet(bit_UDMA_MODE4_ENABLED));
+	IDFY_SetBit(buf, iWord, 11, ATA_BitGet(bit_UDMA_MODE3_ENABLED));
+	IDFY_SetBit(buf, iWord, 10, ATA_BitGet(bit_UDMA_MODE2_ENABLED));
+	IDFY_SetBit(buf, iWord,  9, ATA_BitGet(bit_UDMA_MODE1_ENABLED));
+	IDFY_SetBit(buf, iWord,  8, ATA_BitGet(bit_UDMA_MODE0_ENABLED));
+	IDFY_SetBit(buf, iWord,  6, ATA_BitGet(bit_UDMA_MODE6_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  5, ATA_BitGet(bit_UDMA_MODE5_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  4, ATA_BitGet(bit_UDMA_MODE4_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  3, ATA_BitGet(bit_UDMA_MODE3_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  2, ATA_BitGet(bit_UDMA_MODE2_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  1, ATA_BitGet(bit_UDMA_MODE1_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  0, ATA_BitGet(bit_UDMA_MODE0_SUPPORTED));
 
 	/*=====================================================================
 	** Word 89 - Time required for a Normal Erase mode SECURITY ERASE UNIT
 	**           command
 	*/
 	iWord = IDFY_W089_NORMAL_SECURITY_ERASE_TIME;
-	IDFY_SetBit(iWord, 15, ATA_BitGet(bit_NORMAL_SECURITY_ERASE_TIME_FORMAT));
-	IDFY_SetField(iWord, 0, ATA_Field(NORMAL_SECURITY_ERASE_TIME));
+	IDFY_SetBit(buf, iWord, 15, ATA_BitGet(bit_NORMAL_SECURITY_ERASE_TIME_FORMAT));
+	IDFY_SetField(buf, iWord, 0, ATA_Field(NORMAL_SECURITY_ERASE_TIME));
 
 	/*=====================================================================
 	** Word 90 - Time required for an Enhanced Erase mode SECURITY ERASE
 	**           UNIT command
 	*/
 	iWord = IDFY_W090_ENHANCED_SECURITY_ERASE_TIME;
-	IDFY_SetWord(iWord, ATA_Field(ENHANCED_SECURITY_ERASE_TIME));
+	IDFY_SetWord(buf, iWord, ATA_Field(ENHANCED_SECURITY_ERASE_TIME));
 
 	/*=====================================================================
 	** Word 91
@@ -672,13 +674,13 @@ void ATA_Command_IdentifyDevice(void)
 	**     7:0 - Current APM level value
 	*/
 	iWord = IDFY_W091_CURRENT_ADVANCED_POWER_MANAGEMENT_LEVEL_VALUE;
-	IDFY_SetField(iWord, 0, ATA_Field(APM_LEVEL));
+	IDFY_SetField(buf, iWord, 0, ATA_Field(APM_LEVEL));
 
 	/*=====================================================================
 	** Word 92 - Master Password Identifier
 	*/
 	iWord = IDFY_W092_MASTER_PASSWORD_IDENTIFIER;
-	IDFY_SetWord(iWord, ATA_Field(MASTER_PASSWORD_IDENTIFIER));
+	IDFY_SetWord(buf, iWord, ATA_Field(MASTER_PASSWORD_IDENTIFIER));
 
 	/*=====================================================================
 	** Word 93 - Hardware reset results
@@ -694,43 +696,46 @@ void ATA_Command_IdentifyDevice(void)
 	** Word 95 - Stream Minimum Request Size
 	*/
 	iWord = IDFY_W095_STREAM_MINIMUM_REQUEST_SIZE;
-	IDFY_SetWord(iWord, ATA_Field(STREAM_MIN_REQUEST_SIZE));
+	IDFY_SetWord(buf, iWord, ATA_Field(STREAM_MIN_REQUEST_SIZE));
 
 	/*=====================================================================
 	** Word 96 - Streaming Transfer Time - DMA
 	*/
 	iWord = IDFY_W096_STREAMING_TRANSFER_TIME_DMA;
-	IDFY_SetWord(iWord, ATA_Field(DMA_SECTOR_TIME));
+	IDFY_SetWord(buf, iWord, ATA_Field(DMA_SECTOR_TIME));
 
 	/*=====================================================================
 	** Word 97 - Streaming Access Latency - DMA and PIO
 	*/
 	iWord = IDFY_W097_STREAMING_ACCESS_LATENCY;
-	IDFY_SetWord(iWord, ATA_Field(STREAM_ACCESS_LATENCY));
+	IDFY_SetWord(buf, iWord, ATA_Field(STREAM_ACCESS_LATENCY));
 
 	/*=====================================================================
 	** Word 98..99 - Streaming Performance Granularity
 	*/
 	iWord = IDFY_W098_W099_STREAMING_PERFORMANCE_GRANULARITY;
-	IDFY_SetDword(iWord, ATA_Field(STREAM_GRANULARITY));
+	IDFY_SetDword(buf, iWord, ATA_Field(STREAM_GRANULARITY));
 
 	/*=====================================================================
 	** Word 100..103 - Number of User Addressable Logical Sectors
 	*/
 	iWord = IDFY_W100_W103_NUMBER_OF_USER_ADDRESSABLE_LOGICAL_SECTORS;
+	if (ATA_BitGet(bit_48BIT_SUPPORTED)) {
+		IDFY_SetQword(buf, iWord, ATA_Field(ACCESSIBLE_CAPACITY));
+	}
 
 	/*=====================================================================
 	** Word 104 - Streaming Transfer Time - PIO
 	*/
 	iWord = IDFY_W104_STREAMING_TRANSFER_TIME_PIO;
-	IDFY_SetWord(iWord, ATA_Field(PIO_SECTOR_TIME));
+	IDFY_SetWord(buf, iWord, ATA_Field(PIO_SECTOR_TIME));
 
 	/*=====================================================================
 	** Word 105 - Maximum number of 512-byte blocks per DATA SET
 	**            MANAGEMENT command
 	*/
 	iWord = IDFY_W105_MAX_PAGES_PER_DSM_COMMAND;
-	IDFY_SetWord(iWord, ATA_Field(MAX_PAGES_PER_DSM_COMMAND));
+	IDFY_SetWord(buf, iWord, ATA_Field(MAX_PAGES_PER_DSM_COMMAND));
 
 	/*=====================================================================
 	** Word 106 - Physical sector size / logical sector size
@@ -742,10 +747,10 @@ void ATA_Command_IdentifyDevice(void)
 	**      3:0 - 2^x logical sectors per physical sector
 	*/
 	iWord = IDFY_W106_PHYSICAL_SECTOR_SIZE_LOGICAL_SECTOR_SIZE;
-	IDFY_SetBit(iWord, 14, 1);
-	IDFY_SetBit(iWord, 13, ATA_BitGet(bit_LOGICAL_TO_PHYSICAL_SECTOR_RELATIONSHIP_SUPPORTED));
-	IDFY_SetBit(iWord, 12, ATA_BitGet(bit_LOGICAL_SECTOR_SIZE_SUPPORTED));
-	IDFY_SetField(iWord, 0, ATA_Field(LOGICAL_TO_PHYSICAL_SECTOR_RELATIONSHIP));
+	IDFY_SetBit(buf, iWord, 14, 1);
+	IDFY_SetBit(buf, iWord, 13, ATA_BitGet(bit_LOGICAL_TO_PHYSICAL_SECTOR_RELATIONSHIP_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 12, ATA_BitGet(bit_LOGICAL_SECTOR_SIZE_SUPPORTED));
+	IDFY_SetField(buf, iWord, 0, ATA_Field(LOGICAL_TO_PHYSICAL_SECTOR_RELATIONSHIP));
 
 	/*=====================================================================
 	** Word 107 - Inter-seek delay for ISO/IEC 7779 standard acoustic
@@ -756,7 +761,7 @@ void ATA_Command_IdentifyDevice(void)
 	** Word 108..111 - World wide name
 	*/
 	iWord = IDFY_W108_W111_WORLD_WIDE_NAME;
-	IDFY_Copy(iWord, ATA_Field(WORLD_WIDE_NAME));
+	IDFY_Copy(buf, iWord, ATA_Field(WORLD_WIDE_NAME), 8);
 
 	/*=====================================================================
 	** Word 112..115 - Reserved
@@ -770,7 +775,7 @@ void ATA_Command_IdentifyDevice(void)
 	** Word 117..118 - Logical sector size
 	*/
 	iWord = IDFY_W117_W118_LOGICAL_SECTOR_SIZE;
-	IDFY_SetWord(iWord, ATA_Field(LOGICAL_SECTOR_SIZE));
+	IDFY_SetDword(buf, iWord, ATA_Field(LOGICAL_SECTOR_SIZE));
 
 	/*=====================================================================
 	** Word 119 - Commands and feature sets supported
@@ -790,16 +795,16 @@ void ATA_Command_IdentifyDevice(void)
 	**        0 - Obsolete
 	*/
 	iWord = IDFY_W119_COMMANDS_AND_FEATURE_SETS_SUPPORTED;
-	IDFY_SetBit(iWord, 14, 1);
-	IDFY_SetBit(iWord,  9, ATA_BitGet(bit_DSN_SUPPORTED));
-	IDFY_SetBit(iWord,  8, ATA_BitGet(bit_AMAX_ADDR_SUPPORTED));
-	IDFY_SetBit(iWord,  7, ATA_BitGet(bit_EPC_SUPPORTED));
-	IDFY_SetBit(iWord,  6, ATA_BitGet(bit_SENSE_DATA_SUPPORTED));
-	IDFY_SetBit(iWord,  5, ATA_BitGet(bit_FREE_FALL_SUPPORTED));
-	IDFY_SetBit(iWord,  4, ATA_BitGet(bit_DM_MODE3_SUPPORTED));
-	IDFY_SetBit(iWord,  3, ATA_BitGet(bit_GPL_DMA_SUPPORTED));
-	IDFY_SetBit(iWord,  2, ATA_BitGet(bit_WRITE_UNCORRECTABLE_SUPPORTED));
-	IDFY_SetBit(iWord,  1, ATA_BitGet(bit_WRV_SUPPORTED));
+	IDFY_SetBit(buf, iWord, 14, 1);
+	IDFY_SetBit(buf, iWord,  9, ATA_BitGet(bit_DSN_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  8, ATA_BitGet(bit_AMAX_ADDR_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  7, ATA_BitGet(bit_EPC_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  6, ATA_BitGet(bit_SENSE_DATA_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  5, ATA_BitGet(bit_FREE_FALL_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  4, ATA_BitGet(bit_DM_MODE3_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  3, ATA_BitGet(bit_GPL_DMA_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  2, ATA_BitGet(bit_WRITE_UNCORRECTABLE_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  1, ATA_BitGet(bit_WRV_SUPPORTED));
 
 	/*=====================================================================
 	** Word 120 - Commands and feature sets supported or enabled
@@ -819,15 +824,15 @@ void ATA_Command_IdentifyDevice(void)
 	**        0 - Obsolete
 	*/
 	iWord = IDFY_W120_COMMANDS_AND_FEATURE_SETS_SUPPORTED_OR_ENABLED;
-	IDFY_SetBit(iWord, 14, 1);
-	IDFY_SetBit(iWord,  9, ATA_BitGet(bit_DSN_ENABLED));
-	IDFY_SetBit(iWord,  7, ATA_BitGet(bit_EPC_ENABLED));
-	IDFY_SetBit(iWord,  6, ATA_BitGet(bit_SENSE_DATA_ENABLED));
-	IDFY_SetBit(iWord,  5, ATA_BitGet(bit_FREE_FALL_ENABLED));
-	IDFY_SetBit(iWord,  4, ATA_BitGet(bit_DM_MODE3_SUPPORTED));
-	IDFY_SetBit(iWord,  3, ATA_BitGet(bit_GPL_DMA_SUPPORTED));
-	IDFY_SetBit(iWord,  2, ATA_BitGet(bit_WRITE_UNCORRECTABLE_SUPPORTED));
-	IDFY_SetBit(iWord,  1, ATA_BitGet(bit_WRV_ENABLED));
+	IDFY_SetBit(buf, iWord, 14, 1);
+	IDFY_SetBit(buf, iWord,  9, ATA_BitGet(bit_DSN_ENABLED));
+	IDFY_SetBit(buf, iWord,  7, ATA_BitGet(bit_EPC_ENABLED));
+	IDFY_SetBit(buf, iWord,  6, ATA_BitGet(bit_SENSE_DATA_ENABLED));
+	IDFY_SetBit(buf, iWord,  5, ATA_BitGet(bit_FREE_FALL_ENABLED));
+	IDFY_SetBit(buf, iWord,  4, ATA_BitGet(bit_DM_MODE3_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  3, ATA_BitGet(bit_GPL_DMA_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  2, ATA_BitGet(bit_WRITE_UNCORRECTABLE_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  1, ATA_BitGet(bit_WRV_ENABLED));
 
 	/*=====================================================================
 	** Word 121..126 - Reserved for expanded supported and enabled settings
@@ -850,13 +855,13 @@ void ATA_Command_IdentifyDevice(void)
 	**        0 - Security supported
 	*/
 	iWord = IDFY_W128_SECURITY_STATUS;
-	IDFY_SetBit(iWord,  8, ATA_BitGet(bit_MASTER_PASSWORD_CAPABILITY));
-	IDFY_SetBit(iWord,  5, ATA_BitGet(bit_ENHANCED_SECURITY_ERASE_SUPPORTED));
-	IDFY_SetBit(iWord,  4, ATA_BitGet(bit_SECURITY_COUNT_EXPIRED));
-	IDFY_SetBit(iWord,  3, ATA_BitGet(bit_SECURITY_FROZEN));
-	IDFY_SetBit(iWord,  2, ATA_BitGet(bit_SECURITY_LOCKED));
-	IDFY_SetBit(iWord,  1, ATA_BitGet(bit_SECURITY_ENABLED));
-	IDFY_SetBit(iWord,  0, ATA_BitGet(bit_SECURITY_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  8, ATA_BitGet(bit_MASTER_PASSWORD_CAPABILITY));
+	IDFY_SetBit(buf, iWord,  5, ATA_BitGet(bit_ENHANCED_SECURITY_ERASE_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  4, ATA_BitGet(bit_SECURITY_COUNT_EXPIRED));
+	IDFY_SetBit(buf, iWord,  3, ATA_BitGet(bit_SECURITY_FROZEN));
+	IDFY_SetBit(buf, iWord,  2, ATA_BitGet(bit_SECURITY_LOCKED));
+	IDFY_SetBit(buf, iWord,  1, ATA_BitGet(bit_SECURITY_ENABLED));
+	IDFY_SetBit(buf, iWord,  0, ATA_BitGet(bit_SECURITY_SUPPORTED));
 
 	/*=====================================================================
 	** Word 129..159 - Vendor specific
@@ -872,7 +877,7 @@ void ATA_Command_IdentifyDevice(void)
 	**      3:0 - Device Nominal Form Factor
 	*/
 	iWord = IDFY_W168;
-	IDFY_SetField(iWord, 0, ATA_Field(NOMINAL_FORM_FACTOR));
+	IDFY_SetField(buf, iWord, 0, ATA_Field(NOMINAL_FORM_FACTOR));
 
 	/*=====================================================================
 	** Word 169 - DATA SET MANAGEMENT command support
@@ -880,13 +885,13 @@ void ATA_Command_IdentifyDevice(void)
 	**        0 - The TRIM bit in the DATA SET MANAGEMENT command is supported
 	*/
 	iWord = IDFY_W169_DATA_SET_MANAGEMENT_COMMAND_SUPPORT;
-	IDFY_SetBit(iWord,  0, ATA_BitGet(bit_TRIM_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  0, ATA_BitGet(bit_TRIM_SUPPORTED));
 
 	/*=====================================================================
 	** Word 170..173 - Additional Product Identifier
 	*/
 	iWord = IDFY_W170_W173_ADDITIONAL_PRODUCT_IDENTIFIER;
-	IDFY_Copy(iWord, ATA_Field(ADDITIONAL_PRODUCT_IDENTIFIER));
+	IDFY_Copy(buf, iWord, ATA_Field(ADDITIONAL_PRODUCT_IDENTIFIER), 8);
 
 	/*=====================================================================
 	** Word 174..175 - Reserved
@@ -911,11 +916,11 @@ void ATA_Command_IdentifyDevice(void)
 	**        0 - The SCT Command Transport is supported
 	*/
 	iWord = IDFY_W206_SCT_COMMAND_TRANSPORT;
-	IDFY_SetBit(iWord,  5, ATA_BitGet(bit_SCT_DATA_TABLES_SUPPORTED));
-	IDFY_SetBit(iWord,  4, ATA_BitGet(bit_SCT_FEATURE_CONTROL_SUPPORTED));
-	IDFY_SetBit(iWord,  3, ATA_BitGet(bit_SCT_ERROR_RECOVERY_CONTROL_SUPPORTED));
-	IDFY_SetBit(iWord,  2, ATA_BitGet(bit_SCT_WRITE_SAME_SUPPORTED));
-	IDFY_SetBit(iWord,  0, ATA_BitGet(bit_SCT_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  5, ATA_BitGet(bit_SCT_DATA_TABLES_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  4, ATA_BitGet(bit_SCT_FEATURE_CONTROL_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  3, ATA_BitGet(bit_SCT_ERROR_RECOVERY_CONTROL_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  2, ATA_BitGet(bit_SCT_WRITE_SAME_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  0, ATA_BitGet(bit_SCT_SUPPORTED));
 
 	/*=====================================================================
 	** Word 207..208 - Reserved
@@ -928,23 +933,21 @@ void ATA_Command_IdentifyDevice(void)
 	**     13:0 - Logical sector offset within the first physical sector
 	**            where the first logical sector is placed
 	*/
-	if (ATA_BitGet(bit_LOGICAL_TO_PHYSICAL_SECTOR_RELATIONSHIP_SUPPORTED)) {
-		iWord = IDFY_W209_ALIGNMENT_OF_LOGICAL_BLOCKS_WITHIN_PHYSICAL_BLOCK;
-		IDFY_SetBit(iWord, 14, 1);
-		IDFY_SetField(iWord, 0, ATA_Field(LOGICAL_SECTOR_OFFSET));
-	}
+	iWord = IDFY_W209_ALIGNMENT_OF_LOGICAL_BLOCKS_WITHIN_PHYSICAL_BLOCK;
+	IDFY_SetBit(buf, iWord, 14, 1);
+	IDFY_SetField(buf, iWord, 0, ATA_Field(LOGICAL_SECTOR_OFFSET));
 
 	/*=====================================================================
 	** Word 210..211 - Write-Read-Verify Sector Mode 3 Count
 	*/
 	iWord = IDFY_W210_W211_WRITE_READ_VERIFY_SECTOR_MODE3_COUNT;
-	IDFY_SetDword(iWord, ATA_Field(WRV_MODE3_COUNT));
+	IDFY_SetDword(buf, iWord, ATA_Field(WRV_MODE3_COUNT));
 
 	/*=====================================================================
 	** Word 212..213 - Write-Read-Verify Sector Mode 2 Count
 	*/
 	iWord = IDFY_W212_W213_WRITE_READ_VERIFY_SECTOR_MODE2_COUNT;
-	IDFY_SetDword(iWord, ATA_Field(WRV_MODE2_COUNT));
+	IDFY_SetDword(buf, iWord, ATA_Field(WRV_MODE2_COUNT));
 
 	/*=====================================================================
 	** Word 214..216 - Obsolete
@@ -954,7 +957,7 @@ void ATA_Command_IdentifyDevice(void)
 	** Word 217 - Nominal media rotation rate
 	*/
 	iWord = IDFY_W217_NOMINAL_MEDIA_ROTATION_RATE;
-	IDFY_SetWord(iWord, ATA_Field(NOMINAL_MEDIA_ROTATION_RATE));
+	IDFY_SetWord(buf, iWord, ATA_Field(NOMINAL_MEDIA_ROTATION_RATE));
 
 	/*=====================================================================
 	** Word 218 - Reserved
@@ -970,7 +973,7 @@ void ATA_Command_IdentifyDevice(void)
 	**      7:0 - Write-Read-Verify feature set current mode
 	*/
 	iWord = IDFY_W220;
-	IDFY_SetField(iWord, 0, ATA_Field(WRV_MODE));
+	IDFY_SetField(buf, iWord, 0, ATA_Field(WRV_MODE));
 
 	/*=====================================================================
 	** Word 221 - Reserved
@@ -1009,20 +1012,24 @@ void ATA_Command_IdentifyDevice(void)
 	/*=====================================================================
 	** Word 230..233 - Extended Number of User Addressable Sectors
 	*/
+	iWord = IDFY_W230_W233_EXTENDED_NUMBER_OF_USER_ADDRESSABLE_SECTORS;
+	if (ATA_BitGet(bit_48BIT_SUPPORTED) &&
+		ATA_BitGet(bit_ExtendedNumberOfUserAddressableSectorsSupported))
+		IDFY_SetQword(buf, iWord, ATA_Field(ACCESSIBLE_CAPACITY));
 
 	/*=====================================================================
 	** Word 234 - Minimum number of 512-byte data blocks per Download
 	**            Microcode operation
 	*/
 	iWord = IDFY_W234_DM_MINIMUM_TRANSFER_SIZE;
-	IDFY_SetWord(iWord, ATA_Field(DM_MINIMUM_TRANSFER_SIZE));
+	IDFY_SetWord(buf, iWord, ATA_Field(DM_MINIMUM_TRANSFER_SIZE));
 
 	/*=====================================================================
 	** Word 235 - Maximum number of 512-byte data blocks per Download
 	**            Microcode operation
 	*/
 	iWord = IDFY_W235_DM_MAXIMUM_TRANSFER_SIZE;
-	IDFY_SetWord(iWord, ATA_Field(DM_MAXIMUM_TRANSFER_SIZE));
+	IDFY_SetWord(buf, iWord, ATA_Field(DM_MAXIMUM_TRANSFER_SIZE));
 
 	/*=====================================================================
 	** Word 236..254 - Reserved
