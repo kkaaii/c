@@ -64,6 +64,7 @@ static void IdentifyDevice(void *buf)
 	**      0 - Reserved
 	*/
 	iWord = IDFY_W000_GENERAL_CONFIGURATION;
+	IDFY_SetBit(buf, iWord, 2, ATA_BitGet(bit_IDENTIFY_DEVICE_data_is_incomplete));
 
 	/*=====================================================================
 	** Word 1 - Obsolete
@@ -73,6 +74,17 @@ static void IdentifyDevice(void *buf)
 	** Word 2 - Specific configuration
 	*/
 	iWord = IDFY_W002_SPECIFIC_CONFIGURATION;
+	if (ATA_BitGet(bit_IDENTIFY_DEVICE_data_is_incomplete)) {
+		if (ATA_BitGet(bit_SPIN_UP_SUPPORTED))
+			IDFY_SetWord(buf, iWord, 0x37C8);
+		else
+			IDFY_SetWord(buf, iWord, 0x8C73);
+	} else {
+		if (ATA_BitGet(bit_SPIN_UP_SUPPORTED))
+			IDFY_SetWord(buf, iWord, 0x738C);
+		else
+			IDFY_SetWord(buf, iWord, 0xC837);
+	}
 
 	/*=====================================================================
 	** Word 3 - Obsolete
@@ -151,6 +163,7 @@ static void IdentifyDevice(void *buf)
 	**     1:0 - Long Physical Sector Alignment Error reporting
 	*/
 	iWord = IDFY_W049_CAPABILITIES;
+	IDFY_SetBit(buf, iWord, 13, ATA_BitGet(bit_standard_Standby_timer_values_supported));
 	IDFY_SetBit(buf, iWord, 11, ATA_BitGet(bit_IORDY_SUPPORTED));
 	IDFY_SetBit(buf, iWord, 10, ATA_BitGet(bit_IORDY_DISABLE_SUPPORTED));
 	IDFY_SetBit(buf, iWord,  9, 1);
@@ -169,6 +182,7 @@ static void IdentifyDevice(void *buf)
 	*/
 	iWord = IDFY_W050_CAPABILITIES;
 	IDFY_SetBit(buf, iWord, 14, 1);
+	IDFY_SetBit(buf, iWord,  0, ATA_BitGet(bit_vendor_specific_minimum_Standby_timer_value));
 
 	/*=====================================================================
 	** Word 51..52 - Obsolete
@@ -184,6 +198,8 @@ static void IdentifyDevice(void *buf)
 	*/
 	iWord = IDFY_W053;
 	IDFY_SetField(buf, iWord, 8, ATA_Field(FREE_FALL_SENSITIVITY));
+	IDFY_SetBit(buf, iWord, 2, ATA_BitGet(bit_IDENTIFY_DEVICE_data_word88_is_valid));
+	IDFY_SetBit(buf, iWord, 1, ATA_BitGet(bit_IDENTIFY_DEVICE_data_word64_to_word70_are_valid));
 
 	/*=====================================================================
 	** Word 54..58 - Obsolete
@@ -449,10 +465,16 @@ static void IdentifyDevice(void *buf)
 	**       1 - Obsolete
 	**       0 - Reserved
 	*/
+	iWord = IDFY_W080_MAJOR_VERSION_NUMBER;
+	IDFY_SetBit(buf, iWord, 11, ATA_BitGet(bit_ACS4_supported));
+	IDFY_SetBit(buf, iWord, 10, ATA_BitGet(bit_ACS3_supported));
+	IDFY_SetBit(buf, iWord,  9, ATA_BitGet(bit_ACS2_supported));
 
 	/*=====================================================================
 	** Word 81 - Minor version number
 	*/
+	iWord = IDFY_W081_MINOR_VERSION_NUMBER;
+	IDFY_SetWord(buf, iWord, ATA_Field(Minor_Version_Number));
 
 	/*=====================================================================
 	** Word 82 - Commands and feature sets supported
@@ -586,6 +608,7 @@ static void IdentifyDevice(void *buf)
 	**       0 - The DOWNLOAD MICROCODE command is supported
 	*/
 	iWord = IDFY_W086_COMMANDS_AND_FEATURE_SETS_SUPPORTED_OR_ENABLED;
+	IDFY_SetBit(buf, iWord, 15, ATA_BitGet(bit_IDENTIFY_DEVICE_data_word119_to_word120_are_valid));
 	IDFY_SetBit(buf, iWord, 13, ATA_BitGet(bit_FLUSH_CACHE_EXT_SUPPORTED));
 	IDFY_SetBit(buf, iWord, 12, 1);
 	IDFY_SetBit(buf, iWord, 10, ATA_BitGet(bit_48BIT_SUPPORTED));
@@ -615,6 +638,7 @@ static void IdentifyDevice(void *buf)
 	IDFY_SetBit(buf, iWord,  8, 1);
 	IDFY_SetBit(buf, iWord,  6, ATA_BitGet(bit_WRITE_FUA_EXT_SUPPORTED));
 	IDFY_SetBit(buf, iWord,  5, ATA_BitGet(bit_GPL_SUPPORTED));
+	IDFY_SetBit(buf, iWord,  2, ATA_BitGet(bit_media_serial_number_is_valid));
 	IDFY_SetBit(buf, iWord,  1, ATA_BitGet(bit_SMART_SELF_TEST_SUPPORTED));
 	IDFY_SetBit(buf, iWord,  0, ATA_BitGet(bit_SMART_ERROR_LOGGING_SUPPORTED));
 
@@ -756,6 +780,8 @@ static void IdentifyDevice(void *buf)
 	** Word 107 - Inter-seek delay for ISO/IEC 7779 standard acoustic
 	**            testing
 	*/
+	iWord = IDFY_W107_INTER_SEEK_DELAY;
+	IDFY_SetWord(buf, iWord, ATA_Field(Inter_seek_delay));
 
 	/*=====================================================================
 	** Word 108..111 - World wide name
@@ -1000,10 +1026,14 @@ static void IdentifyDevice(void *buf)
 	**        1 - ATA/ATAPI-7       SATA 1.0a               Reserved
 	**        0 - ATA8-APT          ATA8-AST                Reserved
 	*/
+	iWord = IDFY_W222_TRANSPORT_MAJOR_VERSION_NUMBER;
+	IDFY_SetWord(buf, iWord, ATA_Field(Transport_major_version_number));
 
 	/*=====================================================================
 	** Word 223 - Transport minor version number
 	*/
+	iWord = IDFY_W223_TRANSPORT_MINOR_VERSION_NUMBER;
+	IDFY_SetWord(buf, iWord, ATA_Field(Transport_minor_version_number));
 
 	/*=====================================================================
 	** Word 224..229 - Reserved

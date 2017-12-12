@@ -216,6 +216,7 @@ static void ReadLog30h_Page04h_Current_Settings(void *buf)
 
 	/* 8..15 - Current Settings */
 	*entry++ = QWORD_VALID |
+		((uint64)ATA_BitGet(bit_FW_ACTIVATION_PENDING) << 19) |
 		((uint64)ATA_BitGet(bit_SUCCESSFUL_NCQ_COMMAND_SENSE_DATA_ENABLED) << 18) |
 		((uint64)ATA_BitGet(bit_DLC_ENABLED) << 17) |
 		((uint64)ATA_BitGet(bit_DSN_ENABLED) << 16) |
@@ -392,10 +393,10 @@ static void ReadLog30h_Page07h_Parallel_ATA(void *buf)
 		((uint64)ATA_Field(MIN_PIO_TRANSFER_TIME_WITH_IORDY) << 16) |
 		((uint64)ATA_Field(MIN_PIO_TRANSFER_TIME_WITHOUT_IORDY));
 
-#if 0
 	/* 40..47 - Set Transfer Mode */
 	*entry = QWORD_VALID | ATA_Field(TRANSFER_MODE);
 
+#if 0
 	/* 48..55 - Parallel ATA Hardware Reset Result */
 	*entry = QWORD_VALID |
 		((uint64)ATA_BitGet(bit_CBLID) << 55) |

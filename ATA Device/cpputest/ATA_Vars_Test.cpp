@@ -88,10 +88,34 @@ TEST_GROUP(ATA_Vars)
 	}
 };
 
+TEST(ATA_Vars, Specific_Configuration)
+{
+	uint16	*word = (uint16 *)mBuf;
+
+	ATA_BitSet(bit_SPIN_UP_SUPPORTED);
+	ATA_BitSet(bit_IDENTIFY_DEVICE_data_is_incomplete);
+	IdentifyDevice(mBuf);
+	CHECK_EQUAL(0x37C8, word[2]);
+
+	ATA_BitSet(bit_SPIN_UP_SUPPORTED);
+	ATA_BitClr(bit_IDENTIFY_DEVICE_data_is_incomplete);
+	IdentifyDevice(mBuf);
+	CHECK_EQUAL(0x738C, word[2]);
+
+	ATA_BitClr(bit_SPIN_UP_SUPPORTED);
+	ATA_BitSet(bit_IDENTIFY_DEVICE_data_is_incomplete);
+	IdentifyDevice(mBuf);
+	CHECK_EQUAL(0x8C73, word[2]);
+
+	ATA_BitClr(bit_SPIN_UP_SUPPORTED);
+	ATA_BitClr(bit_IDENTIFY_DEVICE_data_is_incomplete);
+	IdentifyDevice(mBuf);
+	CHECK_EQUAL(0xC837, word[2]);
+}
+
 TEST(ATA_Vars, field_WORLD_WIDE_NAME)
 {
-#undef	BYTES
-#define	BYTES	8
+	const int BYTES = 8;
 	char	s[] = "87654321        ", *p = s;
 
 	for (int i = BYTES; i > 0; --i, ++p) {
@@ -103,8 +127,7 @@ TEST(ATA_Vars, field_WORLD_WIDE_NAME)
 
 TEST(ATA_Vars, field_SERIAL_NUMBER)
 {
-#undef	BYTES
-#define	BYTES	20
+	const int BYTES = 20;
 	char	s[] = "98765432109876543210                    ", *p = s;
 
 	for (int i = BYTES; i > 0; --i, ++p) {
@@ -116,8 +139,7 @@ TEST(ATA_Vars, field_SERIAL_NUMBER)
 
 TEST(ATA_Vars, field_MODEL_NUMBER)
 {
-#undef	BYTES
-#define	BYTES	40
+	const int BYTES = 40;
 	char	s[] = "9876543210987654321098765432109876543210                                        ", *p = s;
 
 	for (int i = BYTES; i > 0; --i, ++p) {
@@ -129,8 +151,7 @@ TEST(ATA_Vars, field_MODEL_NUMBER)
 
 TEST(ATA_Vars, field_FIRMWARE_REVISION)
 {
-#undef	BYTES
-#define	BYTES	8
+	const int BYTES = 8;
 	char	s[] = "87654321        ", *p = s;
 
 	for (int i = BYTES; i > 0; --i, ++p) {
@@ -142,8 +163,7 @@ TEST(ATA_Vars, field_FIRMWARE_REVISION)
 
 TEST(ATA_Vars, field_ADDITIONAL_PRODUCT_IDENTIFIER)
 {
-#undef	BYTES
-#define	BYTES	8
+	const int BYTES = 8;
 	char	s[] = "87654321        ", *p = s;
 
 	for (int i = BYTES; i > 0; --i, ++p) {
@@ -155,8 +175,7 @@ TEST(ATA_Vars, field_ADDITIONAL_PRODUCT_IDENTIFIER)
 
 TEST(ATA_Vars, field_BUFFER_SIZE)
 {
-#undef	BITS
-#define	BITS	63
+	const int BITS = 63;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint64 val = (uint64)((1ull << bits) - 1);
 		ATA_Field(BUFFER_SIZE) = val & ((1ull << BITS) - 1);
@@ -166,8 +185,7 @@ TEST(ATA_Vars, field_BUFFER_SIZE)
 
 TEST(ATA_Vars, field_ACCESSIBLE_CAPACITY)
 {
-#undef	BITS
-#define	BITS	48
+	const int BITS = 48;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint64 val = (uint64)((1ull << bits) - 1);
 		ATA_Field(ACCESSIBLE_CAPACITY) = val & ((1ull << BITS) - 1);
@@ -301,10 +319,29 @@ TEST(ATA_Vars, field_ABO_MINIMUM_FRACTION)
 	}
 }
 
+TEST(ATA_Vars, field_Transport_minor_version_number)
+{
+	const int BITS = 16;
+	for (int bits = BITS; bits >= 0; --bits) {
+		uint16 val = (uint16)((1u << bits) - 1);
+		ATA_Field(Transport_minor_version_number) = val;
+		checkIdentifyDeviceValue(223, val);
+	}
+}
+
+TEST(ATA_Vars, field_Transport_major_version_number)
+{
+	const int BITS = 16;
+	for (int bits = BITS; bits >= 0; --bits) {
+		uint16 val = (uint16)((1u << bits) - 1);
+		ATA_Field(Transport_major_version_number) = val;
+		checkIdentifyDeviceValue(222, val);
+	}
+}
+
 TEST(ATA_Vars, field_TIME_TO_PERFORMANCE_DEGRATION)
 {
-#undef	BITS
-#define	BITS	16
+	const int BITS = 16;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(TIME_TO_PERFORMANCE_DEGRATION) = val;
@@ -314,8 +351,7 @@ TEST(ATA_Vars, field_TIME_TO_PERFORMANCE_DEGRATION)
 
 TEST(ATA_Vars, field_TIME_SCHEDULED_FOR_DEVICE_MAINTENANCE)
 {
-#undef	BITS
-#define	BITS	16
+	const int BITS = 16;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(TIME_SCHEDULED_FOR_DEVICE_MAINTENANCE) = val;
@@ -325,8 +361,7 @@ TEST(ATA_Vars, field_TIME_SCHEDULED_FOR_DEVICE_MAINTENANCE)
 
 TEST(ATA_Vars, field_SUPPORTED_HARDWARE_FEATURE_CONTROL_IDENTIFIER)
 {
-#undef	BITS
-#define	BITS	16
+	const int BITS = 16;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(SUPPORTED_HARDWARE_FEATURE_CONTROL_IDENTIFIER) = val;
@@ -336,8 +371,7 @@ TEST(ATA_Vars, field_SUPPORTED_HARDWARE_FEATURE_CONTROL_IDENTIFIER)
 
 TEST(ATA_Vars, field_STREAM_MIN_REQUEST_SIZE)
 {
-#undef	BITS
-#define	BITS	16
+	const int BITS = 16;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(STREAM_MIN_REQUEST_SIZE) = val;
@@ -348,8 +382,7 @@ TEST(ATA_Vars, field_STREAM_MIN_REQUEST_SIZE)
 
 TEST(ATA_Vars, field_STREAM_ACCESS_LATENCY)
 {
-#undef	BITS
-#define	BITS	16
+	const int BITS = 16;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(STREAM_ACCESS_LATENCY) = val;
@@ -360,8 +393,7 @@ TEST(ATA_Vars, field_STREAM_ACCESS_LATENCY)
 
 TEST(ATA_Vars, field_RECOMMENDED_MULTIWORD_CYCLE_TIME)
 {
-#undef	BITS
-#define	BITS	16
+	const int BITS = 16;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(RECOMMENDED_MULTIWORD_CYCLE_TIME) = val;
@@ -372,8 +404,7 @@ TEST(ATA_Vars, field_RECOMMENDED_MULTIWORD_CYCLE_TIME)
 
 TEST(ATA_Vars, field_PIO_SECTOR_TIME)
 {
-#undef	BITS
-#define	BITS	16
+	const int BITS = 16;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(PIO_SECTOR_TIME) = val;
@@ -384,8 +415,7 @@ TEST(ATA_Vars, field_PIO_SECTOR_TIME)
 
 TEST(ATA_Vars, field_NOMINAL_MEDIA_ROTATION_RATE)
 {
-#undef	BITS
-#define	BITS	16
+	const int BITS = 16;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(NOMINAL_MEDIA_ROTATION_RATE) = val;
@@ -394,10 +424,19 @@ TEST(ATA_Vars, field_NOMINAL_MEDIA_ROTATION_RATE)
 	}
 }
 
+TEST(ATA_Vars, field_Minor_Version_Number)
+{
+	const int BITS = 16;
+	for (int bits = BITS; bits >= 0; --bits) {
+		uint16 val = (uint16)((1u << bits) - 1);
+		ATA_Field(Minor_Version_Number) = val;
+		checkIdentifyDeviceValue(81, val);
+	}
+}
+
 TEST(ATA_Vars, field_MINIMUM_INACTIVE_TIME)
 {
-#undef	BITS
-#define	BITS	16
+	const int BITS = 16;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(MINIMUM_INACTIVE_TIME) = val;
@@ -407,8 +446,7 @@ TEST(ATA_Vars, field_MINIMUM_INACTIVE_TIME)
 
 TEST(ATA_Vars, field_MIN_PIO_TRANSFER_TIME_WITHOUT_IORDY)
 {
-#undef	BITS
-#define	BITS	16
+	const int BITS = 16;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(MIN_PIO_TRANSFER_TIME_WITHOUT_IORDY) = val;
@@ -419,8 +457,7 @@ TEST(ATA_Vars, field_MIN_PIO_TRANSFER_TIME_WITHOUT_IORDY)
 
 TEST(ATA_Vars, field_MIN_PIO_TRANSFER_TIME_WITH_IORDY)
 {
-#undef	BITS
-#define	BITS	16
+	const int BITS = 16;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(MIN_PIO_TRANSFER_TIME_WITH_IORDY) = val;
@@ -431,8 +468,7 @@ TEST(ATA_Vars, field_MIN_PIO_TRANSFER_TIME_WITH_IORDY)
 
 TEST(ATA_Vars, field_MIN_MULTIWORD_CYCLE_TIME)
 {
-#undef	BITS
-#define	BITS	16
+	const int BITS = 16;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(MIN_MULTIWORD_CYCLE_TIME) = val;
@@ -443,8 +479,7 @@ TEST(ATA_Vars, field_MIN_MULTIWORD_CYCLE_TIME)
 
 TEST(ATA_Vars, field_MAX_PAGES_PER_DSM_COMMAND)
 {
-#undef	BITS
-#define	BITS	16
+	const int BITS = 16;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(MAX_PAGES_PER_DSM_COMMAND) = val;
@@ -455,8 +490,7 @@ TEST(ATA_Vars, field_MAX_PAGES_PER_DSM_COMMAND)
 
 TEST(ATA_Vars, field_MASTER_PASSWORD_IDENTIFIER)
 {
-#undef	BITS
-#define	BITS	16
+	const int BITS = 16;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(MASTER_PASSWORD_IDENTIFIER) = val;
@@ -465,10 +499,19 @@ TEST(ATA_Vars, field_MASTER_PASSWORD_IDENTIFIER)
 	}
 }
 
+TEST(ATA_Vars, field_Inter_seek_delay)
+{
+	const int BITS = 16;
+	for (int bits = BITS; bits >= 0; --bits) {
+		uint16 val = (uint16)((1u << bits) - 1);
+		ATA_Field(Inter_seek_delay) = val;
+		checkIdentifyDeviceValue(107, val);
+	}
+}
+
 TEST(ATA_Vars, field_ENHANCED_SECURITY_ERASE_TIME)
 {
-#undef	BITS
-#define	BITS	16
+	const int BITS = 16;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(ENHANCED_SECURITY_ERASE_TIME) = val;
@@ -479,8 +522,7 @@ TEST(ATA_Vars, field_ENHANCED_SECURITY_ERASE_TIME)
 
 TEST(ATA_Vars, field_DMA_SECTOR_TIME)
 {
-#undef	BITS
-#define	BITS	16
+	const int BITS = 16;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(DMA_SECTOR_TIME) = val;
@@ -491,8 +533,7 @@ TEST(ATA_Vars, field_DMA_SECTOR_TIME)
 
 TEST(ATA_Vars, field_DM_MINIMUM_TRANSFER_SIZE)
 {
-#undef	BITS
-#define	BITS	16
+	const int BITS = 16;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(DM_MINIMUM_TRANSFER_SIZE) = val;
@@ -503,8 +544,7 @@ TEST(ATA_Vars, field_DM_MINIMUM_TRANSFER_SIZE)
 
 TEST(ATA_Vars, field_DM_MAXIMUM_TRANSFER_SIZE)
 {
-#undef	BITS
-#define	BITS	16
+	const int BITS = 16;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(DM_MAXIMUM_TRANSFER_SIZE) = val;
@@ -515,8 +555,7 @@ TEST(ATA_Vars, field_DM_MAXIMUM_TRANSFER_SIZE)
 
 TEST(ATA_Vars, field_DEVICE_MAINTENANCE_POLLING_TIME)
 {
-#undef	BITS
-#define	BITS	16
+	const int BITS = 16;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(DEVICE_MAINTENANCE_POLLING_TIME) = val;
@@ -526,8 +565,7 @@ TEST(ATA_Vars, field_DEVICE_MAINTENANCE_POLLING_TIME)
 
 TEST(ATA_Vars, field_CURRENT_HARDWARE_FEATURE_CONTROL_IDENTIFIER)
 {
-#undef	BITS
-#define	BITS	16
+	const int BITS = 16;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(CURRENT_HARDWARE_FEATURE_CONTROL_IDENTIFIER) = val;
@@ -537,8 +575,7 @@ TEST(ATA_Vars, field_CURRENT_HARDWARE_FEATURE_CONTROL_IDENTIFIER)
 
 TEST(ATA_Vars, field_ABO_RECOMMENDED_ABO_START_INTERVAL)
 {
-#undef	BITS
-#define	BITS	16
+	const int BITS = 16;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(ABO_RECOMMENDED_ABO_START_INTERVAL) = val;
@@ -548,8 +585,7 @@ TEST(ATA_Vars, field_ABO_RECOMMENDED_ABO_START_INTERVAL)
 
 TEST(ATA_Vars, field_ABO_MINIMUM_SUPPORTED_TIMELIMIT)
 {
-#undef	BITS
-#define	BITS	16
+	const int BITS = 16;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(ABO_MINIMUM_SUPPORTED_TIMELIMIT) = val;
@@ -559,8 +595,7 @@ TEST(ATA_Vars, field_ABO_MINIMUM_SUPPORTED_TIMELIMIT)
 
 TEST(ATA_Vars, field_WRV_MODE)
 {
-#undef	BITS
-#define	BITS	8
+	const int BITS = 8;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint8 val = (uint8)((1u << bits) - 1);
 		ATA_Field(WRV_MODE) = val;
@@ -571,8 +606,7 @@ TEST(ATA_Vars, field_WRV_MODE)
 
 TEST(ATA_Vars, field_UTILIZATION_UNITS)
 {
-#undef	BITS
-#define	BITS	8
+	const int BITS = 8;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint8 val = (uint8)((1u << bits) - 1);
 		ATA_Field(UTILIZATION_UNITS) = val;
@@ -582,8 +616,7 @@ TEST(ATA_Vars, field_UTILIZATION_UNITS)
 
 TEST(ATA_Vars, field_UTILIZATION_TYPE)
 {
-#undef	BITS
-#define	BITS	8
+	const int BITS = 8;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint8 val = (uint8)((1u << bits) - 1);
 		ATA_Field(UTILIZATION_TYPE) = val;
@@ -593,8 +626,7 @@ TEST(ATA_Vars, field_UTILIZATION_TYPE)
 
 TEST(ATA_Vars, field_UTILIZATION_INTERVAL)
 {
-#undef	BITS
-#define	BITS	8
+	const int BITS = 8;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint8 val = (uint8)((1u << bits) - 1);
 		ATA_Field(UTILIZATION_INTERVAL) = val;
@@ -602,10 +634,19 @@ TEST(ATA_Vars, field_UTILIZATION_INTERVAL)
 	}
 }
 
+TEST(ATA_Vars, field_TRANSFER_MODE)
+{
+	const int BITS = 8;
+	for (int bits = BITS; bits >= 0; --bits) {
+		uint8 val = (uint8)((1u << bits) - 1);
+		ATA_Field(TRANSFER_MODE) = val;
+		checkLog30hField(PAGE_NUMBER_07H, 40/8, 0, BITS, val);
+	}
+}
+
 TEST(ATA_Vars, field_LOGICAL_BLOCK_MARKUPS_SUPPORTED)
 {
-#undef	BITS
-#define	BITS	8
+	const int BITS = 8;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint8 val = (uint8)((1u << bits) - 1);
 		ATA_Field(LOGICAL_BLOCK_MARKUPS_SUPPORTED) = val;
@@ -615,8 +656,7 @@ TEST(ATA_Vars, field_LOGICAL_BLOCK_MARKUPS_SUPPORTED)
 
 TEST(ATA_Vars, field_FREE_FALL_SENSITIVITY)
 {
-#undef	BITS
-#define	BITS	8
+	const int BITS = 8;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint8 val = (uint8)((1u << bits) - 1);
 		ATA_Field(FREE_FALL_SENSITIVITY) = val;
@@ -627,8 +667,7 @@ TEST(ATA_Vars, field_FREE_FALL_SENSITIVITY)
 
 TEST(ATA_Vars, field_DEVSLEEP_EXIT_TIMEOUT)
 {
-#undef	BITS
-#define	BITS	8
+	const int BITS = 8;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint8 val = (uint8)((1u << bits) - 1);
 		ATA_Field(DEVSLEEP_EXIT_TIMEOUT) = val;
@@ -638,8 +677,7 @@ TEST(ATA_Vars, field_DEVSLEEP_EXIT_TIMEOUT)
 
 TEST(ATA_Vars, field_APM_LEVEL)
 {
-#undef	BITS
-#define	BITS	8
+	const int BITS = 8;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint8 val = (uint8)((1u << bits) - 1);
 		ATA_Field(APM_LEVEL) = val;
@@ -650,8 +688,7 @@ TEST(ATA_Vars, field_APM_LEVEL)
 
 TEST(ATA_Vars, field_ABO_STATUS)
 {
-#undef	BITS
-#define	BITS	8
+	const int BITS = 8;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint8 val = (uint8)((1u << bits) - 1);
 		ATA_Field(ABO_STATUS) = val;
@@ -661,8 +698,7 @@ TEST(ATA_Vars, field_ABO_STATUS)
 
 TEST(ATA_Vars, field_ZONED)
 {
-#undef	BITS
-#define	BITS	2
+	const int BITS = 2;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(ZONED) = val & ((1 << BITS) - 1);
@@ -673,8 +709,7 @@ TEST(ATA_Vars, field_ZONED)
 
 TEST(ATA_Vars, field_QUEUE_DEPTH)
 {
-#undef	BITS
-#define	BITS	5
+	const int BITS = 5;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(QUEUE_DEPTH) = val & ((1 << BITS) - 1);
@@ -685,8 +720,7 @@ TEST(ATA_Vars, field_QUEUE_DEPTH)
 
 TEST(ATA_Vars, field_POWER_SOURCE)
 {
-#undef	BITS
-#define	BITS	2
+	const int BITS = 2;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(POWER_SOURCE) = val & ((1 << BITS) - 1);
@@ -696,8 +730,7 @@ TEST(ATA_Vars, field_POWER_SOURCE)
 
 TEST(ATA_Vars, field_NORMAL_SECURITY_ERASE_TIME)
 {
-#undef	BITS
-#define	BITS	15
+	const int BITS = 15;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(NORMAL_SECURITY_ERASE_TIME) = val & ((1 << BITS) - 1);
@@ -708,8 +741,7 @@ TEST(ATA_Vars, field_NORMAL_SECURITY_ERASE_TIME)
 
 TEST(ATA_Vars, field_NOMINAL_FORM_FACTOR)
 {
-#undef	BITS
-#define	BITS	4
+	const int BITS = 4;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(NOMINAL_FORM_FACTOR) = val & ((1 << BITS) - 1);
@@ -720,8 +752,7 @@ TEST(ATA_Vars, field_NOMINAL_FORM_FACTOR)
 
 TEST(ATA_Vars, field_MINIMUM_INACTIVE_TIME_IN_MILLISECONDS)
 {
-#undef	BITS
-#define	BITS	10
+	const int BITS = 10;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(MINIMUM_INACTIVE_TIME_IN_MILLISECONDS) = val & ((1 << BITS) - 1);
@@ -731,8 +762,7 @@ TEST(ATA_Vars, field_MINIMUM_INACTIVE_TIME_IN_MILLISECONDS)
 
 TEST(ATA_Vars, field_MINIMUM_DEVSLP_ASSERTION_TIME)
 {
-#undef	BITS
-#define	BITS	5
+	const int BITS = 5;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(MINIMUM_DEVSLP_ASSERTION_TIME) = val & ((1 << BITS) - 1);
@@ -742,8 +772,7 @@ TEST(ATA_Vars, field_MINIMUM_DEVSLP_ASSERTION_TIME)
 
 TEST(ATA_Vars, field_LOGICAL_TO_PHYSICAL_SECTOR_RELATIONSHIP)
 {
-#undef	BITS
-#define	BITS	4
+	const int BITS = 4;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(LOGICAL_TO_PHYSICAL_SECTOR_RELATIONSHIP) = val & ((1 << BITS) - 1);
@@ -754,8 +783,7 @@ TEST(ATA_Vars, field_LOGICAL_TO_PHYSICAL_SECTOR_RELATIONSHIP)
 
 TEST(ATA_Vars, field_LOGICAL_SECTOR_OFFSET)
 {
-#undef	BITS
-#define	BITS	14
+	const int BITS = 14;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(LOGICAL_SECTOR_OFFSET) = val & ((1 << BITS) - 1);
@@ -766,8 +794,7 @@ TEST(ATA_Vars, field_LOGICAL_SECTOR_OFFSET)
 
 TEST(ATA_Vars, field_CURRENT_SERIAL_ATA_SIGNAL_SPEED)
 {
-#undef	BITS
-#define	BITS	3
+	const int BITS = 3;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(CURRENT_SERIAL_ATA_SIGNAL_SPEED) = val & ((1 << BITS) - 1);
@@ -778,8 +805,7 @@ TEST(ATA_Vars, field_CURRENT_SERIAL_ATA_SIGNAL_SPEED)
 
 TEST(ATA_Vars, field_ALIGNMENT_ERROR_REPORTING)
 {
-#undef	BITS
-#define	BITS	2
+	const int BITS = 2;
 	for (int bits = BITS; bits >= 0; --bits) {
 		uint16 val = (uint16)((1u << bits) - 1);
 		ATA_Field(ALIGNMENT_ERROR_REPORTING) = val & ((1 << BITS) - 1);
@@ -851,6 +877,12 @@ TEST(ATA_Vars, bit_VOLATILE_WRITE_CACHE_ENABLED)
 	int	index = bit_VOLATILE_WRITE_CACHE_ENABLED;
 	checkLog30hBit(PAGE_NUMBER_04H, 8/8, 13, index);
 	checkIdentifyDeviceBit(85, 5, index);
+}
+
+TEST(ATA_Vars, bit_vendor_specific_minimum_Standby_timer_value)
+{
+	int	index = bit_vendor_specific_minimum_Standby_timer_value;
+	checkIdentifyDeviceBit(50, 0, index);
 }
 
 TEST(ATA_Vars, bit_UNLOAD_WHILE_NCQ_COMMANDS_ARE_OUTSTANDING_SUPPORTED)
@@ -997,6 +1029,12 @@ TEST(ATA_Vars, bit_STREAMING_SUPPORTED)
 	int	index = bit_STREAMING_SUPPORTED;
 	checkLog30hBit(PAGE_NUMBER_03H, 8/8, 10, index);
 	checkIdentifyDeviceBit(84, 4, index);
+}
+
+TEST(ATA_Vars, bit_standard_Standby_timer_values_supported)
+{
+	int	index = bit_standard_Standby_timer_values_supported;
+	checkIdentifyDeviceBit(49, 13, index);
 }
 
 TEST(ATA_Vars, bit_SPIN_UP_SUPPORTED)
@@ -1546,6 +1584,12 @@ TEST(ATA_Vars, bit_MULTIWORD_DMA_MODE0_ENABLED)
 	checkIdentifyDeviceBit(63, 8, index);
 }
 
+TEST(ATA_Vars, bit_media_serial_number_is_valid)
+{
+	int	index = bit_media_serial_number_is_valid;
+	checkIdentifyDeviceBit(87, 2, index);
+}
+
 TEST(ATA_Vars, bit_MASTER_PASSWORD_CAPABILITY)
 {
 	int	index = bit_MASTER_PASSWORD_CAPABILITY;
@@ -1608,6 +1652,30 @@ TEST(ATA_Vars, bit_IN_ORDER_DATA_DELIVERY_ENABLED)
 	checkIdentifyDeviceBit(79, 4, index);
 }
 
+TEST(ATA_Vars, bit_IDENTIFY_DEVICE_data_word88_is_valid)
+{
+	int	index = bit_IDENTIFY_DEVICE_data_word88_is_valid;
+	checkIdentifyDeviceBit(53, 2, index);
+}
+
+TEST(ATA_Vars, bit_IDENTIFY_DEVICE_data_word64_to_word70_are_valid)
+{
+	int	index = bit_IDENTIFY_DEVICE_data_word64_to_word70_are_valid;
+	checkIdentifyDeviceBit(53, 1, index);
+}
+
+TEST(ATA_Vars, bit_IDENTIFY_DEVICE_data_word119_to_word120_are_valid)
+{
+	int	index = bit_IDENTIFY_DEVICE_data_word119_to_word120_are_valid;
+	checkIdentifyDeviceBit(86, 15, index);
+}
+
+TEST(ATA_Vars, bit_IDENTIFY_DEVICE_data_is_incomplete)
+{
+	int	index = bit_IDENTIFY_DEVICE_data_is_incomplete;
+	checkIdentifyDeviceBit(0, 2, index);
+}
+
 TEST(ATA_Vars, bit_HYBRID_INFORMATION_SUPPORTED)
 {
 	int	index = bit_HYBRID_INFORMATION_SUPPORTED;
@@ -1657,6 +1725,12 @@ TEST(ATA_Vars, bit_GPL_DMA_SUPPORTED)
 	checkLog30hBit(PAGE_NUMBER_03H, 8/8, 2, index);
 	checkIdentifyDeviceBit(119, 3, index);
 	checkIdentifyDeviceBit(120, 3, index);
+}
+
+TEST(ATA_Vars, bit_FW_ACTIVATION_PENDING)
+{
+	int	index = bit_FW_ACTIVATION_PENDING;
+	checkLog30hBit(PAGE_NUMBER_04H, 8/8, 19, index);
 }
 
 TEST(ATA_Vars, bit_FREE_FALL_SUPPORTED)
@@ -1936,11 +2010,29 @@ TEST(ATA_Vars, bit_ADVANCED_BACKGROUND_OPERATION_SUPPORTED)
 	checkLog30hBit(PAGE_NUMBER_03H, 8/8, 54, index);
 }
 
+TEST(ATA_Vars, bit_ACS4_supported)
+{
+	int	index = bit_ACS4_supported;
+	checkIdentifyDeviceBit(80, 11, index);
+}
+
+TEST(ATA_Vars, bit_ACS3_supported)
+{
+	int	index = bit_ACS3_supported;
+	checkIdentifyDeviceBit(80, 10, index);
+}
+
 TEST(ATA_Vars, bit_ACS3_COMMANDS_ALLOWED_BY_SANITIZE)
 {
 	int	index = bit_ACS3_COMMANDS_ALLOWED_BY_SANITIZE;
 	checkLog30hBit(PAGE_NUMBER_06H, 48/8, 6, index);
 	checkIdentifyDeviceBit(59, 11, index);
+}
+
+TEST(ATA_Vars, bit_ACS2_supported)
+{
+	int	index = bit_ACS2_supported;
+	checkIdentifyDeviceBit(80, 9, index);
 }
 
 TEST(ATA_Vars, bit_ABO_IR_MODE_SUPPORTED)
