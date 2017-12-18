@@ -10,6 +10,7 @@ Atonyms with same length of characters.
 
 ## 4 characters
 * head - tail
+* next - prev
 
 ## 5 characters
 * lower - upper
