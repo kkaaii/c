@@ -1,21 +1,22 @@
 /******************************************************************************
-** File Name: nvme_command.h
+** File Name: nvme_sq_entry.h
 ** Author:
 ** Creation Time: Wed Jan  3 23:03:53 2018
 */
-#ifndef	_NVME_COMMAND_H
-#define	_NVME_COMMAND_H
+#ifndef	_NVME_SQ_ENTRY_H
+#define	_NVME_SQ_ENTRY_H
 
-typedef unsigned char		UINT8;
-typedef unsigned short		UINT16;
-typedef	unsigned long		UINT32;
-typedef unsigned long long	UINT64;
-
-typedef enum {
-	FALSE = 0,
-	TRUE = !FALSE
-} BOOL;
-
+/*
+** 4.2 Submission Queue Entry - Command Format
+**
+** Each command is 64 bytes in size.
+**
+** Command Dword 0, Namespace Identifier, Metadata Pointer, PRP Entry 1, PRP
+** Entry 2, SGL Entry 1, and Metadata SGL Segment Pointer have common
+** definitions for all Admin commands and NVM commands. Metadata Pointer, PRP
+** Entry 1, PRP Entry 2, and Metadata SGL Segment Pointer are not used by all
+** commands.
+*/
 typedef	struct {
 	UINT32		opc	: 8;	/* Opcode (OPC) */
 	UINT32		fuse	: 2;	/* Fused Operation (FUSE) */
@@ -181,18 +182,72 @@ typedef union {
 } NVME_CDW15;
 
 typedef struct {
-	NVME_CDW0	cdw0;		/* Command Dword 0 (CDW0) */
-	UINT32		nsid;		/* Namespace Identifier (NSID) */
-	UINT32		rsvd[2];	/* reserved */
-	UINT64		mptr;		/* Metadata Pointer (MPTR) */
-	NVME_DPTR	dptr;		/* Data Pointer */
-	NVME_CDW10	cdw10;		/* Command Dword 10 (CDW10) */
-	NVME_CDW11	cdw11;		/* Command Dword 11 (CDW11) */
-	NVME_CDW12	cdw12;		/* Command Dword 12 (CDW12) */
-	NVME_CDW13	cdw13;		/* Command Dword 13 (CDW13) */
-	NVME_CDW14	cdw14;		/* Command Dword 14 (CDW14) */
-	NVME_CDW15	cdw15;		/* Command Dword 15 (CDW15) */
-} NVME_COMMAND;
+	NVME_CDW0	cdw0;		/* 03:00 Command Dword 0 (CDW0) */
+	UINT32		nsid;		/* 07:04 Namespace Identifier (NSID) */
+	UINT32		rsvd[2];	/* 15:08 reserved */
+	UINT64		mptr;		/* 23:16 Metadata Pointer (MPTR) */
+	NVME_DPTR	dptr;		/* 39:24 Data Pointer */
+	NVME_CDW10	cdw10;		/* 43:40 Command Dword 10 (CDW10) */
+	NVME_CDW11	cdw11;		/* 47:44 Command Dword 11 (CDW11) */
+	NVME_CDW12	cdw12;		/* 51:48 Command Dword 12 (CDW12) */
+	NVME_CDW13	cdw13;		/* 55:52 Command Dword 13 (CDW13) */
+	NVME_CDW14	cdw14;		/* 59:56 Command Dword 14 (CDW14) */
+	NVME_CDW15	cdw15;		/* 63:60 Command Dword 15 (CDW15) */
+} NVME_SQ_ENTRY;
 
-#endif	/* _NVME_COMMAND_H */
+typedef	enum {
+/*
+** Figure 41: Opcodes for Admin Commands
+*/
+	NVME_OPC_ADMIN_DELETE_IOSQ	= 0x00,
+	NVME_OPC_ADMIN_CREATE_IOSQ	= 0x01,
+	NVME_OPC_ADMIN_GET_LOG_PAGE	= 0x02,
+	NVME_OPC_ADMIN_DELETE_IOCQ	= 0x04,
+	NVME_OPC_ADMIN_CREATE_IOCQ	= 0x05,
+	NVME_OPC_ADMIN_IDENTIFY		= 0x06,
+	NVME_OPC_ADMIN_ABORT		= 0x08,
+	NVME_OPC_ADMIN_SET_FEATURES	= 0x09,
+	NVME_OPC_ADMIN_GET_FEATURES	= 0x0A,
+	NVME_OPC_ADMIN_AER		= 0x0C,
+	NVME_OPC_ADMIN_NS_MANAGEMENT	= 0x0D,
+	NVME_OPC_ADMIN_FW_COMMIT	= 0x10,
+	NVME_OPC_ADMIN_FW_DOWNLOAD	= 0x11,
+	NVME_OPC_ADMIN_DST		= 0x14,
+	NVME_OPC_ADMIN_NS_ATTACHMENT	= 0x15,
+	NVME_OPC_ADMIN_KEEP_ALIVE	= 0x18,
+	NVME_OPC_ADMIN_DIRECTIVE_SND	= 0x19,
+	NVME_OPC_ADMIN_DIRECTIVE_RCV	= 0x1A,
+	NVME_OPC_ADMIN_VIRT_MGMT	= 0x1C,
+	NVME_OPC_ADMIN_NVME_MI_SND	= 0x1D,
+	NVME_OPC_ADMIN_NVME_MI_RCV	= 0x1E,
+	NVME_OPC_ADMIN_DB_BUFFER_CONFIG	= 0x7C,
+
+/*
+** Figure 42: Opcodes for Admin Commands - NVM Commans Set Specific
+*/
+	NVME_OPC_ADMIN_FORMAT_NVM	= 0x80,
+	NVME_OPC_ADMIN_SECURITY_SND	= 0x81,
+	NVME_OPC_ADMIN_SECURITY_RCV	= 0x82,
+	NVME_OPC_ADMIN_SANITIZE		= 0x84,
+
+/*
+** Figure 188: Opcodes for NVM Commands
+*/
+	NVME_OPC_IO_FLUSH		= 0x00,
+	NVME_OPC_IO_WRITE		= 0x01,
+	NVME_OPC_IO_READ		= 0x02,
+	NVME_OPC_IO_WRITE_UNC		= 0x04,
+	NVME_OPC_IO_COMPARE		= 0x05,
+	NVME_OPC_IO_WRITE_ZEROES	= 0x08,
+	NVME_OPC_IO_DATASET_MGMT	= 0x09,
+	NVME_OPC_IO_RESERVATION_REG	= 0x0D,
+	NVME_OPC_IO_RESERVATION_REPORT	= 0x0E,
+	NVME_OPC_IO_RESERVATION_ACQUIRE	= 0x11,
+	NVME_OPC_IO_RESERVATION_RELEASE	= 0x15,
+
+	NVME_OPC_IO_VU_START		= 0x80
+
+} NVME_OPCODE;
+
+#endif	/* _NVME_SQ_ENTRY_H */
 

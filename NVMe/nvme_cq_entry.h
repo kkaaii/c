@@ -1,0 +1,219 @@
+/******************************************************************************
+** File Name: nvme_cq_entry.h
+** Author:
+** Creation Time: Thu Jan 11 00:26:30 2018
+*/
+#ifndef	_NVME_CQ_ENTRY_H
+#define	_NVME_CQ_ENTRY_H
+
+/*
+** 4.6 Completion Queue Entry
+**
+** An entry in the Completion Queue is at least 26 bytes in size. The contents
+** of Dword 0 are command specific. If a command uses Dword 0, then the
+** definition of this Dword is contained within the associated command
+** definition. If a command does not use Dword 0, the the field is reserved.
+** Dword 1 is reserved. Dword 2 is defined in Figure 27 and Dword 3 is defined
+** in Figure 28. Any additional I/O Command Set defined in the future may use
+** an alternate Completion Queue entry size or format.
+*/
+
+/*
+** Figure 27: Completion Queue Entry: DW 2
+*/
+typedef	struct {
+	UINT16	sqhd;	/* 15:00 SQ Head Pointer (SQHD) */
+	UINT16	sqid;	/* 31:16 SQ Identifier (SQID) */
+} NVME_CQ_DW2;
+
+/*
+** Figure 28: Completion Queue Entry: DW 3
+*/
+typedef	struct {
+	UINT16	cid;		/* 15:00 Command Identifier (CID) */
+	UINT16	p	: 1;	/* 16:16 Phase Tag (P) */
+	UINT16	sc	: 8;	/* 24:17 Status Code (SC) */
+	UINT16	sct	: 3;	/* 27:25 Status Code Type (SCT) */
+	UINT16	rsvd	: 2;	/* 29:28 reserved */
+	UINT16	m	: 1;	/* 30:30 More (M) */
+	UINT16	dnr	: 1;	/* 31:31 Do Not Retry (DNR) */
+} NVME_CQ_DW3;
+
+/*
+** Figure 26: Completion Queue Entry Layout - Admin and NVM Command Set
+*/
+typedef struct {
+	UINT32		dw0;
+	UINT32		rsvd;
+	NVME_CQ_DW2	dw2;
+	NVME_CQ_DW3	dw3;
+} NVME_CQ_ENTRY;
+
+/*
+** 4.6.1.1 Status Code Type (SCT)
+**
+** Completion queue entries indicate a status code type for the type of
+** completion being reported. Figure 30 specifies the status code type values
+** and descriptions.
+**
+** Figure 30: Status Code - Status Code Type Values
+*/
+#define	NVME_SCT_GENERIC_COMMAND_STATUS			0
+#define	NVME_SCT_COMMAND_SPECIFIC_STATUS		1
+#define	NVME_SCT_MEDIA_AND_DATA_INTEGRITY_ERRORS	2
+#define	NVME_SCT_RESERVED_3H				3
+#define	NVME_SCT_RESERVED_4H				4
+#define	NVME_SCT_RESERVED_5H				5
+#define	NVME_SCT_RESERVED_6H				6
+#define	NVME_SCT_VENDOR_SPECIFIC			7
+
+/*
+** 4.6.1.2 Status Code (SC)
+**
+** The Status Code (SC) field in the completion queue enetry indicates more
+** detailed status information about the completion being reported.
+**
+** Each Status Code set of values is split into three ranges:
+** - 00h-7Fh: Applicable to Admin Command Set, or across multiple command sets
+** - 80h-BFh: I/O Command Set Specfic status code
+** - C0h-FFh: Vendor Specific status codes
+**
+** If there are multiple status codes that apply to a particular command
+** failure, the controller shall report the status code with the lowest
+** numerical value.
+*/
+#define	SCT(nvmeStatus)	((nvmeStatus) >> 8)
+#define	SC(nvmeStatus)	((UINT8)(nvmeStatus))
+
+typedef enum {
+/*
+** 4.6.1.2.1 Generic Command Status Definition
+**
+** Completion queue entries with a Status Code Type of Generic Command Status
+** indicate a status value associated with the command that is generic across
+** many different types of commands.
+**
+** Figure 31: Status Code - Generic Command Status Value
+*/
+	NVME_STATUS_SUCCESSFUL_COMPLETION	= 0x000,
+	NVME_STATUS_INVALID_COMMAND_OPCODE	= 0x001,
+	NVME_STATUS_INVALID_FIELD_IN_COMMAND	= 0x002,
+	NVME_STATUS_COMMAND_ID_CONFLICT		= 0x003,
+	NVME_STATUS_DATA_TRANSFER_ERROR		= 0x004,
+	NVME_STATUS_COMMANDS_ABORTED_DUE_TO_POWER_LOSS_NOTIFICATION	= 0x005,
+	NVME_STATUS_INTERNAL_ERROR		= 0x006,
+	NVME_STATUS_COMMAND_ABORT_REQUESTED	= 0x007,
+	NVME_STATUS_COMMAND_ABORTED_DUE_TO_SQ_DELETION	= 0x008,
+	NVME_STATUS_COMMAND_ABORTED_DUE_TO_FAILED_FUSED_COMMAND	= 0x009,
+	NVME_STATUS_COMMAND_ABORTED_DUE_TO_MISSING_FUSED_COMMAND	= 0x00A,
+	NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT	= 0x00B,
+	NVME_STATUS_COMMAND_SEQUENCE_ERROR	= 0x00C,
+	NVME_STATUS_INVALID_SGL_SEGMENT_DESCRIPTOR	= 0x00D,
+	NVME_STATUS_INVALID_NUMBER_OF_SGL_DESCRIPTORS	= 0x00E,
+	NVME_STATUS_DATA_SGL_LENGTH_INVALID	= 0x00F,
+	NVME_STATUS_METADATA_SGL_LENGTH_INVALID	= 0x010,
+	NVME_STATUS_SGL_DESCRIPTOR_TYPE_INVALID	= 0x011,
+	NVME_STATUS_INVALID_USE_OF_CONTROLLER_MEMORY_BUFFER	= 0x012,
+	NVME_STATUS_PRP_OFFSET_INVALID	= 0x013,
+	NVME_STATUS_ATOMIC_WRITE_UNIT_EXCEEDED	= 0x014,
+	NVME_STATUS_OPERATION_DENIED	= 0x015,
+	NVME_STATUS_SGL_OFFSET_INVALID	= 0x016,
+	NVME_STATUS_RESERVED_017H	= 0x017,
+	NVME_STATUS_HOST_IDENTIFIER_INCONSISTENT_FORMAT	= 0x018,
+	NVME_STATUS_KEEP_ALIVE_TIMEOUT_EXPIRED	= 0x019,
+	NVME_STATUS_KEEP_ALIVE_TIMEOUT_INVALID	= 0x01A,
+	NVME_STATUS_COMMAND_ABORTED_DUE_TO_PREEMPT_AND_ABORT	= 0x01B,
+	NVME_STATUS_SANITIZE_FAILED	= 0x01C,
+	NVME_STATUS_SANITIZE_IN_PRORESS	= 0x01D,
+	NVME_STATUS_SGL_DATA_BLOCK_GRANULARITY_INVALID	= 0x01E,
+	NVME_STATUS_COMMAND_NOT_SUPPORTED_FOR_QUEUE_IN_CMB	= 0x014,
+/*
+** Figure 32: Status Code - Generic Command Status Values, NVM Command Set
+*/
+	NVME_STATUS_LBA_OUT_OF_RANGE	= 0x080,
+	NVME_STATUS_CAPACITY_EXCEEDED	= 0x081,
+	NVME_STATUS_NAMESPACE_NOT_READY	= 0x082,
+	NVME_STATUS_RESERVATION_CONFLICT	= 0x083,
+	NVME_STATUS_FORMAT_IN_PROGRESS	= 0x084,
+
+/*
+** 4.6.1.2.2 Command Specific Errors Definition
+**
+** Completion queue entries with a Status Code Type of Command Specific Errors
+** indicate an error that is specific to a particular command opcode. Status
+** codes of 0h to 7Fh are for Admin command errors. Status codes of 80h - BFh
+** are specific to the selected I/O command set.
+**
+** Figure 33: Status Code - Command Specific Status Values
+*/
+	NVME_STATUS_CQ_INVALID	= 0x100,
+	NVME_STATUS_INVALID_QID	= 0x101,
+	NVME_STATUS_INVALID_QSIZE	= 0x102,
+	NVME_STATUS_ABORT_COMMAND_LIMIT_EXCEDED	= 0x103,
+	NVME_STATUS_RESERVED_104H	= 0x104,
+	NVME_STATUS_AER_LIMIT_EXCEEDED	= 0x105,
+	NVME_STATUS_INVALID_FW_SLOT	= 0x106,
+	NVME_STATUS_INVALID_FW_IMAGE	= 0x107,
+	NVME_STATUS_INVALID_INT_VECTOR	= 0x108,
+	NVME_STATUS_INVALID_LOG_PAGE	= 0x109,
+	NVME_STATUS_INVALID_FORMAT	= 0x10A,
+	NVME_STATUS_FW_ACTIVATION_REQUIRES_CONVENTIONAL_RESET	= 0x10B,
+	NVME_STATUS_INVALID_QUEUE_DELETION	= 0x10C,
+	NVME_STATUS_FEATURE_NOT_SAVEABLE	= 0x10D,
+	NVME_STATUS_FEATURE_NOT_CHANGEABLE	= 0x10E,
+	NVME_STATUS_FEATURE_NOT_NS_SPECIFIC	= 0x10F,
+	NVME_STATUS_FW_ACTIVATION_REQUIRES_NVM_SUBSYSTEM_RESET	= 0x110,
+	NVME_STATUS_FW_ACTIVATION_REQUIRES_RESET	= 0x111,
+	NVME_STATUS_FW_ACTIVATION_REQUIRES_MAXIMUM_TIME_VIOLATION	= 0x112,
+	NVME_STATUS_FW_ACTIVATION_PROHIBITED	= 0x113,
+	NVME_STATUS_OVERLAPPING_RANGE	= 0x114,
+	NVME_STATUS_NAMESPACE_INSUFFICIENT_CAPACITY	= 0x115,
+	NVME_STATUS_NAMESPACE_ID_UNAVAILABLE	= 0x116,
+	NVME_STATUS_RESERVED_117H	= 0x117,
+	NVME_STATUS_NAMESPACE_ALREADY_ATTACHED	= 0x118,
+	NVME_STATUS_NAMESPACE_IS_PRIVATE	= 0x119,
+	NVME_STATUS_NAMESPACE_NOT_ATTACHED	= 0x11A,
+	NVME_STATUS_THIN_PROVISIONING_NOT_SUPPORTED	= 0x11B,
+	NVME_STATUS_CONTROLLER_LIST_INVALID	= 0x11C,
+	NVME_STATUS_DEVICE_SELFTEST_IN_PROGRESS	= 0x11D,
+	NVME_STATUS_BOOT_PARTITION_WRITE_PROHIBITED	= 0x11E,
+	NVME_STATUS_INVALID_CONTROLLER_ID	= 0x11F,
+	NVME_STATUS_INVALID_SECONDARY_CONTROLLER_STATE	= 0x120,
+	NVME_STATUS_INVALID_NUMBER_OF_CONTROLLER_RESOURCES	= 0x121,
+	NVME_STATUS_INVALID_RESOURCE_ID		= 0x122,
+
+/*
+** Figure 34: Status Code - Command Specific Status Values, NVM Command Set
+*/
+	NVME_STATUS_CONFLICTING_ATTRIBUTES	= 0x180,
+	NVME_STATUS_INVALID_PROTECTION_INFO	= 0x181,
+	NVME_STATUS_ATTEMPTED_WRITE_TO_READ_ONLY_RANGE	= 0x182,
+
+/*
+** 4.6.1.2.3 Media and Data Integrity Errors Definition
+**
+** Completion queue entries with a Status Code Type of Media and Data
+** Integrity Errors indicate an error associated with the command that is due
+** to an error associated with the NVM media or data integrity type error.
+**
+** Figure 35: Status Code - Media and Data Integrity Error Values
+*/
+	NVME_STATUS_RESERVED_200H	= 0x200,
+
+/*
+** Figure 36: Status Code - Media and Data Integrity Error Values, NVM Command
+** Set
+*/
+	NVME_STATUS_WRITE_FAULT	= 0x280,
+	NVME_STATUS_UNRECOVERED_READ_ERROR	= 0x281,
+	NVME_STATUS_END2END_GUARD_CHECK_ERROR	= 0x282,
+	NVME_STATUS_END2END_APPLICATION_TAG_CHECK_ERROR	= 0x283,
+	NVME_STATUS_END2END_REFERENCE_TAG_CHECK_ERROR	= 0x284,
+	NVME_STATUS_COMPARE_FAILURE	= 0x285,
+	NVME_STATUS_ACCESS_DENIED	= 0x286,
+	NVME_STATUS_DEALLOCATED_OR_UNWRITTEN_LOGICAL_BLOCK	= 0x287
+
+} NVME_STATUS;
+
+#endif	/* _NVME_CQ_ENTRY_H */
+
