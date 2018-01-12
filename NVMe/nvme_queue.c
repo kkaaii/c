@@ -7,21 +7,24 @@
 #include "nvme.h"
 #include "nvme_queue.h"
 
-void	NvmeQ_Init(NVME_QUEUE *q, UINT8 bits)
-{
-	q->head = 0;
-	q->tail = 0;
-	q->mask = (UINT16)((1 << bits) - 1);
-}
-
 CC_STATIC_ALWAYS_INLINE
 BOOL	IsHeadOverTail(NVME_QUEUE *q, UINT16 head)
 {
-	if (q->head < q->tail) {
+	if (q->head <= q->tail) {
+		/*
+		**     H
+		** x..xxv..vvx..x
+		**          T
+		*/
 		if (!(q->head < head && head <= q->tail)) {
 			return TRUE;
 		}
 	} else {
+		/*
+		**          H
+		** v..vvx..xxv..v
+		**     T
+		*/
 		if (q->tail < head && head <= q->head) {
 			return TRUE;
 		}
@@ -32,15 +35,17 @@ BOOL	IsHeadOverTail(NVME_QUEUE *q, UINT16 head)
 
 BOOL	NvmeQ_UpdateHead(NVME_QUEUE *q, UINT16 head)
 {
-	if (NVME_QUEUE_IS_EMPTY(q)) {
+	/* covered by IsHeadOverTail */
+	if (0 && NVME_QUEUE_IS_EMPTY(q)) {
 		return FALSE;
 	}
 
-	if (head > q->mask) {
+	if (head > q->size) {
 		return FALSE;
 	}
 
-	if (head == q->head) {
+	/* covered by IsHeadOverTail */
+	if (0 && head == q->head) {
 		return FALSE;
 	}
 
@@ -56,11 +61,21 @@ CC_STATIC_ALWAYS_INLINE
 BOOL	IsTailOverHead(NVME_QUEUE *q, UINT16 tail)
 {
 	if (q->tail < q->head) {
+		/*
+		**          H
+		** x..xxv..vxx..x
+		**     T
+		*/
 		if (!(q->tail < tail && tail < q->head)) {
 			return TRUE;
 		}
 	} else {
-		if (q->head <= tail && tail < q->tail) {
+		/*
+		**     H
+		** v..vxx..xxv..v
+		**          T
+		*/
+		if (q->head <= tail && tail <= q->tail) {
 			return TRUE;
 		}
 	}
@@ -70,15 +85,17 @@ BOOL	IsTailOverHead(NVME_QUEUE *q, UINT16 tail)
 
 BOOL	NvmeQ_UpdateTail(NVME_QUEUE *q, UINT16 tail)
 {
-	if (NVME_QUEUE_IS_FULL(q)) {
+	/* covered by IsTailOverHead */
+	if (0 && NVME_QUEUE_IS_FULL(q)) {
 		return FALSE;
 	}
 
-	if (tail > q->mask) {
+	if (tail > q->size) {
 		return FALSE;
 	}
 
-	if (tail == q->tail) {
+	/* covered by IsTailOverHead */
+	if (0 && tail == q->tail) {
 		return FALSE;
 	}
 
@@ -89,5 +106,4 @@ BOOL	NvmeQ_UpdateTail(NVME_QUEUE *q, UINT16 tail)
 	q->tail = tail;
 	return TRUE;
 }
-
 

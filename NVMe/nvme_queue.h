@@ -9,10 +9,7 @@
 typedef	struct {
 	UINT16	head;
 	UINT16	tail;
-	UINT16	mask;
-	UINT16	valid	: 1;
-	UINT16	prio	: 2;
-	UINT16	rsvd	: 13;
+	UINT16	size;
 } NVME_QUEUE;
 
 /*
@@ -21,8 +18,7 @@ typedef	struct {
 ** The queue is Empty when the Head entry pointer equals the Tail entry
 ** pointer. Figure 8 defines the Empty Queue condition.
 */
-#define	NVME_QUEUE_IS_EMPTY(sq)	\
-	((sq)->head == (sq)->tail)
+#define	NVME_QUEUE_IS_EMPTY(q)	((q)->head == (q)->tail)
 
 /*
 ** 4.1.2 Full Queue
@@ -34,10 +30,13 @@ typedef	struct {
 ** Note: Queue wrap conditions shall be taken into account when determining
 ** whether a queue is Full.
 */
-#define	NVME_QUEUE_IS_FULL(q)	\
-	((q)->head == ((q)->mask & ((q)->tail + 1)))
+#define	NVME_QUEUE_IS_FULL(q)	((q)->head == ((q)->tail + 1) % (1 + (q)->size))
 
-void	NvmeQ_Init(NVME_QUEUE *q, UINT8 bits);
+#define	NVME_QUEUE_INIT(q, qsize)	do {	\
+	(q)->head = (q)->tail = 0;		\
+	(q)->size = (qsize);			\
+} while (0)
+
 BOOL	NvmeQ_UpdateHead(NVME_QUEUE *q, UINT16 head);
 BOOL	NvmeQ_UpdateTail(NVME_QUEUE *q, UINT16 tail);
 
