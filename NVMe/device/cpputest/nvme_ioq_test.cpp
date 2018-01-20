@@ -14,13 +14,21 @@ namespace {
 		entry.cdw11.createIoCq.iv = iv;
 		entry.cdw11.createIoCq.ien = ien;
 
-		CHECK_EQUAL(expected, NvmeCq_Create(&entry));
+		NVME_STATUS	actual = NvmeCq_ValidateCreation(&entry);
+		CHECK_EQUAL(expected, actual);
+		if (NVME_STATUS_SUCCESSFUL_COMPLETION == actual) {
+			NvmeCq_Create(&entry);
+		}
 	}
 
 	void TestDeleteIoCq(NVME_STATUS expected, UINT16 cqid) {
 		entry.cdw10.deleteq.qid = cqid;
 
-		CHECK_EQUAL(expected, NvmeCq_Delete(&entry));
+		NVME_STATUS	actual = NvmeCq_ValidateDeletion(&entry);
+		CHECK_EQUAL(expected, actual);
+		if (NVME_STATUS_SUCCESSFUL_COMPLETION == actual) {
+			NvmeCq_Delete(&entry);
+		}
 	}
 
 	void TestCreateIoSq(NVME_STATUS expected, UINT16 cqid, UINT16 sqid=1, UINT16 qsize=15) {
@@ -28,13 +36,22 @@ namespace {
 		entry.cdw10.createq.qsize = qsize;
 		entry.cdw11.createIoSq.cqid = cqid;
 
-		CHECK_EQUAL(expected, NvmeSq_Create(&entry));
+		NVME_STATUS	actual = NvmeSq_ValidateCreation(&entry);
+		CHECK_EQUAL(expected, actual);
+		if (NVME_STATUS_SUCCESSFUL_COMPLETION == actual) {
+			NvmeSq_Create(&entry);
+		}
+		
 	}
 
 	void TestDeleteIoSq(NVME_STATUS expected, UINT16 sqid) {
 		entry.cdw10.deleteq.qid = sqid;
 
-		CHECK_EQUAL(expected, NvmeSq_Delete(&entry));
+		NVME_STATUS	actual = NvmeSq_ValidateDeletion(&entry);
+		CHECK_EQUAL(expected, actual);
+		if (NVME_STATUS_SUCCESSFUL_COMPLETION == actual) {
+			NvmeSq_Delete(&entry);
+		}
 	}
 }
 

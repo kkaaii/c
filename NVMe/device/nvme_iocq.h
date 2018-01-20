@@ -8,6 +8,8 @@
 
 #include "nvme_queue.h"
 
+#define	NVME_CQID_ADMIN		0
+
 #define	NVME_CQ_IS_EMPTY(cq)	NVME_QUEUE_IS_EMPTY(&(cq)->q)
 #define	NVME_CQ_IS_FULL(cq)	NVME_QUEUE_IS_FULL(&(cq)->q)
 
@@ -20,9 +22,11 @@ typedef	struct {
 	UINT16		ien	: 1;
 } NVME_CQ;
 
-NVME_STATUS	NvmeCq_Create(NVME_SQ_ENTRY *entry);
-NVME_STATUS	NvmeCq_Delete(NVME_SQ_ENTRY *entry);
+NVME_STATUS	NvmeCq_ValidateCreation(NVME_SQ_ENTRY *entry);
+NVME_STATUS	NvmeCq_ValidateDeletion(NVME_SQ_ENTRY *entry);
 
+void		NvmeCq_Create(NVME_SQ_ENTRY *entry);
+void		NvmeCq_Delete(NVME_SQ_ENTRY *entry);
 BOOL		NvmeCq_IsValid(UINT16 cqid);
 void		NvmeCq_Bind(UINT16 cqid);
 void		NvmeCq_Unbind(UINT16 cqid);

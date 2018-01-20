@@ -144,6 +144,26 @@ typedef struct {
 	UINT32		ofst;		/* Offset (OFST) */
 } NVME_CDW11_OFST;
 
+/*
+** Figure 53: Create I/O Completion Queue - Command Dword 11
+*/
+typedef	struct {
+	UINT16		pc	: 1;	/* 00:00 Physically Contiguous (PC) */
+	UINT16		ien	: 1;	/* 01:01 Interrupts Enabled (IEN) */
+	UINT16		rsvd	: 14;	/* 15:02 reserved */
+	UINT16		iv;		/* 31:16 Interrupt Vector (IV) */
+} NVME_CDW11_CREATE_IOCQ;
+
+/*
+** Figure 57: Create I/O Submission Queue - Command Dword 11
+*/
+typedef	struct {
+	UINT16		pc	: 1;	/* 00:00 Physically Contiguous (PC) */
+	UINT16		qprio	: 2;	/* 02:01 Queue Priority (QPRIO) */
+	UINT16		rsvd	: 13;	/* 15:03 reserved */
+	UINT16		cqid;		/* 31:16 Completion Queue ID (CQID) */
+} NVME_CDW11_CREATE_IOSQ;
+
 typedef struct {
 	UINT16		numdu;		/* Number of Dwords Upper (NUMDU) */
 	UINT16		rsvd;		/* reserved */
@@ -151,6 +171,8 @@ typedef struct {
 
 typedef union {
 	UINT32			val;
+	NVME_CDW11_CREATE_IOCQ	createIoCq;
+	NVME_CDW11_CREATE_IOSQ	createIoSq;
 	NVME_CDW11_OFST		fwdownload;
 	NVME_CDW11_GET_LOG_PAGE	getLogPage;
 } NVME_CDW11;

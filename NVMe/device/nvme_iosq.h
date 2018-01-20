@@ -11,6 +11,8 @@
 #define	NVME_SQ_IS_EMPTY(sq)	NVME_QUEUE_IS_EMPTY(&(sq)->q)
 #define	NVME_SQ_IS_FULL(sq)	NVME_QUEUE_IS_FULL(&(sq)->q)
 
+#define	NVME_SQID_ADMIN		0
+
 typedef	struct {
 	NVME_QUEUE	q;
 	UINT16		cqid;

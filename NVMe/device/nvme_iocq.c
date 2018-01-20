@@ -25,14 +25,23 @@ void	NvmeCq_Init(void)
 	memset(cqs, 0, sizeof cqs);
 }
 
-NVME_STATUS	NvmeCq_Create(NVME_SQ_ENTRY *entry)
+BOOL	NvmeCq_IsValid(UINT16 cqid)
 {
-	UINT16	cqid = entry->cdw10.createq.qid;
 	NVME_CQ	*cq = NvmeCq_Get(cqid);
+	return (NULL != cq && cq->valid) ? TRUE : FALSE;
+}
+
+NVME_STATUS
+NvmeCq_ValidateCreation(NVME_SQ_ENTRY *entry)
+{
+	UINT16	cqid;
+	NVME_CQ	*cq;
 	UINT16	qsize;
 	UINT16	iv;
 
-	if (0 == cqid || NULL == cq || cq->valid) {
+	cqid = entry->cdw10.createq.qid;
+	cq = NvmeCq_Get(cqid);
+	if (NVME_CQID_ADMIN == cqid || NULL == cq || cq->valid) {
 		return NVME_STATUS_INVALID_QID;
 	}
 
@@ -46,20 +55,31 @@ NVME_STATUS	NvmeCq_Create(NVME_SQ_ENTRY *entry)
 		return NVME_STATUS_INVALID_INT_VECTOR;
 	}
 
-	NVME_QUEUE_INIT(&cq->q, qsize);
-	cq->iv = iv;
-	cq->ien = entry->cdw11.createIoCq.ien;
-	cq->valid = 1;
-	cq->ref	= 0;
-
 	return NVME_STATUS_SUCCESSFUL_COMPLETION;
 }
 
-NVME_STATUS	NvmeCq_Delete(NVME_SQ_ENTRY *entry)
+void
+NvmeCq_Create(NVME_SQ_ENTRY *entry)
 {
-	NVME_CQ	*cq = NvmeCq_Get(entry->cdw10.deleteq.qid);
+	UINT16	qsize = entry->cdw10.createq.qsize;
+	UINT16	cqid = entry->cdw10.createq.qid;
+	NVME_CQ	*cq = NvmeCq_Get(cqid);
 
-	if (NULL == cq || !cq->valid) {
+
+	NVME_QUEUE_INIT(&cq->q, qsize);
+	cq->iv = entry->cdw11.createIoCq.iv;
+	cq->ien = entry->cdw11.createIoCq.ien;
+	cq->valid = 1;
+	cq->ref	= 0;
+}
+
+NVME_STATUS
+NvmeCq_ValidateDeletion(NVME_SQ_ENTRY *entry)
+{
+	UINT16	cqid = entry->cdw10.deleteq.qid;
+	NVME_CQ	*cq = NvmeCq_Get(cqid);
+
+	if (NVME_CQID_ADMIN == cqid || NULL == cq || !cq->valid) {
 		return NVME_STATUS_INVALID_QID;
 	}
 
@@ -67,16 +87,16 @@ NVME_STATUS	NvmeCq_Delete(NVME_SQ_ENTRY *entry)
 		return NVME_STATUS_INVALID_QUEUE_DELETION;
 	}
 
-	cq->valid = 0;
-
 	return NVME_STATUS_SUCCESSFUL_COMPLETION;
 }
 
-BOOL	NvmeCq_IsValid(UINT16 cqid)
+void
+NvmeCq_Delete(NVME_SQ_ENTRY *entry)
 {
+	UINT16	cqid = entry->cdw10.deleteq.qid;
 	NVME_CQ	*cq = NvmeCq_Get(cqid);
 
-	return (NULL != cq && cq->valid) ? TRUE : FALSE;
+	cq->valid = 0;
 }
 
 void	NvmeCq_Bind(UINT16 cqid)

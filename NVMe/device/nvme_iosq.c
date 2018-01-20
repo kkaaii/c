@@ -32,12 +32,13 @@ BOOL	NvmeSq_IsValid(UINT16 sqid)
 	return (NULL != sq && sq->valid) ? TRUE : FALSE;
 }
 
-NVME_STATUS	NvmeSq_Create(NVME_SQ_ENTRY *entry)
+NVME_STATUS
+NvmeSq_ValidateCreation(NVME_SQ_ENTRY *entry)
 {
+	NVME_SQ	*sq;
 	UINT16	cqid;
 	UINT16	sqid;
 	UINT16	qsize;
-	NVME_SQ	*sq;
 
 	cqid = entry->cdw11.createIoSq.cqid;
 	if (!NvmeCq_IsValid(cqid)) {
@@ -46,7 +47,7 @@ NVME_STATUS	NvmeSq_Create(NVME_SQ_ENTRY *entry)
 
 	sqid = entry->cdw10.createq.qid;
 	sq = NvmeSq_Get(sqid);
-	if (0 == sqid || NULL == sq || sq->valid) {
+	if (NVME_SQID_ADMIN == sqid || NULL == sq || sq->valid) {
 		return NVME_STATUS_INVALID_QID;
 	}
 
@@ -55,26 +56,44 @@ NVME_STATUS	NvmeSq_Create(NVME_SQ_ENTRY *entry)
 		return NVME_STATUS_INVALID_QSIZE;
 	}
 
+	return NVME_STATUS_SUCCESSFUL_COMPLETION;
+}
+
+void
+NvmeSq_Create(NVME_SQ_ENTRY *entry)
+{
+	UINT16	cqid = entry->cdw11.createIoSq.cqid;
+	UINT16	qsize = entry->cdw10.createq.qsize;
+	UINT16	sqid = entry->cdw10.createq.qid;
+	NVME_SQ	*sq = NvmeSq_Get(sqid);
+
 	NVME_QUEUE_INIT(&sq->q, qsize);
 	sq->cqid	= cqid;
 	sq->valid	= 1;
 	sq->prio	= entry->cdw11.createIoSq.qprio;
 
 	NvmeCq_Bind(cqid);
-	return NVME_STATUS_SUCCESSFUL_COMPLETION;
 }
 
-NVME_STATUS	NvmeSq_Delete(NVME_SQ_ENTRY *cmd)
+NVME_STATUS
+NvmeSq_ValidateDeletion(NVME_SQ_ENTRY *cmd)
 {
-	NVME_SQ	*sq = NvmeSq_Get(cmd->cdw10.deleteq.qid);
+	UINT16	sqid = cmd->cdw10.deleteq.qid;
+	NVME_SQ	*sq = NvmeSq_Get(sqid);
 
-	if (NULL == sq || !sq->valid) {
+	if (NVME_SQID_ADMIN == sqid || NULL == sq || !sq->valid) {
 		return NVME_STATUS_INVALID_QID;
 	}
 
-	sq->valid	= 0;
-
-	NvmeCq_Unbind(sq->cqid);
 	return NVME_STATUS_SUCCESSFUL_COMPLETION;
+}
+
+void
+NvmeSq_Delete(NVME_SQ_ENTRY *cmd)
+{
+	NVME_SQ	*sq = NvmeSq_Get(cmd->cdw10.deleteq.qid);
+
+	sq->valid	= 0;
+	NvmeCq_Unbind(sq->cqid);
 }
 
