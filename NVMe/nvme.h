@@ -37,6 +37,7 @@ CC_ASSERT(2 == sizeof(UINT16));
 CC_ASSERT(4 == sizeof(UINT32));
 CC_ASSERT(8 == sizeof(UINT64));
 
+#include "nvme_debug.h"
 #include "nvme_registers.h"
 
 #include "nvme_queue.h"

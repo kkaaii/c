@@ -1,5 +1,5 @@
-#ifndef _NVME_REGISTERS_H
-#define	_NVME_REGISTERS_H
+#ifndef _NVME_CONTROLLER_H
+#define	_NVME_CONTROLLER_H
 
 /*
 ** 3.1.1 Offset 00h: CAP - Controller Capabilities
@@ -39,6 +39,12 @@ typedef union {
 
 CC_ASSERT(sizeof(UINT32) == sizeof (NVME_REG32_08H));
 
+#define	VS_1_0		0x00010000	/* VS Value for 1.0 Compliant Controllers */
+#define	VS_1_1		0x00010100	/* VS Value for 1.1 Compliant Controllers */
+#define	VS_1_2		0x00010200	/* VS Value for 1.2 Compliant Controllers */
+#define	VS_1_2_1	0x00010201	/* VS Value for 1.2.1 Compliant Controllers */
+#define	VS_1_3		0x00010300	/* VS Value for 1.3 Compliant Controllers */
+
 /*
 ** 3.1.5 Offset 14h: CC - Controller Configuration
 */
@@ -59,6 +65,17 @@ typedef union {
 
 CC_ASSERT(sizeof(UINT32) == sizeof (NVME_REG32_14H));
 
+#define	CC_SHN_NO_NOTIFICATION	0
+#define	CC_SHN_NORMAL_SHUTDOWN	1
+#define	CC_SHN_ABRUPT_SHUTDOWN	2
+#define	CC_SHN_RESERVED		3
+
+#define	CC_AMS_ROUND_ROBIN	0
+#define	CC_AMS_WRR_UPS		1	/* Weighted Round Robin with Urgent Priority Class */
+#define	CC_AMS_VENDOR_SPECIFIC	7
+
+#define	CC_CSS_NVM_COMMAND_SET	0
+
 /*
 ** 3.1.6 Offset 1Ch: CSTS - Controller Status
 */
@@ -75,6 +92,11 @@ typedef union {
 } NVME_REG32_1CH;
 
 CC_ASSERT(sizeof(UINT32) == sizeof (NVME_REG32_1CH));
+
+#define	CSTS_SHST_NORMAL_OPERATION	0
+#define	CSTS_SHST_SHUTDOWN_OCCURRING	1
+#define	CSTS_SHST_SHUTDOWN_COMPLETE	2
+#define	CSTS_SHST_RESERVED		3
 
 /*
 ** 3.1.8 Offset 24h: AQA - Admin Queue Attributes
@@ -150,6 +172,14 @@ typedef union {
 
 CC_ASSERT(sizeof(UINT32) == sizeof (NVME_REG32_3CH));
 
+#define	CMBSZ_SZU_4KB	0
+#define	CMBSZ_SZU_64KB	1
+#define	CMBSZ_SZU_1MB	2
+#define	CMBSZ_SZU_16MB	3
+#define	CMBSZ_SZU_256MB	4
+#define	CMBSZ_SZU_4GB	5
+#define	CMBSZ_SZU_64GB	6
+
 /*
 ** 3.1.13 Offset 40h: BPINFO - Boot Partition Information
 */
@@ -165,6 +195,11 @@ typedef union {
 } NVME_REG32_40H;
 
 CC_ASSERT(sizeof(UINT32) == sizeof (NVME_REG32_40H));
+
+#define	BPINFO_BRS_NO_READ		0
+#define	BPINFO_BRS_READ_IN_PROGRESS	1
+#define	BPINFO_BRS_READ_SUCCESSFULLY	2
+#define	BPINFO_BRS_READ_ERROR		3
 
 /*
 ** 3.1.14 Offset 44h: BPRSEL - Boot Partition Read Select
@@ -195,6 +230,28 @@ typedef union {
 CC_ASSERT(sizeof(UINT64) == sizeof (NVME_REG64_48H));
 
 /*
+** 3.1.16 Offset 1000h + ((2y) * (4 << CAP.DSTRD)): SQyTDBL - Submission Queue y Tail Doorbell
+*/
+typedef union {
+	UINT32	reg;
+	struct {
+		UINT32	SQT	: 16;	/* Submission Queue Tail */
+		UINT32	rsvd16	: 16;
+	};
+} NVME_REG32_SQT;
+
+/*
+** 3.1.17 Offset 1000h + ((2y + 1) * (4 << CAP.DSTRD)): CQyHDBL - Completion Queue y Head Doorbell
+*/
+typedef union {
+	UINT32	reg;
+	struct {
+		UINT32	CQH	: 16;	/* Completion Queue Head */
+		UINT32	rsvd16	: 16;
+	};
+} NVME_REG32_CQH;
+
+/*
 ** 3.1 Register Definition
 */
 typedef struct {
@@ -214,7 +271,7 @@ typedef struct {
 	NVME_REG32_40H	BPINFO;
 	NVME_REG32_44H	BPRSEL;
 	NVME_REG64_48H	BPMBL;
-} NVME_CONFIG;
+} NVME_CONTROLLER;
 
-#endif	/* NVME_REGISTERS_H */
+#endif	/* NVME_CONTROLLER_H */
 
