@@ -9,8 +9,8 @@
 
 extern	NVME_CONFIG	nvmeConfig;
 
-NVME_CQ_ENTRY	cqAdmin[ADMIN_CQSIZE];
-NVME_SQ_ENTRY	sqAdmin[ADMIN_SQSIZE];
+CC_ATTRIB_ALIGNED(4096)	NVME_CQ_ENTRY	cqAdmin[ADMIN_CQSIZE];
+CC_ATTRIB_ALIGNED(4096)	NVME_SQ_ENTRY	sqAdmin[ADMIN_SQSIZE];
 
 NVME_QUEUE	cqs[MAX_CQS];
 NVME_QUEUE	sqs[MAX_SQS];
@@ -25,7 +25,27 @@ void Host_Init(void)
 
 	nvmeConfig.AQA.ACQS = ADMIN_CQSIZE;
 	nvmeConfig.AQA.ASQS = ADMIN_SQSIZE;
-	nvmeConfig.ACQ = CAST_FROM_PTR(UINT64)(cqs[0].base);
-	nvmeConfig.ASQ = CAST_FROM_PTR(UINT64)(sqs[0].base);
+	nvmeConfig.ACQ.reg = CAST_FROM_PTR(UINT64)(cqs[0].base);
+	nvmeConfig.ASQ.reg = CAST_FROM_PTR(UINT64)(sqs[0].base);
+
+	nvmeConfig.CC.EN = 1;
+}
+
+#include <stdio.h>
+
+#define	WATCH(x)	printf("%s = 0x%lx\n", #x, (UINT64)x)
+
+NVME_CONFIG	nvmeConfig;
+
+int main(void)
+{
+	Host_Init();
+
+	WATCH(nvmeConfig.AQA.ACQS);
+	WATCH(nvmeConfig.AQA.ASQS);
+	WATCH(nvmeConfig.ACQ.reg);
+	WATCH(nvmeConfig.ASQ.reg);
+
+	return 0;
 }
 
