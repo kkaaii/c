@@ -7,9 +7,10 @@
 #define	_NVME_QUEUE_H
 
 typedef	struct {
+	PVOID	base;
+	UINT16	size;
 	UINT16	head;
 	UINT16	tail;
-	UINT16	size;
 } NVME_QUEUE;
 
 /*
@@ -50,9 +51,10 @@ typedef	struct {
 #define	NVME_QSIZE_IS_VALID(qsize)	\
 	(NVME_MIN_QSIZE <= (qsize) && (qsize) <= NVME_MAX_QSIZE)
 
-#define	NVME_QUEUE_INIT(q, qsize)	do {	\
-	(q)->head = (q)->tail = 0;		\
-	(q)->size = (qsize);			\
+#define	NVME_QUEUE_INIT(q, qbase, qsize)	do {	\
+	(q)->base = (qbase);				\
+	(q)->size = (qsize);				\
+	(q)->head = (q)->tail = 0;			\
 } while (0)
 
 BOOL	NvmeQ_UpdateHead(NVME_QUEUE *q, UINT16 head);

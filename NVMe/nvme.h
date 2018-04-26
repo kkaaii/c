@@ -1,5 +1,7 @@
 #ifndef	_NVME_H
 
+#include <stdint.h>
+
 #define	CC_CONCAT(x, y)		x##y
 #define	CC_CONCAT_EXPAND(x, y)	CC_CONCAT(x, y)
 #define	CC_ASSERT(x)		typedef int CC_CONCAT_EXPAND(_cc_assert_, __COUNTER__)[1/!!(x)]
@@ -15,6 +17,9 @@
 #define	CC_STATIC_INLINE	static inline
 #define	CC_STATIC_ALWAYS_INLINE	static inline __attribute__ ((always_inline))
 
+#define	INT_PTR_TYPE		intptr_t
+#define	CAST_FROM_PTR(T)	(T)(INT_PTR_TYPE)
+
 typedef enum {
 	FALSE	= 0,
 	TRUE	= !FALSE
@@ -25,10 +30,14 @@ typedef unsigned short	UINT16;
 typedef	unsigned int	UINT32;
 typedef	unsigned long	UINT64;
 
+typedef	void		*PVOID;
+
 CC_ASSERT(1 == sizeof(UINT8));
 CC_ASSERT(2 == sizeof(UINT16));
 CC_ASSERT(4 == sizeof(UINT32));
 CC_ASSERT(8 == sizeof(UINT64));
+
+#include "nvme_registers.h"
 
 #include "nvme_queue.h"
 #include "nvme_cq_entry.h"
