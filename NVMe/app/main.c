@@ -2,34 +2,32 @@
 #include <pthread.h>
 #include "nvme.h"
 
-#define	WATCH(x)	printf("%s = 0x%lx\n", #x, (UINT64)x)
-
-NVME_CONTROLLER	nvmeController = {0}, *gpController = &nvmeController;
-
-void *HostThread(void *context)
-{
-	Host_Init();
-
-	Host_RingDoorbell_SQT(0, 0);
-	Host_RingDoorbell_SQT(1, 0);
-	Host_RingDoorbell_SQT(2, 0);
-	Host_RingDoorbell_SQT(3, 0);
-	Host_RingDoorbell_SQT(4, 0);
-	Host_RingDoorbell_SQT(5, 0);
-	Host_RingDoorbell_SQT(6, 0);
-	Host_RingDoorbell_SQT(7, 0);
-}
+extern void *HostMain(void *context);
+extern void *DeviceMain(void *context);
 
 int main(void)
 {
-#if 1
-	HostThread(NULL);
-#else
 	int		rc;
 	pthread_t	hostThread;
+	pthread_t	deviceThread;
 
-	rc = pthread_create(&hostThread, NULL, HostThread, NULL);
-#endif
+	ENTER();
+	rc = pthread_create(&hostThread, NULL, HostMain, NULL);
+	if (rc) {
+		LEAVE();
+		return -1;
+	}
+
+	rc = pthread_create(&deviceThread, NULL, DeviceMain, NULL);
+	if (rc) {
+		LEAVE();
+		return -1;
+	}
+
+	pthread_join(hostThread, NULL);
+	pthread_join(deviceThread, NULL);
+
+	LEAVE();
 	return 0;
 }
 

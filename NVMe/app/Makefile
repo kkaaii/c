@@ -4,16 +4,22 @@ RM=rm
 
 SOURCES=\
 	main.c\
-	host_nvme.c\
+	host.c\
+	device.c\
+	pcie.c\
+	../host/host_nvme.c\
 
 CFLAGS+=-I ..
+LFLAGS+=-lpthread
 
 OBJS=$(SOURCES:.c=.o)
+
+.PHONY = all clean clobber
 
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) -o $@ $^
+	$(CC) -o $@ $^ $(LFLAGS)
 
 clean:
 	-$(RM) $(OBJS)

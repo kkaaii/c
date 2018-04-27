@@ -44,5 +44,11 @@ CC_ASSERT(8 == sizeof(UINT64));
 #include "nvme_cq_entry.h"
 #include "nvme_sq_entry.h"
 
+void *	PCIe_GetControllerRegBase(UINT8 id);
+void	PCIe_WriteControllerReg32(UINT32 *reg, UINT32 val);
+void	PCIe_WriteControllerReg64(UINT64 *reg, UINT64 val);
+UINT32	PCIe_ReadControllerReg32(UINT32 *reg);
+UINT64	PCIe_ReadControllerReg64(UINT64 *reg);
+
 #endif	/* _NVME_H */
 
