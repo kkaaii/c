@@ -6,12 +6,20 @@
 #ifndef	_NVME_QUEUE_H
 #define	_NVME_QUEUE_H
 
+#define	NVME_CQID_ADMIN		0
+#define	NVME_SQID_ADMIN		0
+
 typedef	struct {
 	PVOID	base;
 	UINT16	size;
 	UINT16	head;
 	UINT16	tail;
 } NVME_QUEUE;
+
+#define	NVME_QUEUE_IS_VALID(q)	(NULL != (q)->base)
+
+#define	NVME_QUEUE_INC_HEAD(q)	((q)->head = ((q)->head + 1) & (q)->size)
+#define	NVME_QUEUE_INC_TAIL(q)	((q)->tail = ((q)->tail + 1) & (q)->size)
 
 /*
 ** 4.1.1 Empty Queue
