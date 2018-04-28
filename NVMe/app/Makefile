@@ -7,6 +7,7 @@ SOURCES=\
 	host.c\
 	device.c\
 	pcie.c\
+	../nvme_queue.c\
 	../host/host_nvme.c\
 
 CFLAGS+=-I ..

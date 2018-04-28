@@ -59,12 +59,7 @@ typedef	struct {
 #define	NVME_QSIZE_IS_VALID(qsize)	\
 	(NVME_MIN_QSIZE <= (qsize) && (qsize) <= NVME_MAX_QSIZE)
 
-#define	NVME_QUEUE_INIT(q, qbase, qsize)	do {	\
-	(q)->base = (qbase);				\
-	(q)->size = (qsize);				\
-	(q)->head = (q)->tail = 0;			\
-} while (0)
-
+BOOL	NvmeQ_Init(NVME_QUEUE *q, void *base, UINT16 size);
 BOOL	NvmeQ_UpdateHead(NVME_QUEUE *q, UINT16 head);
 BOOL	NvmeQ_UpdateTail(NVME_QUEUE *q, UINT16 tail);
 

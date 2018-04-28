@@ -19,8 +19,8 @@ void Host_Init(void)
 
 	NVME_QUEUE	*acq = &hostCq[NVME_CQID_ADMIN];
 	NVME_QUEUE	*asq = &hostSq[NVME_SQID_ADMIN];
-	NVME_QUEUE_INIT(acq, cqAdmin, QDEPTH_ADMIN);
-	NVME_QUEUE_INIT(asq, sqAdmin, QDEPTH_ADMIN);
+	NvmeQ_Init(acq, cqAdmin, QDEPTH_ADMIN);
+	NvmeQ_Init(asq, sqAdmin, QDEPTH_ADMIN);
 
 	NVME_CONTROLLER *controller = (NVME_CONTROLLER *)PCIe_GetControllerRegBase(0);
 

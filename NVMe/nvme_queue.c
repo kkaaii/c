@@ -7,6 +7,20 @@
 #include "nvme.h"
 #include "nvme_queue.h"
 
+BOOL	NvmeQ_Init(NVME_QUEUE *q, void *base, UINT16 size)
+{
+	if (NULL == base)
+		return FALSE;
+
+	if (!NVME_QSIZE_IS_VALID(size))
+		return FALSE;
+
+	q->base = base;
+	q->size = size - 1;
+	q->head = q->tail = 0;
+	return TRUE;
+}
+
 /*
 **     H		         H
 ** x..xxv..vvx..x	v..vvx..xxv..v
