@@ -18,36 +18,53 @@
 ** an alternate Completion Queue entry size or format.
 */
 
+typedef union {
+	UINT32	all;
+} NVME_CQE_DW0;
+
+typedef union {
+	UINT32	all;
+	struct {
+		UINT32	rsvd0;
+	};
+} NVME_CQE_DW1;
+
 /*
 ** Figure 27: Completion Queue Entry: DW 2
 */
-typedef	struct {
-	UINT16	sqhd;	/* 15:00 SQ Head Pointer (SQHD) */
-	UINT16	sqid;	/* 31:16 SQ Identifier (SQID) */
-} NVME_CQ_DW2;
+typedef	union {
+	UINT32	all;
+	struct {
+		UINT32	SQHD	: 16;	/* SQ Head Pointer */
+		UINT32	SQID	: 16;	/* SQ Identifier */
+	};
+} NVME_CQE_DW2;
 
 /*
 ** Figure 28: Completion Queue Entry: DW 3
 */
-typedef	struct {
-	UINT16	cid;		/* 15:00 Command Identifier (CID) */
-	UINT16	p	: 1;	/* 16:16 Phase Tag (P) */
-	UINT16	sc	: 8;	/* 24:17 Status Code (SC) */
-	UINT16	sct	: 3;	/* 27:25 Status Code Type (SCT) */
-	UINT16	rsvd	: 2;	/* 29:28 reserved */
-	UINT16	m	: 1;	/* 30:30 More (M) */
-	UINT16	dnr	: 1;	/* 31:31 Do Not Retry (DNR) */
-} NVME_CQ_DW3;
+typedef	union {
+	UINT32	all;
+	struct {
+		UINT32	CID	: 16;	/* Command Identifier */
+		UINT32	P	: 1;	/* Phase Tag */
+		UINT32	SC	: 8;	/* Status Code */
+		UINT32	SCT	: 3;	/* Status Code Type */
+		UINT32	rsvd28	: 2;
+		UINT32	M	: 1;	/* More */
+		UINT32	DNR	: 1;	/* Do Not Retry */
+	};
+} NVME_CQE_DW3;
 
 /*
 ** Figure 26: Completion Queue Entry Layout - Admin and NVM Command Set
 */
 typedef struct {
-	UINT32		dw0;
-	UINT32		rsvd;
-	NVME_CQ_DW2	dw2;
-	NVME_CQ_DW3	dw3;
-} NVME_CQ_ENTRY;
+	NVME_CQE_DW0	dw0;
+	NVME_CQE_DW1	dw1;
+	NVME_CQE_DW2	dw2;
+	NVME_CQE_DW3	dw3;
+} NVME_CQE;
 
 /*
 ** 4.6.1.1 Status Code Type (SCT)

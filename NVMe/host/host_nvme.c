@@ -6,11 +6,37 @@
 
 #define	QDEPTH_ADMIN	16
 
-CC_STATIC	NVME_CQ_ENTRY	cqAdmin[QDEPTH_ADMIN]	CC_ATTRIB_ALIGNED(4096);
-CC_STATIC	NVME_SQ_ENTRY	sqAdmin[QDEPTH_ADMIN]	CC_ATTRIB_ALIGNED(4096);
+CC_STATIC	NVME_CQE	cqAdmin[QDEPTH_ADMIN]	CC_ATTRIB_ALIGNED(4096);
+CC_STATIC	NVME_SQE	sqAdmin[QDEPTH_ADMIN]	CC_ATTRIB_ALIGNED(4096);
 
 NVME_QUEUE	hostCq[MAX_QUEUES];
 NVME_QUEUE	hostSq[MAX_QUEUES];
+
+CC_STATIC_ALWAYS_INLINE
+NVME_QUEUE *Host_GetCq(UINT16 cqid)
+{
+	if (cqid >= MAX_QUEUES)
+		return NULL;
+
+	NVME_QUEUE *cq = &hostCq[cqid];
+	if (!NVME_QUEUE_IS_VALID(cq))
+		return NULL;
+
+	return cq;
+}
+
+CC_STATIC_ALWAYS_INLINE
+NVME_QUEUE *Host_GetSq(UINT16 sqid)
+{
+	if (sqid >= MAX_QUEUES)
+		return NULL;
+
+	NVME_QUEUE *sq = &hostSq[sqid];
+	if (!NVME_QUEUE_IS_VALID(sq))
+		return NULL;
+
+	return sq;
+}
 
 void Host_Init(void)
 {
@@ -46,18 +72,6 @@ void Host_Init(void)
 		sleep(1);
 		CSTS.reg = PCIe_ReadControllerReg32(&controller->CSTS.reg);
 	} while (0 == CSTS.RDY);
-}
-
-CC_STATIC NVME_QUEUE *Host_GetSq(UINT16 sqid)
-{
-	if (sqid > MAX_QUEUES)
-		return NULL;
-
-	NVME_QUEUE *sq = &hostSq[sqid];
-	if (!NVME_QUEUE_IS_VALID(sq))
-		return NULL;
-
-	return sq;
 }
 
 BOOL Host_IssueCommand(UINT16 sqid)
@@ -96,5 +110,47 @@ BOOL Host_RingDoorbell_SQT(UINT16 sqid)
 
 	LEAVE();
 	return TRUE;
+}
+
+BOOL Host_CheckResponse(UINT16 cqid)
+{
+	static BOOL	phase = FALSE;
+
+	NVME_QUEUE	*cq = Host_GetCq(cqid);
+	if (NULL == cq)
+		return FALSE;
+
+	NVME_CQE	*cqe = (NVME_CQE *)(cq->base) + cq->tail;
+	if (cqe->dw3.P == phase)
+		return FALSE;
+
+	UINT16	sqid = cqe->dw2.SQID;
+	NVME_QUEUE	*sq = Host_GetSq(sqid);
+	if (NULL == sq)
+		return FALSE;
+
+	NVME_QUEUE_INC_TAIL(cq);
+	NVME_QUEUE_INC_HEAD(cq);
+	if (0 == cq->head)
+		phase = !phase;
+
+	NVME_QUEUE_INC_HEAD(sq);
+}
+
+BOOL Host_RingDoorbell_CQH(UINT16 cqid)
+{
+	NVME_CONTROLLER	*controller = PCIe_GetControllerRegBase(0);
+
+	NVME_REG64_00H	CAP;
+	CAP.reg = PCIe_ReadControllerReg64(&controller->CAP.reg);
+
+	UINT32	offset = 0x1000 + (cqid * 2 + 1) * (4 << CAP.DSTRD);
+	UINT32	*reg = (UINT32 *)controller + (offset >> 2);
+
+	NVME_QUEUE	*cq = Host_GetCq(cqid);
+	NVME_REG32_CQH	CQH;
+	CQH.reg = 0;
+	CQH.CQH = cq->head;
+	PCIe_WriteControllerReg32(reg, CQH.reg);
 }
 

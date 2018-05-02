@@ -17,18 +17,18 @@
 ** Entry 1, PRP Entry 2, and Metadata SGL Segment Pointer are not used by all
 ** commands.
 */
-typedef	struct {
-	UINT32		opc	: 8;	/* Opcode (OPC) */
-	UINT32		fuse	: 2;	/* Fused Operation (FUSE) */
-	UINT32		rsvd	: 4;	/* reserved */
-	UINT32		psdt	: 2;	/* PRP or SGL for Data Transfer (PSDT) */
-	UINT32		cid	: 16;	/* Command Identifier (CID) */
-} NVME_CDW0_FIELDS;
-
 typedef union {
-	UINT32			val;
-	NVME_CDW0_FIELDS	fields;
-} NVME_CDW0;
+	UINT32	all;
+	struct {
+		UINT32		OPC	: 8;	/* Opcode */
+		UINT32		FUSE	: 2;	/* Fused Operation */
+		UINT32		rsvd16	: 4;
+		UINT32		PSDT	: 2;	/* PRP or SGL for Data Transfer */
+		UINT32		CID	: 16;	/* Command Identifier */
+	};
+} NVME_SQE_DW0;
+
+CC_ASSERT(sizeof(UINT32) == sizeof (NVME_SQE_DW0));
 
 typedef struct {
 	UINT64		prp1;		/* PRP Entry 1 (PRP1) */
@@ -204,7 +204,7 @@ typedef union {
 } NVME_CDW15;
 
 typedef struct {
-	NVME_CDW0	cdw0;		/* 03:00 Command Dword 0 (CDW0) */
+	NVME_SQE_DW0	CDW0;		/* 03:00 Command Dword 0 (CDW0) */
 	UINT32		nsid;		/* 07:04 Namespace Identifier (NSID) */
 	UINT32		rsvd[2];	/* 15:08 reserved */
 	UINT64		mptr;		/* 23:16 Metadata Pointer (MPTR) */
@@ -215,7 +215,7 @@ typedef struct {
 	NVME_CDW13	cdw13;		/* 55:52 Command Dword 13 (CDW13) */
 	NVME_CDW14	cdw14;		/* 59:56 Command Dword 14 (CDW14) */
 	NVME_CDW15	cdw15;		/* 63:60 Command Dword 15 (CDW15) */
-} NVME_SQ_ENTRY;
+} NVME_SQE;
 
 typedef	enum {
 /*

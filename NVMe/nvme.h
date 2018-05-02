@@ -19,7 +19,7 @@
 
 #define	INT_PTR_TYPE		intptr_t
 #define	CAST_FROM_PTR(T)	(T)(INT_PTR_TYPE)
-#define	CAST_TO_PTR(T)		(T)(INT_PTR_TYPE)
+#define	CAST_PTR(T)		(T)(INT_PTR_TYPE)
 
 typedef enum {
 	FALSE	= 0,
