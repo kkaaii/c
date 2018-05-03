@@ -1,11 +1,12 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include "nvme.h"
+
+#define	DEV_DBG_MSG(...)	DBG_MSG("\t\t\t\t\t[device]" __VA_ARGS__)
 
 CC_STATIC	NVME_QUEUE	*devCq = NULL;
 CC_STATIC	NVME_QUEUE	*devSq = NULL;
 
-CC_STATIC	NVME_REG64_00H	CAP;
+CC_STATIC	NVME_REG64_CAP	CAP;
 
 CC_STATIC_ALWAYS_INLINE
 NVME_QUEUE *Device_GetCq(UINT16 cqid)
@@ -37,34 +38,34 @@ void Device_Init(void)
 {
 	NVME_CONTROLLER	*controller = PCIe_GetControllerRegBase(0);
 
-	NVME_REG32_14H	CC;
+	NVME_REG32_CC	CC;
 	do {
 		sleep(1);
-		CC.reg = PCIe_ReadControllerReg32(&controller->CC.reg);
+		CC.reg = PCIe_ReadReg32(&controller->CC.reg);
 	} while (0 == CC.EN);
 
-	CAP.reg = PCIe_ReadControllerReg64(&controller->CAP.reg);
+	CAP.reg = PCIe_ReadReg64(&controller->CAP.reg);
 	devCq = (NVME_QUEUE *)calloc(CAP.MQES + 1, sizeof (NVME_QUEUE));
 	devSq = (NVME_QUEUE *)calloc(CAP.MQES + 1, sizeof (NVME_QUEUE));
 
-	NVME_REG32_24H	AQA;
-	AQA.reg = PCIe_ReadControllerReg32(&controller->AQA.reg);
+	NVME_REG32_AQA	AQA;
+	AQA.reg = PCIe_ReadReg32(&controller->AQA.reg);
 
-	NVME_REG64_28H	ASQ;
-	ASQ.reg = PCIe_ReadControllerReg64(&controller->ASQ.reg);
+	NVME_REG64_ASQ	ASQ;
+	ASQ.reg = PCIe_ReadReg64(&controller->ASQ.reg);
 
-	NVME_REG64_30H	ACQ;
-	ACQ.reg = PCIe_ReadControllerReg64(&controller->ACQ.reg);
+	NVME_REG64_ACQ	ACQ;
+	ACQ.reg = PCIe_ReadReg64(&controller->ACQ.reg);
 
 	NVME_QUEUE *acq = &devCq[NVME_CQID_ADMIN];
 	NVME_QUEUE *asq = &devSq[NVME_SQID_ADMIN];
 	NvmeQ_Init(acq, CAST_PTR(void *)(ACQ.reg), AQA.ACQS + 1);
 	NvmeQ_Init(asq, CAST_PTR(void *)(ASQ.reg), AQA.ASQS + 1);
 
-	NVME_REG32_1CH	CSTS;
-	CSTS.reg = PCIe_ReadControllerReg32(&controller->CSTS.reg);
+	NVME_REG32_CSTS	CSTS;
+	CSTS.reg = PCIe_ReadReg32(&controller->CSTS.reg);
 	CSTS.RDY = 1;
-	PCIe_WriteControllerReg32(&controller->CSTS.reg, CSTS.reg);
+	PCIe_WriteReg32(&controller->CSTS.reg, CSTS.reg);
 }
 
 BOOL Device_UpdateSQT(UINT16 sqid, UINT16 tail)
@@ -93,16 +94,17 @@ BOOL Device_UpdateCQH(UINT16 cqid, UINT16 head)
 	return TRUE;
 }
 
-BOOL Device_HandleCommand(UINT16 sqid)
+BOOL Device_HandleCommand(UINT16 sqid, UINT16 cqid)
 {
 	NVME_QUEUE	*sq = Device_GetSq(sqid);
-	if (NULL == sq)
+	NVME_QUEUE	*cq = Device_GetCq(cqid);
+
+	if (NULL == sq || NULL == cq)
 		return FALSE;
 
 	if (NVME_QUEUE_IS_EMPTY(sq))
 		return FALSE;
 
-	NVME_QUEUE	*cq = Device_GetCq(NVME_CQID_ADMIN);
 	if (NVME_QUEUE_IS_FULL(cq))
 		return FALSE;
 
@@ -117,6 +119,9 @@ BOOL Device_HandleCommand(UINT16 sqid)
 
 	NVME_QUEUE_INC_HEAD(sq);
 	NVME_QUEUE_INC_TAIL(cq);
+
+	DEV_DBG_MSG("(%02d|%02d)(%02d|%02d) 0x%04x %1x\n",
+		sq->head, sq->tail, cq->head, cq->tail, cid, cqe->dw3.P);
 }
 
 void *DeviceMain(void *context CC_ATTRIB_UNUSED)
@@ -138,13 +143,13 @@ void *DeviceMain(void *context CC_ATTRIB_UNUSED)
 
 	for (;;) {
 		NVME_REG32_SQT	SQT;
-		SQT.reg = PCIe_ReadControllerReg32(sqt);
+		SQT.reg = PCIe_ReadReg32(sqt);
 		Device_UpdateSQT(sqid, SQT.SQT);
 
-		Device_HandleCommand(sqid);
+		Device_HandleCommand(sqid, cqid);
 
 		NVME_REG32_CQH	CQH;
-		CQH.reg = PCIe_ReadControllerReg32(cqh);
+		CQH.reg = PCIe_ReadReg32(cqh);
 		Device_UpdateCQH(cqid, CQH.CQH);
 	}
 

@@ -21,9 +21,9 @@ typedef union {
 		UINT64	MPSMAX	: 4;	/* Memory Page Size Maximum */
 		UINT64	rsvd56	: 8;
 	};
-} NVME_REG64_00H;
+} NVME_REG64_CAP;
 
-CC_ASSERT(sizeof(UINT64) == sizeof (NVME_REG64_00H));
+CC_ASSERT(sizeof(UINT64) == sizeof (NVME_REG64_CAP));
 
 /*
 ** 3.1.2 Offset 08h: VS - Version
@@ -35,9 +35,9 @@ typedef union {
 		UINT32	MNR	: 8;	/* Minor Version Number */
 		UINT32	MJR	: 16;	/* Major Version Number */
 	};
-} NVME_REG32_08H;
+} NVME_REG32_VS;
 
-CC_ASSERT(sizeof(UINT32) == sizeof (NVME_REG32_08H));
+CC_ASSERT(sizeof(UINT32) == sizeof (NVME_REG32_VS));
 
 #define	VS_1_0		0x00010000	/* VS Value for 1.0 Compliant Controllers */
 #define	VS_1_1		0x00010100	/* VS Value for 1.1 Compliant Controllers */
@@ -61,9 +61,9 @@ typedef union {
 		UINT32	IOCQES	: 4;	/* I/O Completion Queue Entry Size */
 		UINT32	rsvd24	: 8;
 	};
-} NVME_REG32_14H;
+} NVME_REG32_CC;
 
-CC_ASSERT(sizeof(UINT32) == sizeof (NVME_REG32_14H));
+CC_ASSERT(sizeof(UINT32) == sizeof (NVME_REG32_CC));
 
 #define	CC_SHN_NO_NOTIFICATION	0
 #define	CC_SHN_NORMAL_SHUTDOWN	1
@@ -89,9 +89,9 @@ typedef union {
 		UINT32	PP	: 1;	/* Processing Paused */
 		UINT32	rsvd6	: 26;
 	};
-} NVME_REG32_1CH;
+} NVME_REG32_CSTS;
 
-CC_ASSERT(sizeof(UINT32) == sizeof (NVME_REG32_1CH));
+CC_ASSERT(sizeof(UINT32) == sizeof (NVME_REG32_CSTS));
 
 #define	CSTS_SHST_NORMAL_OPERATION	0
 #define	CSTS_SHST_SHUTDOWN_OCCURRING	1
@@ -109,9 +109,9 @@ typedef union {
 		UINT32	ACQS	: 12;	/* Admin Completion Queue Size */
 		UINT32	rsvd28	: 4;
 	};
-} NVME_REG32_24H;
+} NVME_REG32_AQA;
 
-CC_ASSERT(sizeof(UINT32) == sizeof (NVME_REG32_24H));
+CC_ASSERT(sizeof(UINT32) == sizeof (NVME_REG32_AQA));
 
 /*
 ** 3.1.9 Offset 28h: ASQ - Admin Submission Queue Base Address
@@ -122,9 +122,9 @@ typedef union {
 		UINT64	rsvd0	: 12;
 		UINT64	ASQB	: 52;	/* Admin Submission Queue Base */
 	};
-} NVME_REG64_28H;
+} NVME_REG64_ASQ;
 
-CC_ASSERT(sizeof(UINT64) == sizeof (NVME_REG64_28H));
+CC_ASSERT(sizeof(UINT64) == sizeof (NVME_REG64_ASQ));
 
 /*
 ** 3.1.10 Offset 30h: ACQ - Admin Completion Queue Base Address
@@ -135,9 +135,9 @@ typedef union {
 		UINT64	rsvd0	: 12;
 		UINT64	ACQB	: 52;	/* Admin Completion Queue Base */
 	};
-} NVME_REG64_30H;
+} NVME_REG64_ACQ;
 
-CC_ASSERT(sizeof(UINT64) == sizeof (NVME_REG64_30H));
+CC_ASSERT(sizeof(UINT64) == sizeof (NVME_REG64_ACQ));
 
 /*
 ** 3.1.11 Offset 38h: CMBLOC - Controller Memory Buffer Location
@@ -255,17 +255,17 @@ typedef union {
 ** 3.1 Register Definition
 */
 typedef struct {
-	NVME_REG64_00H	CAP;
-	NVME_REG32_08H	VS;
+	NVME_REG64_CAP	CAP;
+	NVME_REG32_VS	VS;
 	UINT32		INTMS;
 	UINT32		INTMC;
-	NVME_REG32_14H	CC;
+	NVME_REG32_CC	CC;
 	UINT32		rsvd18h;
-	NVME_REG32_1CH	CSTS;
+	NVME_REG32_CSTS	CSTS;
 	UINT32		NSSR;
-	NVME_REG32_24H	AQA;
-	NVME_REG64_28H	ASQ;
-	NVME_REG64_30H	ACQ;
+	NVME_REG32_AQA	AQA;
+	NVME_REG64_ASQ	ASQ;
+	NVME_REG64_ACQ	ACQ;
 	NVME_REG32_38H	CMBLOC;
 	NVME_REG32_3CH	CMBSZ;
 	NVME_REG32_40H	BPINFO;

@@ -48,11 +48,7 @@ typedef	union {
 	struct {
 		UINT32	CID	: 16;	/* Command Identifier */
 		UINT32	P	: 1;	/* Phase Tag */
-		UINT32	SC	: 8;	/* Status Code */
-		UINT32	SCT	: 3;	/* Status Code Type */
-		UINT32	rsvd28	: 2;
-		UINT32	M	: 1;	/* More */
-		UINT32	DNR	: 1;	/* Do Not Retry */
+		UINT32	SF	: 15;	/* Status Field */
 	};
 } NVME_CQE_DW3;
 
@@ -228,8 +224,13 @@ typedef enum {
 	NVME_STATUS_END2END_REFERENCE_TAG_CHECK_ERROR	= 0x284,
 	NVME_STATUS_COMPARE_FAILURE	= 0x285,
 	NVME_STATUS_ACCESS_DENIED	= 0x286,
-	NVME_STATUS_DEALLOCATED_OR_UNWRITTEN_LOGICAL_BLOCK	= 0x287
+	NVME_STATUS_DEALLOCATED_OR_UNWRITTEN_LOGICAL_BLOCK	= 0x287,
 
+/*
+** Figure 29: Completion Queue Entry: Status Field
+*/
+	NVME_STATUS_M	= BIT(14),	/* More */
+	NVME_STATUS_DNR	= BIT(15)	/* Do Not Retry */
 } NVME_STATUS;
 
 #endif	/* _NVME_CQ_ENTRY_H */

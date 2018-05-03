@@ -18,8 +18,9 @@
 #define	CC_STATIC_ALWAYS_INLINE	static inline __attribute__ ((always_inline))
 
 #define	INT_PTR_TYPE		intptr_t
-#define	CAST_FROM_PTR(T)	(T)(INT_PTR_TYPE)
 #define	CAST_PTR(T)		(T)(INT_PTR_TYPE)
+
+#define	BIT(x)			(1u << (x))
 
 typedef enum {
 	FALSE	= 0,
@@ -38,6 +39,8 @@ CC_ASSERT(2 == sizeof(UINT16));
 CC_ASSERT(4 == sizeof(UINT32));
 CC_ASSERT(8 == sizeof(UINT64));
 
+typedef	UINT16	NVME_CID;
+
 #include "nvme_debug.h"
 #include "nvme_registers.h"
 
@@ -46,10 +49,10 @@ CC_ASSERT(8 == sizeof(UINT64));
 #include "nvme_sq_entry.h"
 
 void *	PCIe_GetControllerRegBase(UINT8 id);
-void	PCIe_WriteControllerReg32(UINT32 *reg, UINT32 val);
-void	PCIe_WriteControllerReg64(UINT64 *reg, UINT64 val);
-UINT32	PCIe_ReadControllerReg32(UINT32 *reg);
-UINT64	PCIe_ReadControllerReg64(UINT64 *reg);
+void	PCIe_WriteReg32(UINT32 *reg, UINT32 val);
+void	PCIe_WriteReg64(UINT64 *reg, UINT64 val);
+UINT32	PCIe_ReadReg32(UINT32 *reg);
+UINT64	PCIe_ReadReg64(UINT64 *reg);
 
 #endif	/* _NVME_H */
 
