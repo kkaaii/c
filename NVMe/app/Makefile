@@ -7,10 +7,11 @@ SOURCES=\
 	host.c\
 	device.c\
 	pcie.c\
+	platform_linux.c\
 	../nvme_queue.c\
 	../host/host_nvme.c\
 
-CFLAGS+=-I ..
+CFLAGS+=-I .. -I ../host
 LFLAGS+=-lpthread
 
 OBJS=$(SOURCES:.c=.o)

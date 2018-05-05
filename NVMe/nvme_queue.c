@@ -9,6 +9,8 @@
 
 BOOL	NvmeQ_Init(NVME_QUEUE *q, void *base, UINT16 size)
 {
+	ASSERT(0 == (size & (size + 1)));
+
 	if (NULL == base)
 		return FALSE;
 
@@ -16,7 +18,7 @@ BOOL	NvmeQ_Init(NVME_QUEUE *q, void *base, UINT16 size)
 		return FALSE;
 
 	q->base = base;
-	q->size = size - 1;
+	q->size = size;
 	q->head = q->tail = 0;
 	return TRUE;
 }

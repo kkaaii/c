@@ -22,6 +22,8 @@
 
 #define	BIT(x)			(1u << (x))
 
+#define	ZERO_BASED(x)		((x) - 1)
+
 typedef enum {
 	FALSE	= 0,
 	TRUE	= !FALSE
@@ -40,6 +42,7 @@ CC_ASSERT(4 == sizeof(UINT32));
 CC_ASSERT(8 == sizeof(UINT64));
 
 typedef	UINT16	NVME_CID;
+typedef UINT16	NVME_QID;
 
 #include "nvme_debug.h"
 #include "nvme_registers.h"

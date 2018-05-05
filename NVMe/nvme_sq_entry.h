@@ -31,19 +31,9 @@ typedef union {
 CC_ASSERT(sizeof(UINT32) == sizeof (NVME_SQE_DW0));
 
 typedef struct {
-	UINT64		prp1;		/* PRP Entry 1 (PRP1) */
-	UINT64		prp2;		/* PRP Entry 2 (PRP2) */
-} NVME_DPTR;
-
-typedef struct {
 	UINT16		sqid;		/* Submission Queue Identifier (SQID) */
 	UINT16		cid;		/* Command Identifier (CID) */
 } NVME_CDW10_ABORT;
-
-typedef struct {
-	UINT16		qid;		/* Queue Identifier (QID) */
-	UINT16		qsize;		/* Queue Size (QSIZE) */
-} NVME_CDW10_CREATEQ;
 
 typedef struct {
 	UINT16		qid;		/* Queue Identifier (QID) */
@@ -129,7 +119,6 @@ typedef struct {
 typedef union {
 	UINT32			val;
 	NVME_CDW10_ABORT	abort;
-	NVME_CDW10_CREATEQ	createq;
 	NVME_CDW10_DELETEQ	deleteq;
 	NVME_CDW10_SELFTEST	selftest;
 	NVME_CDW10_FWCOMMIT	fwcommit;
@@ -138,31 +127,20 @@ typedef union {
 	NVME_CDW10_GET_LOG_PAGE	getLogPage;
 	NVME_CDW10_IDENTIFY	identify;
 	NVME_CDW10_SET_FEATURES	setFeatures;
-} NVME_CDW10;
+
+	/*
+	** Figure 52: Create I/O Completion Queue - Command Dword 10
+	** Figure 56: Create I/O Submission Queue - Command Dword 10
+	*/
+	struct {
+		UINT32	QID	: 16;	/* Queue Identifier */
+		UINT32	QSIZE	: 16;	/* Queue Size */
+	} createq;
+} NVME_SQE_DW10;
 
 typedef struct {
 	UINT32		ofst;		/* Offset (OFST) */
 } NVME_CDW11_OFST;
-
-/*
-** Figure 53: Create I/O Completion Queue - Command Dword 11
-*/
-typedef	struct {
-	UINT16		pc	: 1;	/* 00:00 Physically Contiguous (PC) */
-	UINT16		ien	: 1;	/* 01:01 Interrupts Enabled (IEN) */
-	UINT16		rsvd	: 14;	/* 15:02 reserved */
-	UINT16		iv;		/* 31:16 Interrupt Vector (IV) */
-} NVME_CDW11_CREATE_IOCQ;
-
-/*
-** Figure 57: Create I/O Submission Queue - Command Dword 11
-*/
-typedef	struct {
-	UINT16		pc	: 1;	/* 00:00 Physically Contiguous (PC) */
-	UINT16		qprio	: 2;	/* 02:01 Queue Priority (QPRIO) */
-	UINT16		rsvd	: 13;	/* 15:03 reserved */
-	UINT16		cqid;		/* 31:16 Completion Queue ID (CQID) */
-} NVME_CDW11_CREATE_IOSQ;
 
 typedef struct {
 	UINT16		numdu;		/* Number of Dwords Upper (NUMDU) */
@@ -171,11 +149,29 @@ typedef struct {
 
 typedef union {
 	UINT32			val;
-	NVME_CDW11_CREATE_IOCQ	createIoCq;
-	NVME_CDW11_CREATE_IOSQ	createIoSq;
 	NVME_CDW11_OFST		fwdownload;
 	NVME_CDW11_GET_LOG_PAGE	getLogPage;
-} NVME_CDW11;
+
+	/*
+	** Figure 53: Create I/O Completion Queue - Command Dword 11
+	*/
+	struct {
+		UINT32	PC	: 1;	/* 00:00 Physically Contiguous */
+		UINT32	IEN	: 1;	/* 01:01 Interrupts Enabled */
+		UINT32	rsvd2	: 14;	/* 15:02 reserved */
+		UINT32	IV;		/* 31:16 Interrupt Vector */
+	} iocq;
+
+	/*
+	** Figure 57: Create I/O Submission Queue - Command Dword 11
+	*/
+	struct {
+		UINT32	PC	: 1;	/* 00:00 Physically Contiguous */
+		UINT32	QPRIO	: 2;	/* 02:01 Queue Priority */
+		UINT32	rsvd	: 13;	/* 15:03 reserved */
+		UINT32	CQID;		/* 31:16 Completion Queue ID */
+	} iosq;
+} NVME_SQE_DW11;
 
 typedef struct {
 	UINT32		lpol;		/* Log Page Offset Lower (LPOL) */
@@ -203,14 +199,22 @@ typedef union {
 	UINT32	val;
 } NVME_CDW15;
 
+/*
+** Figure 11: Command Format - Amdin and NVM Command Set
+*/
+typedef struct {
+	UINT64	PRP1;	/* PRP Entry 1 */
+	UINT64	PRP2;	/* PRP Entry 2 */
+} NVME_SQE_DPTR;
+
 typedef struct {
 	NVME_SQE_DW0	CDW0;		/* 03:00 Command Dword 0 (CDW0) */
 	UINT32		nsid;		/* 07:04 Namespace Identifier (NSID) */
 	UINT32		rsvd[2];	/* 15:08 reserved */
 	UINT64		mptr;		/* 23:16 Metadata Pointer (MPTR) */
-	NVME_DPTR	dptr;		/* 39:24 Data Pointer */
-	NVME_CDW10	cdw10;		/* 43:40 Command Dword 10 (CDW10) */
-	NVME_CDW11	cdw11;		/* 47:44 Command Dword 11 (CDW11) */
+	NVME_SQE_DPTR	DPTR;		/* 39:24 Data Pointer */
+	NVME_SQE_DW10	CDW10;		/* 43:40 Command Dword 10 (CDW10) */
+	NVME_SQE_DW11	CDW11;		/* 47:44 Command Dword 11 (CDW11) */
 	NVME_CDW12	cdw12;		/* 51:48 Command Dword 12 (CDW12) */
 	NVME_CDW13	cdw13;		/* 55:52 Command Dword 13 (CDW13) */
 	NVME_CDW14	cdw14;		/* 59:56 Command Dword 14 (CDW14) */

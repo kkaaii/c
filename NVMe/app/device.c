@@ -59,8 +59,8 @@ void Device_Init(void)
 
 	NVME_QUEUE *acq = &devCq[NVME_CQID_ADMIN];
 	NVME_QUEUE *asq = &devSq[NVME_SQID_ADMIN];
-	NvmeQ_Init(acq, CAST_PTR(void *)(ACQ.reg), AQA.ACQS + 1);
-	NvmeQ_Init(asq, CAST_PTR(void *)(ASQ.reg), AQA.ASQS + 1);
+	NvmeQ_Init(acq, CAST_PTR(void *)(ACQ.reg), AQA.ACQS);
+	NvmeQ_Init(asq, CAST_PTR(void *)(ASQ.reg), AQA.ASQS);
 
 	NVME_REG32_CSTS	CSTS;
 	CSTS.reg = PCIe_ReadReg32(&controller->CSTS.reg);
