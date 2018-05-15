@@ -1,7 +1,9 @@
 #include <string.h>
 #include "nvme.h"
-#include "host_nvme.h"
+#include "nvme_host.h"
 #include "platform.h"
+
+#define	MODULE_NAME	"[ host ]"
 
 #define	MAX_QUEUES	8
 
@@ -15,8 +17,7 @@ CC_STATIC	NVME_SQE	sqAdmin[QDEPTH_ADMIN + 1]	CC_ATTRIB_ALIGNED(4096);
 NVME_QUEUE	hostCq[MAX_QUEUES];
 NVME_QUEUE	hostSq[MAX_QUEUES];
 
-CC_STATIC_ALWAYS_INLINE
-NVME_QUEUE *Host_GetCq(NVME_QID cqid)
+NVME_QUEUE *Host_GetCompletionQueue(NVME_QID cqid)
 {
 	if (cqid >= MAX_QUEUES)
 		return NULL;
@@ -28,8 +29,7 @@ NVME_QUEUE *Host_GetCq(NVME_QID cqid)
 	return cq;
 }
 
-CC_STATIC_ALWAYS_INLINE
-NVME_QUEUE *Host_GetSq(NVME_QID sqid)
+NVME_QUEUE *Host_GetSubmissionQueue(NVME_QID sqid)
 {
 	if (sqid >= MAX_QUEUES)
 		return NULL;
@@ -87,7 +87,7 @@ void Host_RingDoorbell_CQH(NVME_QID cqid)
 	UINT32	offset = 0x1000 + (cqid * 2 + 1) * (4 << CAP.DSTRD);
 	UINT32	*reg = (UINT32 *)controller + (offset >> 2);
 
-	NVME_QUEUE *cq = Host_GetCq(cqid);
+	NVME_QUEUE *cq = Host_GetCompletionQueue(cqid);
 	NVME_REG32_CQH	CQH;
 	CQH.reg = 0;
 	CQH.CQH = cq->head;
@@ -106,7 +106,7 @@ void Host_RingDoorbell_SQT(NVME_QID sqid)
 	UINT32	offset = 0x1000 + (sqid * 2) * (4 << CAP.DSTRD);
 	UINT32	*reg = (UINT32 *)controller + (offset >> 2);
 
-	NVME_QUEUE *sq = Host_GetSq(sqid);
+	NVME_QUEUE *sq = Host_GetSubmissionQueue(sqid);
 	NVME_REG32_SQT	SQT;
 	SQT.reg = 0;
 	SQT.SQT = sq->tail;
@@ -131,7 +131,7 @@ NVME_CQE *Host_CheckResponse(NVME_QUEUE *cq)
 		phase = !phase;
 
 	UINT16	sqid = cqe->dw2.SQID;
-	NVME_QUEUE	*sq = Host_GetSq(sqid);
+	NVME_QUEUE	*sq = Host_GetSubmissionQueue(sqid);
 	if (NULL != sq && !NVME_QUEUE_IS_EMPTY(sq)) {
 		NVME_QUEUE_INC_HEAD(sq);
 	}
@@ -141,7 +141,7 @@ NVME_CQE *Host_CheckResponse(NVME_QUEUE *cq)
 
 	return cqe;
 }
-
+/*
 NVME_STATUS Host_GetStatus(NVME_QUEUE *cq, NVME_CID cid)
 {
 	NVME_CQE	*cqe;
@@ -152,7 +152,7 @@ NVME_STATUS Host_GetStatus(NVME_QUEUE *cq, NVME_CID cid)
 
 	return cqe->dw3.SF;
 }
-
+*/
 void *HostMain(void *context CC_ATTRIB_UNUSED)
 {
 	ENTER();
@@ -160,10 +160,11 @@ void *HostMain(void *context CC_ATTRIB_UNUSED)
 
 	NVME_QID	sqid = NVME_SQID_ADMIN;
 	NVME_QID	cqid = NVME_CQID_ADMIN;
-	NVME_QUEUE	*asq = Host_GetSq(sqid);
-	NVME_QUEUE	*acq = Host_GetCq(cqid);
+	NVME_QUEUE	*asq = Host_GetSubmissionQueue(sqid);
+	NVME_QUEUE	*acq = Host_GetCompletionQueue(cqid);
 
 	{
+#if 0
 		UINT32	bytes;
 		void	*buf;
 
@@ -175,7 +176,7 @@ void *HostMain(void *context CC_ATTRIB_UNUSED)
 		NvmeQ_Init(&hostCq[cqid], buf, QDEPTH_IOCQ);
 		cid = Host_CreateIoCq(asq, cqid, buf, bytes);
 		Host_RingDoorbell_SQT(NVME_SQID_ADMIN);
-		ASSERT(NVME_STATUS_SUCCESSFUL_COMPLETION == Host_GetStatus(acq, cid));
+		ASSERT(NVME_STATUS_SUCCESSFUL_COMPLETION == Host_WaitForCompletion(cqid, cid));
 
 		bytes = (QDEPTH_IOSQ + 1) * sizeof (NVME_SQE);
 		buf = malloc_align(HOST_PAGE_SIZE, bytes);
@@ -184,7 +185,9 @@ void *HostMain(void *context CC_ATTRIB_UNUSED)
 		NvmeQ_Init(&hostCq[sqid], buf, QDEPTH_IOSQ);
 		cid = Host_CreateIoSq(asq, sqid, buf, bytes);
 		Host_RingDoorbell_SQT(NVME_SQID_ADMIN);
-		ASSERT(NVME_STATUS_SUCCESSFUL_COMPLETION == Host_GetStatus(acq, cid));
+		ASSERT(NVME_STATUS_SUCCESSFUL_COMPLETION == Host_WaitForCompletion(cqid, cid));
+#endif
+		HostTest_IdentifyParameters();
 	}
 
 	for (;;) {

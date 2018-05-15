@@ -105,9 +105,9 @@ typedef struct {
 } NVME_CDW10_GET_LOG_PAGE;
 
 typedef struct {
-	UINT32		cns	: 8;	/* Controller or Namespace Structure (CNS) */
+	UINT32		CNS	: 8;	/* Controller or Namespace Structure (CNS) */
 	UINT32		rsvd	: 8;	/* reserved */
-	UINT32		cntid	: 16;	/* Controller Identifier (CNTID) */
+	UINT32		CNTID	: 16;	/* Controller Identifier (CNTID) */
 } NVME_CDW10_IDENTIFY;
 
 typedef struct {
@@ -209,7 +209,7 @@ typedef struct {
 
 typedef struct {
 	NVME_SQE_DW0	CDW0;		/* 03:00 Command Dword 0 (CDW0) */
-	UINT32		nsid;		/* 07:04 Namespace Identifier (NSID) */
+	NVME_NSID	NSID;		/* 07:04 Namespace Identifier (NSID) */
 	UINT32		rsvd[2];	/* 15:08 reserved */
 	UINT64		mptr;		/* 23:16 Metadata Pointer (MPTR) */
 	NVME_SQE_DPTR	DPTR;		/* 39:24 Data Pointer */

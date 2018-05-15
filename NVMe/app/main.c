@@ -5,6 +5,8 @@
 extern void *HostMain(void *context);
 extern void *DeviceMain(void *context);
 
+#define	MODULE_NAME	""
+
 int main(void)
 {
 	int		rc;

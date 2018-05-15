@@ -1,5 +1,5 @@
 #include "nvme.h"
-#include "host_nvme.h"
+#include "nvme_host.h"
 #include "platform.h"
 
 CC_STATIC	NVME_CID	cid = 0;
@@ -21,7 +21,7 @@ NVME_CID _IssueCommand(NVME_QUEUE *sq)
 	sqe->CDW0.CID = cid;
 	NVME_QUEUE_INC_TAIL(sq);
 
-	HOST_DBG_MSG("(%02d|%02d)(--|--) 0x%04x\n", sq->head, sq->tail, cid);
+	HOST_DBG_MSG("(%02d|%02d)(--|--) %04xh\n", sq->head, sq->tail, cid);
 	return cid;
 }
 
@@ -30,7 +30,6 @@ NVME_CID Host_IssueCommand(NVME_QUEUE *sq)
 	return _IssueCommand(sq);
 }
 
-CC_STATIC
 BOOL Host_BuildPRP1(NVME_SQE *sqe, void *buf, UINT32 bytes)
 {
 	UINT64	s = CAST_PTR(UINT64)(buf);
@@ -52,6 +51,19 @@ BOOL Host_BuildPRP1(NVME_SQE *sqe, void *buf, UINT32 bytes)
 
 	sqe->DPTR.PRP1 = CAST_PTR(UINT64)(p);
 	return FALSE;
+}
+
+NVME_STATUS Host_WaitForCompletion(NVME_QID cqid, NVME_CID cid)
+{
+	NVME_QUEUE	*cq = Host_GetCompletionQueue(cqid);
+	NVME_CQE	*cqe;
+
+	ASSERT(NULL != cq);
+	do {
+		cqe = Host_CheckResponse(cq);
+	} while (NULL == cqe || cid != cqe->dw3.CID);
+
+	return cqe->dw3.SF;
 }
 
 NVME_CID Host_CreateIoCq(NVME_QUEUE *asq, NVME_QID cqid, void *buf, UINT32 bytes)

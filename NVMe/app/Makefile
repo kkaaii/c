@@ -9,9 +9,13 @@ SOURCES=\
 	pcie.c\
 	platform_linux.c\
 	../nvme_queue.c\
-	../host/host_nvme.c\
+	../host/nvme_host.c\
+	../device/nvme_device.c\
+	../host/admin/identify_host.c\
+	../device/identify_device.c\
+	identify_test.c\
 
-CFLAGS+=-I .. -I ../host
+CFLAGS+=-I .. -I ../host -I ../device
 LFLAGS+=-lpthread
 
 OBJS=$(SOURCES:.c=.o)

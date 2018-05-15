@@ -1,15 +1,15 @@
 #include <stdlib.h>
 #include "nvme.h"
+#include "nvme_device.h"
 
-#define	DEV_DBG_MSG(...)	DBG_MSG("\t\t\t\t\t[device]" __VA_ARGS__)
+#define	DEV_DBG_MSG(...)	DBG_MSG(MODULE_NAME __VA_ARGS__)
 
 CC_STATIC	NVME_QUEUE	*devCq = NULL;
 CC_STATIC	NVME_QUEUE	*devSq = NULL;
 
 CC_STATIC	NVME_REG64_CAP	CAP;
 
-CC_STATIC_ALWAYS_INLINE
-NVME_QUEUE *Device_GetCq(UINT16 cqid)
+NVME_QUEUE *Device_GetCompletionQueue(UINT16 cqid)
 {
 	if (cqid > CAP.MQES)
 		return NULL;
@@ -21,8 +21,7 @@ NVME_QUEUE *Device_GetCq(UINT16 cqid)
 	return cq;
 }
 
-CC_STATIC_ALWAYS_INLINE
-NVME_QUEUE *Device_GetSq(UINT16 sqid)
+NVME_QUEUE *Device_GetSubmissionQueue(UINT16 sqid)
 {
 	if (sqid > CAP.MQES)
 		return NULL;
@@ -70,7 +69,7 @@ void Device_Init(void)
 
 BOOL Device_UpdateSQT(UINT16 sqid, UINT16 tail)
 {
-	NVME_QUEUE	*sq = Device_GetSq(sqid);
+	NVME_QUEUE	*sq = Device_GetSubmissionQueue(sqid);
 	if (NULL == sq)
 		return FALSE;
 
@@ -83,7 +82,7 @@ BOOL Device_UpdateSQT(UINT16 sqid, UINT16 tail)
 
 BOOL Device_UpdateCQH(UINT16 cqid, UINT16 head)
 {
-	NVME_QUEUE	*cq = Device_GetCq(cqid);
+	NVME_QUEUE	*cq = Device_GetCompletionQueue(cqid);
 	if (NULL == cq)
 		return FALSE;
 
@@ -96,8 +95,8 @@ BOOL Device_UpdateCQH(UINT16 cqid, UINT16 head)
 
 BOOL Device_HandleCommand(UINT16 sqid, UINT16 cqid)
 {
-	NVME_QUEUE	*sq = Device_GetSq(sqid);
-	NVME_QUEUE	*cq = Device_GetCq(cqid);
+	NVME_QUEUE	*sq = Device_GetSubmissionQueue(sqid);
+	NVME_QUEUE	*cq = Device_GetCompletionQueue(cqid);
 
 	if (NULL == sq || NULL == cq)
 		return FALSE;
@@ -146,7 +145,7 @@ void *DeviceMain(void *context CC_ATTRIB_UNUSED)
 		SQT.reg = PCIe_ReadReg32(sqt);
 		Device_UpdateSQT(sqid, SQT.SQT);
 
-		Device_HandleCommand(sqid, cqid);
+		Device_CommandHandler(sqid, cqid);
 
 		NVME_REG32_CQH	CQH;
 		CQH.reg = PCIe_ReadReg32(cqh);

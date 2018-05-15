@@ -24,6 +24,11 @@
 
 #define	ZERO_BASED(x)		((x) - 1)
 
+#define	NVME_NSID_NONE		0
+#define	NVME_NSID_1		1
+#define	NVME_NSID_INVALID	2
+#define	NVME_NSID_GLOBAL	(~0u)
+
 typedef enum {
 	FALSE	= 0,
 	TRUE	= !FALSE
@@ -41,8 +46,10 @@ CC_ASSERT(2 == sizeof(UINT16));
 CC_ASSERT(4 == sizeof(UINT32));
 CC_ASSERT(8 == sizeof(UINT64));
 
-typedef	UINT16	NVME_CID;
-typedef UINT16	NVME_QID;
+typedef	UINT16	NVME_CID;	/* Command Identifier */
+typedef UINT16	NVME_CNTID;	/* Controller Identifier */
+typedef UINT16	NVME_QID;	/* Queue Identifier */
+typedef UINT32	NVME_NSID;	/* Namespace Identifier */
 
 #include "nvme_debug.h"
 #include "nvme_registers.h"
@@ -50,6 +57,8 @@ typedef UINT16	NVME_QID;
 #include "nvme_queue.h"
 #include "nvme_cq_entry.h"
 #include "nvme_sq_entry.h"
+
+#include "identify.h"
 
 void *	PCIe_GetControllerRegBase(UINT8 id);
 void	PCIe_WriteReg32(UINT32 *reg, UINT32 val);
