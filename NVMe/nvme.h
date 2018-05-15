@@ -59,6 +59,7 @@ typedef UINT32	NVME_NSID;	/* Namespace Identifier */
 #include "nvme_sq_entry.h"
 
 #include "identify.h"
+#include "get_logpage.h"
 
 void *	PCIe_GetControllerRegBase(UINT8 id);
 void	PCIe_WriteReg32(UINT32 *reg, UINT32 val);

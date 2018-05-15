@@ -27,7 +27,7 @@ BOOL Device_Identify(NVME_QID sqid, NVME_QID cqid)
 		if (NVME_NSID_NONE != sqe->NSID) {
 			Device_SetNvmeStatus(cq, NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT);
 		}
-		Device_ChangeState(eDeviceState_ReturnStatus);TRACE();
+		Device_ChangeState(eDeviceState_ReturnStatus);
 		break;
 
 	case eCNS_ActiveNsidList:
@@ -42,7 +42,7 @@ BOOL Device_Identify(NVME_QID sqid, NVME_QID cqid)
 		Device_ChangeState(eDeviceState_ReturnStatus);
 		break;
 	}
-LEAVE();
+
 	return TRUE;
 }
 

@@ -188,6 +188,7 @@ void *HostMain(void *context CC_ATTRIB_UNUSED)
 		ASSERT(NVME_STATUS_SUCCESSFUL_COMPLETION == Host_WaitForCompletion(cqid, cid));
 #endif
 		HostTest_IdentifyParameters();
+		HostTest_GetLogPageParameters();
 	}
 
 	for (;;) {

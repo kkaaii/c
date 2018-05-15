@@ -97,11 +97,11 @@ typedef struct {
 } NVME_CDW10_GET_FEATURES;
 
 typedef struct {
-	UINT32		lid	: 8;	/* Log Page Identifier (LID) */
+	UINT32		LID	: 8;	/* Log Page Identifier (LID) */
 	UINT32		lsp	: 4;	/* Log Specific Field (LSP) */
 	UINT32		rsvd	: 3;	/* reserved */
 	UINT32		rae	: 1;	/* Retain Asynchronous Event (RAE) */
-	UINT32		numdl	: 16;	/* Number of Dwords Lower (NUMDL) */
+	UINT32		NUMDL	: 16;	/* Number of Dwords Lower (NUMDL) */
 } NVME_CDW10_GET_LOG_PAGE;
 
 typedef struct {
@@ -143,7 +143,7 @@ typedef struct {
 } NVME_CDW11_OFST;
 
 typedef struct {
-	UINT16		numdu;		/* Number of Dwords Upper (NUMDU) */
+	UINT16		NUMDU;		/* Number of Dwords Upper (NUMDU) */
 	UINT16		rsvd;		/* reserved */
 } NVME_CDW11_GET_LOG_PAGE;
 
@@ -174,22 +174,22 @@ typedef union {
 } NVME_SQE_DW11;
 
 typedef struct {
-	UINT32		lpol;		/* Log Page Offset Lower (LPOL) */
+	UINT32		LPOL;		/* Log Page Offset Lower (LPOL) */
 } NVME_CDW12_GET_LOG_PAGE;
 
 typedef union {
 	UINT32			val;
 	NVME_CDW12_GET_LOG_PAGE	getLogPage;
-} NVME_CDW12;
+} NVME_SQE_CDW12;
 
 typedef struct {
-	UINT32		lpou;		/* Log Page Offset Upper (LPOU) */
+	UINT32		LPOU;		/* Log Page Offset Upper (LPOU) */
 } NVME_CDW13_GET_LOG_PAGE;
 
 typedef union {
 	UINT32			val;
 	NVME_CDW13_GET_LOG_PAGE	getLogPage;
-} NVME_CDW13;
+} NVME_SQE_CDW13;
 
 typedef union {
 	UINT32	val;
@@ -215,8 +215,8 @@ typedef struct {
 	NVME_SQE_DPTR	DPTR;		/* 39:24 Data Pointer */
 	NVME_SQE_DW10	CDW10;		/* 43:40 Command Dword 10 (CDW10) */
 	NVME_SQE_DW11	CDW11;		/* 47:44 Command Dword 11 (CDW11) */
-	NVME_CDW12	cdw12;		/* 51:48 Command Dword 12 (CDW12) */
-	NVME_CDW13	cdw13;		/* 55:52 Command Dword 13 (CDW13) */
+	NVME_SQE_CDW12	CDW12;		/* 51:48 Command Dword 12 (CDW12) */
+	NVME_SQE_CDW13	CDW13;		/* 55:52 Command Dword 13 (CDW13) */
 	NVME_CDW14	cdw14;		/* 59:56 Command Dword 14 (CDW14) */
 	NVME_CDW15	cdw15;		/* 63:60 Command Dword 15 (CDW15) */
 } NVME_SQE;

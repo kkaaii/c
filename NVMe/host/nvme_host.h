@@ -7,7 +7,7 @@
 #define	HOST_PAGE_SIZE		(1u << HOST_PAGE_SIZE_BITS)
 #define	HOST_PAGE_SIZE_MASK	(HOST_PAGE_SIZE - 1)
 
-#define	HOST_DBG_MSG(...)	DBG_MSG(MODULE_NAME __VA_ARGS__)
+#define	HOST_DBG_MSG(...)	/*DBG_MSG(MODULE_NAME __VA_ARGS__)*/
 #define	HOST_PRN_MSG(...)	DBG_MSG(MODULE_NAME __VA_ARGS__)
 
 NVME_QUEUE *Host_GetCompletionQueue(NVME_QID cqid);
@@ -29,6 +29,9 @@ NVME_SQE *Host_GetSubmissionQueueEntry(NVME_QUEUE *sq)
 }
 
 NVME_CQE *Host_CheckResponse(NVME_QUEUE *cq);
+
+#include "admin/identify_host.h"
+#include "admin/get_logpage_host.h"
 
 #endif	/* _NVME_HOST_H */
 

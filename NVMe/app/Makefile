@@ -14,6 +14,9 @@ SOURCES=\
 	../host/admin/identify_host.c\
 	../device/identify_device.c\
 	identify_test.c\
+	../host/admin/get_logpage_host.c\
+	../device/get_logpage_device.c\
+	get_logpage_test.c\
 
 CFLAGS+=-I .. -I ../host -I ../device
 LFLAGS+=-lpthread

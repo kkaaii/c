@@ -11,6 +11,7 @@ CC_STATIC	EDeviceState	gState = eDeviceState_FetchCommand;
 CC_STATIC	StateHandler	gHandlers[] = {
 	[eDeviceState_FetchCommand]	= Device_FetchCommand,
 	[eDeviceState_Identify]		= Device_Identify,
+	[eDeviceState_GetLogPage]	= Device_GetLogPage,
 	[eDeviceState_ReturnStatus]	= Device_ReturnStatus,
 };
 
@@ -53,6 +54,10 @@ BOOL Device_FetchCommand(NVME_QID sqid, NVME_QID cqid)
 	switch (sqe->CDW0.OPC) {
 	case NVME_OPC_ADMIN_IDENTIFY:
 		Device_ChangeState(eDeviceState_Identify);
+		break;
+
+	case NVME_OPC_ADMIN_GET_LOG_PAGE:
+		Device_ChangeState(eDeviceState_GetLogPage);
 		break;
 
 	default:
