@@ -12,6 +12,8 @@ CC_STATIC	StateHandler	gHandlers[] = {
 	[eDeviceState_FetchCommand]	= Device_FetchCommand,
 	[eDeviceState_Identify]		= Device_Identify,
 	[eDeviceState_GetLogPage]	= Device_GetLogPage,
+	[eDeviceState_FwDownload]	= Device_FwDownload,
+	[eDeviceState_FwCommit]		= Device_FwCommit,
 	[eDeviceState_ReturnStatus]	= Device_ReturnStatus,
 };
 
@@ -58,6 +60,14 @@ BOOL Device_FetchCommand(NVME_QID sqid, NVME_QID cqid)
 
 	case NVME_OPC_ADMIN_GET_LOG_PAGE:
 		Device_ChangeState(eDeviceState_GetLogPage);
+		break;
+
+	case NVME_OPC_ADMIN_FW_DOWNLOAD:
+		Device_ChangeState(eDeviceState_FwDownload);
+		break;
+
+	case NVME_OPC_ADMIN_FW_COMMIT:
+		Device_ChangeState(eDeviceState_FwCommit);
 		break;
 
 	default:

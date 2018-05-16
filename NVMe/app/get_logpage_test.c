@@ -5,7 +5,7 @@
 #define	BYTES_4K	(4 * 1024)
 #define	BYTES_512	512
 
-UINT32 HostTest_GetLogPageParameters(NVME_QUEUE *asq, NVME_QUEUE *acq)
+UINT32 HostTest_GetLogPageParameters(void)
 {
 	static struct {
 		NVME_NSID	nsid;	/* namespace id */

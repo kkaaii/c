@@ -4,7 +4,7 @@
 #define	NSID_ACTIVE	1
 #define	NSID_INVALID	2
 
-UINT32 HostTest_IdentifyParameters(NVME_QUEUE *asq, NVME_QUEUE *acq)
+UINT32 HostTest_IdentifyParameters(void)
 {
 	static struct {
 		NVME_NSID	nsid;	/* namespace id */
@@ -103,7 +103,7 @@ UINT32 HostTest_IdentifyParameters(NVME_QUEUE *asq, NVME_QUEUE *acq)
 	UINT8	buf[4096];
 
 	for (i = 0; i < sizeof (testcases) / sizeof (testcases[0]); ++i) {
-		HOST_PRN_MSG("Case %02d: Identify CNS = %d; NSID = %08Xh; CNTID = %d\n",
+		HOST_PRN_MSG("Case %02d: Identify NSID = %08Xh; CNS = %d; CNTID = %d\n",
 			i, testcases[i].nsid, testcases[i].cns, testcases[i].cntid);
 		NVME_CID cid = Host_Identify(
 			testcases[i].nsid,

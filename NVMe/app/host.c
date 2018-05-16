@@ -189,6 +189,8 @@ void *HostMain(void *context CC_ATTRIB_UNUSED)
 #endif
 		HostTest_IdentifyParameters();
 		HostTest_GetLogPageParameters();
+		HostTest_FwDownloadParameters();
+		HostTest_FwCommitParameters();
 	}
 
 	for (;;) {

@@ -80,14 +80,14 @@ typedef enum {
 } COMMIT_ACTION;
 
 typedef struct {
-	UINT32		fs	: 3;	/* Firmware Slot (FS) */
-	UINT32		ca	: 3;	/* Commit Action (CA) */
+	UINT32		FS	: 3;	/* Firmware Slot (FS) */
+	UINT32		CA	: 3;	/* Commit Action (CA) */
 	UINT32		rsvd	: 25;	/* reserved */
 	UINT32		bpid	: 1;	/* Boot Partition ID (BPID) */
 } NVME_CDW10_FWCOMMIT;
 
 typedef struct {
-	UINT32		numd;		/* Number of DWords (NUMD) */
+	UINT32		NUMD;		/* Number of DWords (NUMD) */
 } NVME_CDW10_NUMD;
 
 typedef struct {
@@ -121,8 +121,8 @@ typedef union {
 	NVME_CDW10_ABORT	abort;
 	NVME_CDW10_DELETEQ	deleteq;
 	NVME_CDW10_SELFTEST	selftest;
-	NVME_CDW10_FWCOMMIT	fwcommit;
-	NVME_CDW10_NUMD		fwdownload;
+	NVME_CDW10_FWCOMMIT	fwCommit;
+	NVME_CDW10_NUMD		fwDownload;
 	NVME_CDW10_GET_FEATURES	getFeatures;
 	NVME_CDW10_GET_LOG_PAGE	getLogPage;
 	NVME_CDW10_IDENTIFY	identify;
@@ -139,7 +139,7 @@ typedef union {
 } NVME_SQE_DW10;
 
 typedef struct {
-	UINT32		ofst;		/* Offset (OFST) */
+	UINT32		OFST;		/* Offset (OFST) */
 } NVME_CDW11_OFST;
 
 typedef struct {
@@ -149,7 +149,7 @@ typedef struct {
 
 typedef union {
 	UINT32			val;
-	NVME_CDW11_OFST		fwdownload;
+	NVME_CDW11_OFST		fwDownload;
 	NVME_CDW11_GET_LOG_PAGE	getLogPage;
 
 	/*

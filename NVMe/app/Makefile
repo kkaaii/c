@@ -17,6 +17,12 @@ SOURCES=\
 	../host/admin/get_logpage_host.c\
 	../device/get_logpage_device.c\
 	get_logpage_test.c\
+	../host/admin/fw_download_host.c\
+	../device/fw_download_device.c\
+	fw_download_test.c\
+	../host/admin/fw_commit_host.c\
+	../device/fw_commit_device.c\
+	fw_commit_test.c\
 
 CFLAGS+=-I .. -I ../host -I ../device
 LFLAGS+=-lpthread

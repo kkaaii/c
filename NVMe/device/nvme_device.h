@@ -9,6 +9,8 @@ typedef enum {
 	eDeviceState_FetchCommand,
 	eDeviceState_Identify,
 	eDeviceState_GetLogPage,
+	eDeviceState_FwDownload,
+	eDeviceState_FwCommit,
 	eDeviceState_ReturnStatus
 } EDeviceState;
 
@@ -37,6 +39,8 @@ void Device_CommandHandler(NVME_QID sqid, NVME_QID cqid);
 
 #include "identify_device.h"
 #include "get_logpage_device.h"
+#include "fw_download_device.h"
+#include "fw_commit_device.h"
 
 #endif	/* _NVME_DEVICE_H */
 

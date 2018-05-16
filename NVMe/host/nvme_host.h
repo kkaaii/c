@@ -32,6 +32,8 @@ NVME_CQE *Host_CheckResponse(NVME_QUEUE *cq);
 
 #include "admin/identify_host.h"
 #include "admin/get_logpage_host.h"
+#include "admin/fw_download_host.h"
+#include "admin/fw_commit_host.h"
 
 #endif	/* _NVME_HOST_H */
 
