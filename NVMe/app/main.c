@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <pthread.h>
+#if 1
 #include "nvme.h"
-
+#endif
 extern void *HostMain(void *context);
 extern void *DeviceMain(void *context);
 

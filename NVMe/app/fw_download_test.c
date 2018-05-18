@@ -12,22 +12,22 @@ UINT32 HostTest_FwDownloadParameters(void)
 		/* Case 01: FIRMWARE DOWNLOAD w/NSID = 00000000h */
 		{
 			.nsid	= 0,
-			.status	= NVME_STATUS_SUCCESSFUL_COMPLETION
+			.status	= eSF_SuccessfulCompletion
 		},
 		/* Case 02: FIRMWARE DOWNLOAD w/NSID = 00000001h */
 		{
 			.nsid	= 1,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* Case 03: FIRMWARE DOWNLOAD w/NSID = 00000002h */
 		{
 			.nsid	= 2,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* Case 04: FIRMWARE DOWNLOAD w/NSID = FFFFFFFFh */
 		{
 			.nsid	= NVME_NSID_GLOBAL,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		}
 	};
 

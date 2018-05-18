@@ -17,84 +17,84 @@ UINT32 HostTest_IdentifyParameters(void)
 			.nsid	= 0,
 			.cntid	= 0,
 			.cns	= 1,
-			.status	= NVME_STATUS_SUCCESSFUL_COMPLETION
+			.status	= eSF_SuccessfulCompletion
 		},
 		/* Case 02: Identify CNS = 1; NSID != 0; CNTID = 0 */
 		{
 			.nsid	= 1,
 			.cntid	= 0,
 			.cns	= 1,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* Case 03: Identify CNS = 1; NSID = 0; CNTID != 0 */
 		{
 			.nsid	= 0,
 			.cntid	= 1,
 			.cns	= 1,
-			.status	= NVME_STATUS_INVALID_FIELD_IN_COMMAND
+			.status	= eSF_InvalidFieldInCommand
 		},
 		/* Case 04: Identify CNS = 2; NSID = 1; CNTID = 0 */
 		{
 			.nsid	= 1,
 			.cntid	= 0,
 			.cns	= 2,
-			.status	= NVME_STATUS_SUCCESSFUL_COMPLETION
+			.status	= eSF_SuccessfulCompletion
 		},
 		/* Case 05: Identify CNS = 2; NSID = Active; CNTID = 0 */
 		{
 			.nsid	= NSID_ACTIVE,
 			.cntid	= 0,
 			.cns	= 2,
-			.status	= NVME_STATUS_SUCCESSFUL_COMPLETION
+			.status	= eSF_SuccessfulCompletion
 		},
 		/* Case 06: Identify CNS = 2; NSID = FFFFFFFFh; CNTID = 0 */
 		{
 			.nsid	= 0xFFFFFFFF,
 			.cntid	= 0,
 			.cns	= 2,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* Case 07: Identify CNS = 2; NSID = FFFFFFFFh; CNTID = 0 */
 		{
 			.nsid	= 0xFFFFFFFE,
 			.cntid	= 0,
 			.cns	= 2,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* Case 08: Identify CNS = 2; NSID = 1; CNTID != 0 */
 		{
 			.nsid	= 1,
 			.cntid	= 1,
 			.cns	= 2,
-			.status	= NVME_STATUS_INVALID_FIELD_IN_COMMAND
+			.status	= eSF_InvalidFieldInCommand
 		},
 		/* Case 09: Identify CNS = 0; NSID = Active; CNTID = 0 */
 		{
 			.nsid	= NSID_ACTIVE,
 			.cntid	= 0,
 			.cns	= 0,
-			.status	= NVME_STATUS_SUCCESSFUL_COMPLETION
+			.status	= eSF_SuccessfulCompletion
 		},
 		/* Case 10: Identify CNS = 0; NSID = Invalid; CNTID = 0 */
 		{
 			.nsid	= NSID_INVALID,
 			.cntid	= 0,
 			.cns	= 0,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* Case 11: Identify CNS = 0; NSID = Active; CNTID != 0 */
 		{
 			.nsid	= NSID_ACTIVE,
 			.cntid	= 1,
 			.cns	= 0,
-			.status	= NVME_STATUS_INVALID_FIELD_IN_COMMAND
+			.status	= eSF_InvalidFieldInCommand
 		},
 		/* Case 12: Identify CNS = 0; NSID = FFFFFFFFh; CNTID = 0 */
 		{
 			.nsid	= 0xFFFFFFFF,
 			.cntid	= 0,
 			.cns	= 0,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		}
 	};
 

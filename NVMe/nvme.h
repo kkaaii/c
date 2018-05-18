@@ -1,5 +1,7 @@
 #ifndef	_NVME_H
+#define	_NVME_H
 
+#if 0
 #include <stdint.h>
 
 #define	CC_CONCAT(x, y)		x##y
@@ -67,6 +69,6 @@ void	PCIe_WriteReg32(UINT32 *reg, UINT32 val);
 void	PCIe_WriteReg64(UINT64 *reg, UINT64 val);
 UINT32	PCIe_ReadReg32(UINT32 *reg);
 UINT64	PCIe_ReadReg64(UINT64 *reg);
-
+#endif
 #endif	/* _NVME_H */
 

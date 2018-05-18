@@ -98,6 +98,118 @@ typedef struct {
 #define	SCT(nvmeStatus)	((nvmeStatus) >> 8)
 #define	SC(nvmeStatus)	((UINT8)(nvmeStatus))
 
+#if 1
+typedef enum {
+/*
+** Figure 29: Completion Queue Entry: Status Field
+*/
+	eSF_DoNotRetry	= BIT(14),
+	eSF_More	= BIT(13),
+
+/*
+** Figure 31: Status Code - Generic Command Status Values
+*/
+	/* 000h */eSF_SuccessfulCompletion	= 0x000,
+	/* 001h */eSF_InvalidCommandOpcode,
+	/* 002h */eSF_InvalidFieldInCommand,
+	/* 003h */eSF_CommandIdConflict,
+	/* 004h */eSF_DataTransferError,
+	/* 005h */eSF_CommandsAbortedDueToPowerLossNotification,
+	/* 006h */eSF_InternalError,
+	/* 007h */eSF_CommandAbortRequested,
+	/* 008h */eSF_CommandAbortedDueToSqDeletion,
+	/* 009h */eSF_CommandAbortedDueToFailedFusedCommand,
+	/* 00Ah */eSF_CommandAbortedDueToMissingFusedCommand,
+	/* 00Bh */eSF_InvalidNamespaceOrFormat,
+	/* 00Ch */eSF_CommandSequenceError,
+	/* 00Dh */eSF_InvalidSglSegmentDescriptor,
+	/* 00Eh */eSF_InvalidNumberOfSglDescriptors,
+	/* 00Fh */eSF_DataSglLengthInvalid,
+	/* 010h */eSF_MetadataSglLengthInvalid,
+	/* 011h */eSF_SglDescriptorTypeInvalid,
+	/* 012h */eSF_InvalidUseOfControllerMemoryBuffer,
+	/* 013h */eSF_PrpOffsetInvalid,
+	/* 014h */eSF_AtomicWriteUnitExceeded,
+	/* 015h */eSF_OperationDenied,				/* 1.3 - */
+	/* 016h */eSF_SglOffsetInvalid,
+	/* 017h */eSF_SglSubTypeInvalid,			/* - 1.3 */
+	/* 018h */eSF_HostIdentifierInconsistentFormat,
+	/* 019h */eSF_KeepAliveTimeoutExpired,
+	/* 01Ah */eSF_KeepAliveTimeoutInvalid,
+	/* 01Bh */eSF_CommandAbortedDueToPreemptAndAbort,	/* 1.3 - */
+	/* 01Ch */eSF_SanitizeFailed,				/* 1.3 - */
+	/* 01Dh */eSF_SanitizeInProgress,			/* 1.3 - */
+	/* 01Eh */eSF_SglDataBlockGranularityInvalid,		/* 1.3 - */
+	/* 01Fh */eSF_CommandNotSupportedForQueueInCmb,		/* 1.3 - */
+
+/*
+** Figure 32: Status Code - Generic Command Status Values, NVM Command Set
+*/
+	/* 080h */eSF_LbaOutOfRange	= 0x080,
+	/* 081h */eSF_CapacityExceeded,
+	/* 082h */eSF_NamespaceNotReady,
+	/* 083h */eSF_ReservationConflict,
+	/* 084h */eSF_FormatInProgress,
+
+/*
+** Figure 33: Status Code - Command Specific Status Values
+*/
+	/* 100h */eSF_CompletionQueueInvalid	= 0x100,
+	/* 101h */eSF_InvalidQueueIdentifier,
+	/* 102h */eSF_InvalidQueueSize,
+	/* 103h */eSF_AbortCommandLimitExceeded,
+	/* 104h */eSF_Reserved_0104h,
+	/* 105h */eSF_AsynchronousEventRequestLimitExceeded,
+	/* 106h */eSF_InvalidFirmwareSlot,
+	/* 107h */eSF_InvalidFirmwareImage,
+	/* 108h */eSF_InvalidInterruptVector,
+	/* 109h */eSF_InvalidLogPage,
+	/* 10Ah */eSF_InvalidFormat,
+	/* 10Bh */eSF_FirmwareActivationRequiresConventionalReset,
+	/* 10Ch */eSF_InvalidQueueDeletion,
+	/* 10Dh */eSF_FeatureIdentifierNotSaveable,
+	/* 10Eh */eSF_FeatureNotChangeable,
+	/* 10Fh */eSF_FeatureNotNamespaceSpecific,
+	/* 110h */eSF_FirmwareActivationRequiresNvmSubsystemReset,
+	/* 111h */eSF_FirmwareActivationRequiresReset,
+	/* 112h */eSF_FirmwareActivationRequiresMaximumTimeViolation,
+	/* 113h */eSF_FirmwareActivationProhibited,
+	/* 114h */eSF_OverlappingRange,
+	/* 115h */eSF_NamespaceInsufficientCapacity,
+	/* 116h */eSF_NamespaceIdentifierUnavailable,
+	/* 117h */eSF_Reserved_0117h,
+	/* 118h */eSF_NamespaceAlreadyAttached,
+	/* 119h */eSF_NamespaceIsPrivate,
+	/* 11Ah */eSF_NamespaceNotAttached,
+	/* 11Bh */eSF_ThinProvisioningNotSupported,
+	/* 11Ch */eSF_ControllerListInvalid,
+	/* 11Dh */eSF_DeviceSelfTestInProgress,			/* 1.3 - */
+	/* 11Eh */eSF_BootPartitionWriteProhibited,		/* 1.3 - */
+	/* 11Fh */eSF_InvalidControllerIdentifier,		/* 1.3 - */
+	/* 120h */eSF_InvalidSecondaryControllerState,		/* 1.3 - */
+	/* 121h */eSF_InvalidNumberOfControllerResources,	/* 1.3 - */
+	/* 122h */eSF_InvalidResourceIdentifier,		/* 1.3 - */
+
+/*
+** Figure 34: Status Code - Command Specific Status Values, NVM Command Set
+*/
+	/* 180h */eSF_ConflictingAttributes	= 0x180,
+	/* 181h */eSF_InvalidProtectionInformation,
+	/* 182h */eSF_AttemptedWriteToReadOnlyRange,
+
+/*
+** Figure 36: Status Code - Media and Data Integrity Error Values, NVME Command Set
+*/
+	/* 280h */eSF_WriteFault	= 0x280,
+	/* 281h */eSF_UnrecoveredReadError,
+	/* 282h */eSF_EndToEndGuardCheckError,
+	/* 283h */eSF_EndToEndApplicationTagCheckError,
+	/* 284h */eSF_EndToEndReferenceTagCheckError,
+	/* 285h */eSF_CompareFailure,
+	/* 286h */eSF_AccessDenied,
+	/* 287h */eSF_DeallocatedOrUnwrittenLogicalBlock,
+} NVME_STATUS;
+#else
 typedef enum {
 /*
 ** 4.6.1.2.1 Generic Command Status Definition
@@ -232,6 +344,6 @@ typedef enum {
 	NVME_STATUS_M	= BIT(14),	/* More */
 	NVME_STATUS_DNR	= BIT(15)	/* Do Not Retry */
 } NVME_STATUS;
-
+#endif
 #endif	/* _NVME_CQ_ENTRY_H */
 
