@@ -1,4 +1,5 @@
 #ifndef	_NVME_H
+#define	_NVME_H
 
 #include <stdint.h>
 

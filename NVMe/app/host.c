@@ -176,7 +176,7 @@ void *HostMain(void *context CC_ATTRIB_UNUSED)
 		NvmeQ_Init(&hostCq[cqid], buf, QDEPTH_IOCQ);
 		cid = Host_CreateIoCq(asq, cqid, buf, bytes);
 		Host_RingDoorbell_SQT(NVME_SQID_ADMIN);
-		ASSERT(NVME_STATUS_SUCCESSFUL_COMPLETION == Host_WaitForCompletion(cqid, cid));
+		ASSERT(eSF_SuccessfulCompletion == Host_WaitForCompletion(cqid, cid));
 
 		bytes = (QDEPTH_IOSQ + 1) * sizeof (NVME_SQE);
 		buf = malloc_align(HOST_PAGE_SIZE, bytes);
@@ -185,7 +185,7 @@ void *HostMain(void *context CC_ATTRIB_UNUSED)
 		NvmeQ_Init(&hostCq[sqid], buf, QDEPTH_IOSQ);
 		cid = Host_CreateIoSq(asq, sqid, buf, bytes);
 		Host_RingDoorbell_SQT(NVME_SQID_ADMIN);
-		ASSERT(NVME_STATUS_SUCCESSFUL_COMPLETION == Host_WaitForCompletion(cqid, cid));
+		ASSERT(eSF_SuccessfulCompletion == Host_WaitForCompletion(cqid, cid));
 #endif
 		HostTest_IdentifyParameters();
 		HostTest_GetLogPageParameters();

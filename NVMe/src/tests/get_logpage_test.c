@@ -19,28 +19,28 @@ UINT32 HostTest_GetLogPageParameters(void)
 			.nsid	= 0,
 			.bytes	= BYTES_16K,
 			.lid	= eLID_ERROR_INFORMATION,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* SubCase 02: LID = SMART/Health Info */
 		{
 			.nsid	= 0,
 			.bytes	= BYTES_512,
 			.lid	= eLID_SMART_HEALTH_INFO,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* SubCase 03: LID = Firmware Slot Info */
 		{
 			.nsid	= 0,
 			.bytes	= BYTES_512,
 			.lid	= eLID_FIRMWARE_SLOT_INFO,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* SubCase 04: LID = Command Effects Log */
 		{
 			.nsid	= 0,
 			.bytes	= BYTES_4K,
 			.lid	= eLID_COMMAND_EFFECTS_LOG,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* Case 02: Get Log w/Length = Full Length; NSID = 00000001h */
 		/* SubCase 01: LID = Error Information */
@@ -48,28 +48,28 @@ UINT32 HostTest_GetLogPageParameters(void)
 			.nsid	= 1,
 			.bytes	= BYTES_16K,
 			.lid	= eLID_ERROR_INFORMATION,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* SubCase 02: LID = SMART/Health Info */
 		{
 			.nsid	= 1,
 			.bytes	= BYTES_512,
 			.lid	= eLID_SMART_HEALTH_INFO,
-			.status	= NVME_STATUS_SUCCESSFUL_COMPLETION
+			.status	= eSF_SuccessfulCompletion
 		},
 		/* SubCase 03: LID = Firmware Slot Info */
 		{
 			.nsid	= 1,
 			.bytes	= BYTES_512,
 			.lid	= eLID_FIRMWARE_SLOT_INFO,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* SubCase 04: LID = Command Effects Log */
 		{
 			.nsid	= 1,
 			.bytes	= BYTES_4K,
 			.lid	= eLID_COMMAND_EFFECTS_LOG,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* Case 03: Get Log w/Length = Full Length; NSID = 00000002h */
 		/* SubCase 01: LID = Error Information */
@@ -77,28 +77,28 @@ UINT32 HostTest_GetLogPageParameters(void)
 			.nsid	= 2,
 			.bytes	= BYTES_16K,
 			.lid	= eLID_ERROR_INFORMATION,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* SubCase 02: LID = SMART/Health Info */
 		{
 			.nsid	= 2,
 			.bytes	= BYTES_512,
 			.lid	= eLID_SMART_HEALTH_INFO,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* SubCase 03: LID = Firmware Slot Info */
 		{
 			.nsid	= 2,
 			.bytes	= BYTES_512,
 			.lid	= eLID_FIRMWARE_SLOT_INFO,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* SubCase 04: LID = Command Effects Log */
 		{
 			.nsid	= 2,
 			.bytes	= BYTES_4K,
 			.lid	= eLID_COMMAND_EFFECTS_LOG,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* Case 04: Get Log w/Length = Full Length; NSID = FFFFFFFFh */
 		/* SubCase 01: LID = Error Information */
@@ -106,28 +106,28 @@ UINT32 HostTest_GetLogPageParameters(void)
 			.nsid	= NVME_NSID_GLOBAL,
 			.bytes	= BYTES_16K,
 			.lid	= eLID_ERROR_INFORMATION,
-			.status	= NVME_STATUS_SUCCESSFUL_COMPLETION
+			.status	= eSF_SuccessfulCompletion
 		},
 		/* SubCase 02: LID = SMART/Health Info */
 		{
 			.nsid	= NVME_NSID_GLOBAL,
 			.bytes	= BYTES_512,
 			.lid	= eLID_SMART_HEALTH_INFO,
-			.status	= NVME_STATUS_SUCCESSFUL_COMPLETION
+			.status	= eSF_SuccessfulCompletion
 		},
 		/* SubCase 03: LID = Firmware Slot Info */
 		{
 			.nsid	= NVME_NSID_GLOBAL,
 			.bytes	= BYTES_512,
 			.lid	= eLID_FIRMWARE_SLOT_INFO,
-			.status	= NVME_STATUS_SUCCESSFUL_COMPLETION
+			.status	= eSF_SuccessfulCompletion
 		},
 		/* SubCase 04: LID = Command Effects Log */
 		{
 			.nsid	= NVME_NSID_GLOBAL,
 			.bytes	= BYTES_4K,
 			.lid	= eLID_COMMAND_EFFECTS_LOG,
-			.status	= NVME_STATUS_SUCCESSFUL_COMPLETION
+			.status	= eSF_SuccessfulCompletion
 		},
 		/* Case 05: Get Log w/Length = Zero Length; NSID = FFFFFFFFh */
 		/* SubCase 01: LID = Error Information */
@@ -135,28 +135,28 @@ UINT32 HostTest_GetLogPageParameters(void)
 			.nsid	= NVME_NSID_GLOBAL,
 			.bytes	= 0,
 			.lid	= eLID_ERROR_INFORMATION,
-			.status	= NVME_STATUS_SUCCESSFUL_COMPLETION
+			.status	= eSF_SuccessfulCompletion
 		},
 		/* SubCase 02: LID = SMART/Health Info */
 		{
 			.nsid	= NVME_NSID_GLOBAL,
 			.bytes	= 0,
 			.lid	= eLID_SMART_HEALTH_INFO,
-			.status	= NVME_STATUS_SUCCESSFUL_COMPLETION
+			.status	= eSF_SuccessfulCompletion
 		},
 		/* SubCase 03: LID = Firmware Slot Info */
 		{
 			.nsid	= NVME_NSID_GLOBAL,
 			.bytes	= 0,
 			.lid	= eLID_FIRMWARE_SLOT_INFO,
-			.status	= NVME_STATUS_SUCCESSFUL_COMPLETION
+			.status	= eSF_SuccessfulCompletion
 		},
 		/* SubCase 04: LID = Command Effects Log */
 		{
 			.nsid	= NVME_NSID_GLOBAL,
 			.bytes	= 0,
 			.lid	= eLID_COMMAND_EFFECTS_LOG,
-			.status	= NVME_STATUS_SUCCESSFUL_COMPLETION
+			.status	= eSF_SuccessfulCompletion
 		},
 	};
 

@@ -10,7 +10,7 @@ BOOL Device_FwDownload(NVME_QID sqid, NVME_QID cqid)
 	NVME_SQE	*sqe = Device_GetSubmissionQueueEntry(sq);
 
 	if (NVME_NSID_NONE != sqe->NSID) {
-		Device_SetNvmeStatus(cq, NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT);
+		Device_SetNvmeStatus(cq, eSF_InvalidNamespaceOrFormat);
         	Device_ChangeState(eDeviceState_ReturnStatus);
 	        return TRUE;
 	}

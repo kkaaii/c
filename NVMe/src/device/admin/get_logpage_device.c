@@ -13,7 +13,7 @@ BOOL Device_GetLogPage(NVME_QID sqid, NVME_QID cqid)
 		if (eLID_SMART_HEALTH_INFO != sqe->CDW10.getLogPage.LID ||
 			NVME_NSID_NONE == sqe->NSID ||
 			NVME_NSID_INVALID <= sqe->NSID) {
-			Device_SetNvmeStatus(cq, NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT);
+			Device_SetNvmeStatus(cq, eSF_InvalidNamespaceOrFormat);
 		}
 	}
 

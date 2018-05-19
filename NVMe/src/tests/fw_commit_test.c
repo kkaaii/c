@@ -15,84 +15,84 @@ UINT32 HostTest_FwCommitParameters(void)
 			.nsid	= 0,
 			.ca	= 0,
 			.fs	= 0,
-			.status	= NVME_STATUS_INVALID_FW_IMAGE
+			.status	= eSF_InvalidFirmwareImage
 		},
 		/* SubCase 02: CA = 000b; FS = 1 */
 		{
 			.nsid	= 0,
 			.ca	= 0,
 			.fs	= 1,
-			.status	= NVME_STATUS_INVALID_FW_IMAGE
+			.status	= eSF_InvalidFirmwareImage
 		},
 		/* SubCase 03: CA = 000b; FS = 2 */
 		{
 			.nsid	= 0,
 			.ca	= 0,
 			.fs	= 2,
-			.status	= NVME_STATUS_INVALID_FW_SLOT
+			.status	= eSF_InvalidFirmwareSlot
 		},
 		/* SubCase 04: CA = 001b; FS = 0 */
 		{
 			.nsid	= 0,
 			.ca	= 1,
 			.fs	= 0,
-			.status	= NVME_STATUS_INVALID_FW_IMAGE
+			.status	= eSF_InvalidFirmwareImage
 		},
 		/* SubCase 05: CA = 001b; FS = 1 */
 		{
 			.nsid	= 0,
 			.ca	= 1,
 			.fs	= 1,
-			.status	= NVME_STATUS_INVALID_FW_IMAGE
+			.status	= eSF_InvalidFirmwareImage
 		},
 		/* SubCase 06: CA = 001b; FS = 2 */
 		{
 			.nsid	= 0,
 			.ca	= 1,
 			.fs	= 2,
-			.status	= NVME_STATUS_INVALID_FW_SLOT
+			.status	= eSF_InvalidFirmwareSlot
 		},
 		/* SubCase 07: CA = 010b; FS = 0 */
 		{
 			.nsid	= 0,
 			.ca	= 2,
 			.fs	= 0,
-			.status	= NVME_STATUS_INVALID_FW_IMAGE
+			.status	= eSF_InvalidFirmwareImage
 		},
 		/* SubCase 08: CA = 010b; FS = 1 */
 		{
 			.nsid	= 0,
 			.ca	= 2,
 			.fs	= 1,
-			.status	= NVME_STATUS_INVALID_FW_IMAGE
+			.status	= eSF_InvalidFirmwareImage
 		},
 		/* SubCase 09: CA = 010b; FS = 2 */
 		{
 			.nsid	= 0,
 			.ca	= 2,
 			.fs	= 2,
-			.status	= NVME_STATUS_INVALID_FW_SLOT
+			.status	= eSF_InvalidFirmwareSlot
 		},
 		/* SubCase 10: CA = 011b; FS = 0 */
 		{
 			.nsid	= 0,
 			.ca	= 3,
 			.fs	= 0,
-			.status	= NVME_STATUS_INVALID_FIELD_IN_COMMAND
+			.status	= eSF_InvalidFieldInCommand
 		},
 		/* SubCase 11: CA = 011b; FS = 1 */
 		{
 			.nsid	= 0,
 			.ca	= 3,
 			.fs	= 1,
-			.status	= NVME_STATUS_INVALID_FIELD_IN_COMMAND
+			.status	= eSF_InvalidFieldInCommand
 		},
 		/* SubCase 12: CA = 011b; FS = 2 */
 		{
 			.nsid	= 0,
 			.ca	= 3,
 			.fs	= 2,
-			.status	= NVME_STATUS_INVALID_FIELD_IN_COMMAND
+			.status	= eSF_InvalidFieldInCommand
 		},
 		/* Case 06: FIRMWARE COMMIT w/NSID = 00000001h */
 		/* SubCase 01: CA = 000b; FS = 0 */
@@ -100,56 +100,56 @@ UINT32 HostTest_FwCommitParameters(void)
 			.nsid	= 1,
 			.ca	= 0,
 			.fs	= 0,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* SubCase 02: CA = 000b; FS = 1 */
 		{
 			.nsid	= 1,
 			.ca	= 0,
 			.fs	= 1,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* SubCase 03: CA = 001b; FS = 0 */
 		{
 			.nsid	= 1,
 			.ca	= 1,
 			.fs	= 0,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* SubCase 04: CA = 001b; FS = 1 */
 		{
 			.nsid	= 1,
 			.ca	= 1,
 			.fs	= 1,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* SubCase 05: CA = 010b; FS = 0 */
 		{
 			.nsid	= 1,
 			.ca	= 2,
 			.fs	= 0,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* SubCase 06: CA = 010b; FS = 1 */
 		{
 			.nsid	= 1,
 			.ca	= 2,
 			.fs	= 1,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* SubCase 07: CA = 011b; FS = 0 */
 		{
 			.nsid	= 1,
 			.ca	= 3,
 			.fs	= 0,
-			.status	= NVME_STATUS_INVALID_FIELD_IN_COMMAND
+			.status	= eSF_InvalidFieldInCommand
 		},
 		/* SubCase 08: CA = 011b; FS = 1 */
 		{
 			.nsid	= 1,
 			.ca	= 3,
 			.fs	= 1,
-			.status	= NVME_STATUS_INVALID_FIELD_IN_COMMAND
+			.status	= eSF_InvalidFieldInCommand
 		},
 		/* Case 07: FIRMWARE COMMIT w/NSID = 00000002h */
 		/* SubCase 01: CA = 000b; FS = 0 */
@@ -157,56 +157,56 @@ UINT32 HostTest_FwCommitParameters(void)
 			.nsid	= 2,
 			.ca	= 0,
 			.fs	= 0,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* SubCase 02: CA = 000b; FS = 1 */
 		{
 			.nsid	= 2,
 			.ca	= 0,
 			.fs	= 1,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* SubCase 03: CA = 001b; FS = 0 */
 		{
 			.nsid	= 2,
 			.ca	= 1,
 			.fs	= 0,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* SubCase 04: CA = 001b; FS = 1 */
 		{
 			.nsid	= 2,
 			.ca	= 1,
 			.fs	= 1,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* SubCase 05: CA = 010b; FS = 0 */
 		{
 			.nsid	= 2,
 			.ca	= 2,
 			.fs	= 0,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* SubCase 06: CA = 010b; FS = 1 */
 		{
 			.nsid	= 2,
 			.ca	= 2,
 			.fs	= 1,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* SubCase 07: CA = 011b; FS = 0 */
 		{
 			.nsid	= 2,
 			.ca	= 3,
 			.fs	= 0,
-			.status	= NVME_STATUS_INVALID_FIELD_IN_COMMAND
+			.status	= eSF_InvalidFieldInCommand
 		},
 		/* SubCase 08: CA = 011b; FS = 1 */
 		{
 			.nsid	= 2,
 			.ca	= 3,
 			.fs	= 1,
-			.status	= NVME_STATUS_INVALID_FIELD_IN_COMMAND
+			.status	= eSF_InvalidFieldInCommand
 		},
 		/* Case 08: FIRMWARE COMMIT w/NSID = FFFFFFFFh */
 		/* SubCase 01: CA = 000b; FS = 0 */
@@ -214,56 +214,56 @@ UINT32 HostTest_FwCommitParameters(void)
 			.nsid	= NVME_NSID_GLOBAL,
 			.ca	= 0,
 			.fs	= 0,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* SubCase 02: CA = 000b; FS = 1 */
 		{
 			.nsid	= NVME_NSID_GLOBAL,
 			.ca	= 0,
 			.fs	= 1,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* SubCase 03: CA = 001b; FS = 0 */
 		{
 			.nsid	= NVME_NSID_GLOBAL,
 			.ca	= 1,
 			.fs	= 0,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* SubCase 04: CA = 001b; FS = 1 */
 		{
 			.nsid	= NVME_NSID_GLOBAL,
 			.ca	= 1,
 			.fs	= 1,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* SubCase 05: CA = 010b; FS = 0 */
 		{
 			.nsid	= NVME_NSID_GLOBAL,
 			.ca	= 2,
 			.fs	= 0,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* SubCase 06: CA = 010b; FS = 1 */
 		{
 			.nsid	= NVME_NSID_GLOBAL,
 			.ca	= 2,
 			.fs	= 1,
-			.status	= NVME_STATUS_INVALID_NAMESPACE_OR_FORMAT
+			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		/* SubCase 07: CA = 011b; FS = 0 */
 		{
 			.nsid	= NVME_NSID_GLOBAL,
 			.ca	= 3,
 			.fs	= 0,
-			.status	= NVME_STATUS_INVALID_FIELD_IN_COMMAND
+			.status	= eSF_InvalidFieldInCommand
 		},
 		/* SubCase 08: CA = 011b; FS = 1 */
 		{
 			.nsid	= NVME_NSID_GLOBAL,
 			.ca	= 3,
 			.fs	= 1,
-			.status	= NVME_STATUS_INVALID_FIELD_IN_COMMAND
+			.status	= eSF_InvalidFieldInCommand
 		}
 	};
 

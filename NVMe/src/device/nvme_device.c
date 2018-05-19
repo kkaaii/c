@@ -52,7 +52,7 @@ BOOL Device_FetchCommand(NVME_QID sqid, NVME_QID cqid)
 	if (NVME_QUEUE_IS_FULL(cq))
 		return FALSE;
 
-	Device_SetNvmeStatus(cq, NVME_STATUS_SUCCESSFUL_COMPLETION);
+	Device_SetNvmeStatus(cq, eSF_SuccessfulCompletion);
 
 	NVME_SQE	*sqe = Device_GetSubmissionQueueEntry(sq);
 	switch (sqe->CDW0.OPC) {
@@ -81,7 +81,7 @@ BOOL Device_FetchCommand(NVME_QID sqid, NVME_QID cqid)
 		break;
 
 	default:
-		Device_SetNvmeStatus(cq, NVME_STATUS_INVALID_COMMAND_OPCODE);
+		Device_SetNvmeStatus(cq, eSF_InvalidCommandOpcode);
 		Device_ChangeState(eDeviceState_ReturnStatus);
 		break;
 	}
