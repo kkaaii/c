@@ -1,4 +1,4 @@
-#include "nvme.h"
+#include "nvme/nvme.h"
 #include "nvme_host.h"
 
 UINT32 HostTest_FwDownloadParameters(void)
@@ -36,7 +36,7 @@ UINT32 HostTest_FwDownloadParameters(void)
 	UINT8	buf[4096];
 
 	for (i = 0; i < sizeof (testcases) / sizeof (testcases[0]); ++i) {
-		HOST_PRN_MSG("Case %02d: FIRMWARE DOWNLOAD w/NSID = %08Xh\n", i, testcases[i].nsid);
+		HOST_MSG("Case %02d: FIRMWARE DOWNLOAD w/NSID = %08Xh\n", i, testcases[i].nsid);
 		NVME_CID cid = Host_FwDownload(
 			testcases[i].nsid,
                         0,
@@ -44,9 +44,9 @@ UINT32 HostTest_FwDownloadParameters(void)
 			sizeof buf);
 
 		Host_RingDoorbell_SQT(NVME_SQID_ADMIN);
-		NVME_STATUS status = Host_WaitForCompletion(NVME_CQID_ADMIN, cid);
+		NVME_STATUS status = Host_WaitForCompletion(NVME_CQID_ADMIN, cid)->dw3.SF;
 		if (testcases[i].status != status) {
-			HOST_PRN_MSG("FAILED: expected %04xh, actual %04xh\n",
+			HOST_MSG("FAILED: expected %04xh, actual %04xh\n",
 				testcases[i].status, status);
 			++failed;
 		}

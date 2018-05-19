@@ -1,21 +1,21 @@
-#include "nvme.h"
+#include "nvme/nvme.h"
 #include "nvme_host.h"
 
 NVME_CID
-Host_FwDownload(
+Host_Identify(
 	NVME_NSID	nsid,
-	UINT32		ofst,
+	UINT8		cns,
+	NVME_CNTID	cntid,
 	void		*buf,
 	UINT32		bytes)
 {
 	NVME_QUEUE	*asq = Host_GetSubmissionQueue(NVME_SQID_ADMIN);
 	NVME_SQE	*sqe = Host_GetSubmissionQueueEntry(asq);
-	UINT32		numd = (bytes >> 2) - 1;
 
-	sqe->CDW0.OPC = NVME_OPC_ADMIN_FW_DOWNLOAD;
+	sqe->CDW0.OPC = NVME_OPC_ADMIN_IDENTIFY;
 	sqe->NSID = nsid;
-	sqe->CDW10.fwDownload.NUMD = numd;
-	sqe->CDW11.fwDownload.OFST = ofst;
+	sqe->CDW10.identify.CNS = cns;
+	sqe->CDW10.identify.CNTID = cntid;
 
 	Host_BuildPRP1(sqe, buf, bytes);
 

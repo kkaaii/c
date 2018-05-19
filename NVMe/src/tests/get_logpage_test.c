@@ -1,4 +1,4 @@
-#include "nvme.h"
+#include "nvme/nvme.h"
 #include "nvme_host.h"
 
 #define	BYTES_16K	(16 * 1024)
@@ -165,7 +165,7 @@ UINT32 HostTest_GetLogPageParameters(void)
 	UINT8	buf[4096];
 
 	for (i = 0; i < sizeof (testcases) / sizeof (testcases[0]); ++i) {
-		HOST_PRN_MSG("Case %02d: Get Log w/Length = %04Xh; NSID = %08Xh; LID = %02Xh\n",
+		HOST_MSG("Case %02d: Get Log w/Length = %04Xh; NSID = %08Xh; LID = %02Xh\n",
 			i, testcases[i].bytes, testcases[i].nsid, testcases[i].lid);
 		NVME_CID cid = Host_GetLogPage(
 			testcases[i].nsid,
@@ -175,9 +175,9 @@ UINT32 HostTest_GetLogPageParameters(void)
 			testcases[i].bytes);
 
 		Host_RingDoorbell_SQT(NVME_SQID_ADMIN);
-		NVME_STATUS status = Host_WaitForCompletion(NVME_CQID_ADMIN, cid);
+		NVME_STATUS status = Host_WaitForCompletion(NVME_CQID_ADMIN, cid)->dw3.SF;
 		if (testcases[i].status != status) {
-			HOST_PRN_MSG("FAILED: expected %04xh, actual %04xh\n",
+			HOST_MSG("FAILED: expected %04xh, actual %04xh\n",
 				testcases[i].status, status);
 			++failed;
 		}

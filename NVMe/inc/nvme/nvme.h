@@ -25,8 +25,6 @@
 #define	ZERO_BASED(x)		((x) - 1)
 
 #define	NVME_NSID_NONE		0
-#define	NVME_NSID_1		1
-#define	NVME_NSID_INVALID	2
 #define	NVME_NSID_GLOBAL	(~0u)
 
 typedef enum {
@@ -61,6 +59,7 @@ typedef UINT32	NVME_NSID;	/* Namespace Identifier */
 #include "identify.h"
 #include "get_logpage.h"
 #include "fw_commit.h"
+#include "features.h"
 
 void *	PCIe_GetControllerRegBase(UINT8 id);
 void	PCIe_WriteReg32(UINT32 *reg, UINT32 val);

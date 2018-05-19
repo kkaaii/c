@@ -1,8 +1,9 @@
 #include <stdlib.h>
-#include "nvme.h"
+#include <pthread.h>
+#include "nvme/nvme.h"
 #include "nvme_device.h"
 
-#define	DEV_DBG_MSG(...)	DBG_MSG(MODULE_NAME __VA_ARGS__)
+#define	MODULE_NAME	"\t\t\t\t\t[device]"
 
 CC_STATIC	NVME_QUEUE	*devCq = NULL;
 CC_STATIC	NVME_QUEUE	*devSq = NULL;
@@ -140,6 +141,7 @@ void *DeviceMain(void *context CC_ATTRIB_UNUSED)
 	offset += (4 << CAP.DSTRD);
 	UINT32	*cqh = (UINT32 *)controller + (offset >> 2);
 
+	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
 	for (;;) {
 		NVME_REG32_SQT	SQT;
 		SQT.reg = PCIe_ReadReg32(sqt);
@@ -150,6 +152,8 @@ void *DeviceMain(void *context CC_ATTRIB_UNUSED)
 		NVME_REG32_CQH	CQH;
 		CQH.reg = PCIe_ReadReg32(cqh);
 		Device_UpdateCQH(cqid, CQH.CQH);
+
+		pthread_testcancel();
 	}
 
 	LEAVE();

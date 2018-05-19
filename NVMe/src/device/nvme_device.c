@@ -1,4 +1,4 @@
-#include "nvme.h"
+#include "nvme/nvme.h"
 #include "nvme_device.h"
 
 typedef BOOL (*StateHandler)(NVME_QID sqid, NVME_QID cqid);
@@ -14,6 +14,8 @@ CC_STATIC	StateHandler	gHandlers[] = {
 	[eDeviceState_GetLogPage]	= Device_GetLogPage,
 	[eDeviceState_FwDownload]	= Device_FwDownload,
 	[eDeviceState_FwCommit]		= Device_FwCommit,
+	[eDeviceState_GetFeatures]	= Device_GetFeatures,
+	[eDeviceState_SetFeatures]	= Device_SetFeatures,
 	[eDeviceState_ReturnStatus]	= Device_ReturnStatus,
 };
 
@@ -68,6 +70,14 @@ BOOL Device_FetchCommand(NVME_QID sqid, NVME_QID cqid)
 
 	case NVME_OPC_ADMIN_FW_COMMIT:
 		Device_ChangeState(eDeviceState_FwCommit);
+		break;
+
+	case NVME_OPC_ADMIN_GET_FEATURES:
+		Device_ChangeState(eDeviceState_GetFeatures);
+		break;
+
+	case NVME_OPC_ADMIN_SET_FEATURES:
+		Device_ChangeState(eDeviceState_SetFeatures);
 		break;
 
 	default:

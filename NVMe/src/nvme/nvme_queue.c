@@ -4,8 +4,8 @@
 ** Creation Time: Thu Jan 11 03:36:41 2018
 */
 #include <stdio.h>
-#include "nvme.h"
-#include "nvme_queue.h"
+#include "nvme/nvme.h"
+#include "nvme/nvme_queue.h"
 
 BOOL	NvmeQ_Init(NVME_QUEUE *q, void *base, UINT16 size)
 {

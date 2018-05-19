@@ -1,9 +1,13 @@
 #ifndef	_NVME_DEVICE_H
 #define	_NVME_DEVICE_H
 
-#define	MODULE_NAME	"\t\t\t\t\t[device]"
+#define	DEV_DBG_MSG(...)	/*DBG_MSG("\t\t\t\t\t[device]" __VA_ARGS__)*/
 
-#define	DEV_DBG_MSG(...)	DBG_MSG(MODULE_NAME __VA_ARGS__)
+enum {
+	NVME_NSID_1		= 1,
+	NVME_NSID_INVALID,
+	NVME_NSID_ACTIVE	= NVME_NSID_1,
+};
 
 typedef enum {
 	eDeviceState_FetchCommand,
@@ -11,6 +15,8 @@ typedef enum {
 	eDeviceState_GetLogPage,
 	eDeviceState_FwDownload,
 	eDeviceState_FwCommit,
+	eDeviceState_GetFeatures,
+	eDeviceState_SetFeatures,
 	eDeviceState_ReturnStatus
 } EDeviceState;
 
@@ -37,10 +43,11 @@ NVME_SQE *Device_GetSubmissionQueueEntry(NVME_QUEUE *sq)
 
 void Device_CommandHandler(NVME_QID sqid, NVME_QID cqid);
 
-#include "identify_device.h"
-#include "get_logpage_device.h"
-#include "fw_download_device.h"
-#include "fw_commit_device.h"
+#include "admin/identify_device.h"
+#include "admin/get_logpage_device.h"
+#include "admin/fw_download_device.h"
+#include "admin/fw_commit_device.h"
+#include "admin/features_device.h"
 
 #endif	/* _NVME_DEVICE_H */
 

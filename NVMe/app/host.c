@@ -1,5 +1,5 @@
 #include <string.h>
-#include "nvme.h"
+#include "nvme/nvme.h"
 #include "nvme_host.h"
 #include "platform.h"
 
@@ -191,8 +191,11 @@ void *HostMain(void *context CC_ATTRIB_UNUSED)
 		HostTest_GetLogPageParameters();
 		HostTest_FwDownloadParameters();
 		HostTest_FwCommitParameters();
+		HostTest_GetFeaturesParameters();
+		HostTest_SetFeaturesParameters();
 	}
 
+#if 0
 	for (;;) {
 		sleep(1);
 
@@ -207,7 +210,7 @@ void *HostMain(void *context CC_ATTRIB_UNUSED)
 		if (0 == (rand() & 3))
 			Host_RingDoorbell_CQH(cqid);
 	}
-
+#endif
 	LEAVE();
 	return NULL;
 }

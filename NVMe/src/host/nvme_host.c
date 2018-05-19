@@ -1,4 +1,4 @@
-#include "nvme.h"
+#include "nvme/nvme.h"
 #include "nvme_host.h"
 #include "platform.h"
 
@@ -53,7 +53,7 @@ BOOL Host_BuildPRP1(NVME_SQE *sqe, void *buf, UINT32 bytes)
 	return FALSE;
 }
 
-NVME_STATUS Host_WaitForCompletion(NVME_QID cqid, NVME_CID cid)
+NVME_CQE *Host_WaitForCompletion(NVME_QID cqid, NVME_CID cid)
 {
 	NVME_QUEUE	*cq = Host_GetCompletionQueue(cqid);
 	NVME_CQE	*cqe;
@@ -63,7 +63,7 @@ NVME_STATUS Host_WaitForCompletion(NVME_QID cqid, NVME_CID cid)
 		cqe = Host_CheckResponse(cq);
 	} while (NULL == cqe || cid != cqe->dw3.CID);
 
-	return cqe->dw3.SF;
+	return cqe;
 }
 
 NVME_CID Host_CreateIoCq(NVME_QUEUE *asq, NVME_QID cqid, void *buf, UINT32 bytes)

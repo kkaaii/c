@@ -91,8 +91,8 @@ typedef struct {
 } NVME_CDW10_NUMD;
 
 typedef struct {
-	UINT32		fid	: 8;	/* Feature Identifier (FID) */
-	UINT32		sel	: 3;	/* Select (SEL) */
+	UINT32		FID	: 8;	/* Feature Identifier (FID) */
+	UINT32		SEL	: 3;	/* Select (SEL) */
 	UINT32		rsvd	: 21;	/* reserved */
 } NVME_CDW10_GET_FEATURES;
 
@@ -111,9 +111,9 @@ typedef struct {
 } NVME_CDW10_IDENTIFY;
 
 typedef struct {
-	UINT32		fid	: 8;	/* Feature Identifier (FID) */
+	UINT32		FID	: 8;	/* Feature Identifier (FID) */
 	UINT32		rsvd	: 23;	/* reserved */
-	UINT32		sv	: 1;	/* Save (SV) */
+	UINT32		SV	: 1;	/* Save (SV) */
 } NVME_CDW10_SET_FEATURES;
 
 typedef union {
