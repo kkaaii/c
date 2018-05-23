@@ -4,11 +4,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define	DBG_MSG		printf
+#define	DBG_LVL_ALWAYS	0
+#define	DBG_LVL_FATAL	1
+#define	DBG_LVL_ERROR	2
+#define	DBG_LVL_DEBUG	3
 
-#define	ENTER()		DBG_MSG(MODULE_NAME "+++ %s\n", __FUNCTION__)
-#define	LEAVE()		DBG_MSG(MODULE_NAME "--- %s:%d\n", __FUNCTION__, __LINE__)
-#define	TRACE()		DBG_MSG(MODULE_NAME "*** %s:%d\n", __FUNCTION__, __LINE__)
+#define	DBG_LEVEL	DBG_LVL_ERROR
+
+#define	MSG(level, ...)	do {if ((level) <= DBG_LEVEL) printf(__VA_ARGS__);} while(0)
+
+#define	ALL_MSG(...)	MSG(DBG_LVL_ALWAYS, __VA_ARGS__)
+#define	DBG_MSG(...)	MSG(DBG_LVL_DEBUG, __VA_ARGS__)
+#define	ERR_MSG(...)	MSG(DBG_LVL_ERROR, __VA_ARGS__)
+
+#define	ENTER()		DBG_MSG("+++ %s\n", __FUNCTION__)
+#define	LEAVE()		DBG_MSG("--- %s:%d\n", __FUNCTION__, __LINE__)
+#define	TRACE()		DBG_MSG("*** %s:%d\n", __FUNCTION__, __LINE__)
 
 #define	WATCH(x)	DBG_MSG("    %s = 0x%lx (%lu)\n", #x, (UINT64)(x), (UINT64)(x))
 

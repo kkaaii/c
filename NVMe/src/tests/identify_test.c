@@ -114,12 +114,15 @@ UINT32 HostTest_IdentifyParameters(void)
 
 		Host_RingDoorbell_SQT(NVME_SQID_ADMIN);
 		NVME_STATUS status = Host_WaitForCompletion(NVME_CQID_ADMIN, cid)->dw3.SF;
+		Host_RingDoorbell_CQH(NVME_CQID_ADMIN);
+
 		if (testcases[i].status != status) {
-			HOST_MSG("FAILED: expected %04xh, actual %04xh\n",
+			HOST_MSG(FAILED": expected %04xh, actual %04xh\n",
 				testcases[i].status, status);
 			++failed;
+		} else {
+			HOST_MSG(PASSED": %04Xh\n", status);
 		}
-		Host_RingDoorbell_CQH(NVME_CQID_ADMIN);
 	}
 
 	return failed;

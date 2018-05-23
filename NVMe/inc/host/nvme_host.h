@@ -5,9 +5,10 @@
 #define	HOST_PAGE_SIZE		(1u << HOST_PAGE_SIZE_BITS)
 #define	HOST_PAGE_SIZE_MASK	(HOST_PAGE_SIZE - 1)
 
-#define	HOST_DBG_MSG(...)	/*DBG_MSG(MODULE_NAME __VA_ARGS__)*/
-#define	HOST_ERR_MSG(...)	DBG_MSG("[ host ]" __VA_ARGS__)
-#define	HOST_MSG(...)	DBG_MSG("[ host ]" __VA_ARGS__)
+#define	HOST			"[ host ]"
+#define	HOST_DBG_MSG(...)	DBG_MSG(HOST __VA_ARGS__)
+#define	HOST_ERR_MSG(...)	ERR_MSG(HOST __VA_ARGS__)
+#define	HOST_MSG(...)		ALL_MSG(HOST __VA_ARGS__)
 
 NVME_QUEUE *Host_GetCompletionQueue(NVME_QID cqid);
 NVME_QUEUE *Host_GetSubmissionQueue(NVME_QID sqid);
@@ -30,6 +31,7 @@ NVME_SQE *Host_GetSubmissionQueueEntry(NVME_QUEUE *sq)
 NVME_CQE *Host_WaitForCompletion(NVME_QID cqid, NVME_CID cid);
 NVME_CQE *Host_CheckResponse(NVME_QUEUE *cq);
 
+#include "platform.h"
 #include "admin/identify_host.h"
 #include "admin/get_logpage_host.h"
 #include "admin/fw_download_host.h"

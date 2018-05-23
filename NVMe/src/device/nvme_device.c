@@ -42,9 +42,22 @@ void Device_SetNvmeStatus(NVME_QUEUE *cq, NVME_STATUS status)
 
 BOOL Device_FetchCommand(NVME_QID sqid, NVME_QID cqid)
 {
+	static const struct {
+		UINT8           opcode;
+		EDeviceState    state;
+	} table[] = {
+		{NVME_OPC_ADMIN_IDENTIFY,       eDeviceState_Identify},
+		{NVME_OPC_ADMIN_GET_FEATURES,   eDeviceState_GetFeatures},
+		{NVME_OPC_ADMIN_SET_FEATURES,   eDeviceState_SetFeatures},
+		{NVME_OPC_ADMIN_GET_LOG_PAGE,   eDeviceState_GetLogPage},
+		{NVME_OPC_ADMIN_FW_DOWNLOAD,    eDeviceState_FwDownload},
+		{NVME_OPC_ADMIN_FW_COMMIT,      eDeviceState_FwCommit}
+	};
+
 	NVME_QUEUE	*sq = Device_GetSubmissionQueue(sqid);
 	NVME_QUEUE	*cq = Device_GetCompletionQueue(cqid);
 	ASSERT(NULL != sq && NULL != cq);
+	UINT32		i;
 
 	if (NVME_QUEUE_IS_EMPTY(sq))
 		return FALSE;
@@ -55,37 +68,15 @@ BOOL Device_FetchCommand(NVME_QID sqid, NVME_QID cqid)
 	Device_SetNvmeStatus(cq, eSF_SuccessfulCompletion);
 
 	NVME_SQE	*sqe = Device_GetSubmissionQueueEntry(sq);
-	switch (sqe->CDW0.OPC) {
-	case NVME_OPC_ADMIN_IDENTIFY:
-		Device_ChangeState(eDeviceState_Identify);
-		break;
-
-	case NVME_OPC_ADMIN_GET_LOG_PAGE:
-		Device_ChangeState(eDeviceState_GetLogPage);
-		break;
-
-	case NVME_OPC_ADMIN_FW_DOWNLOAD:
-		Device_ChangeState(eDeviceState_FwDownload);
-		break;
-
-	case NVME_OPC_ADMIN_FW_COMMIT:
-		Device_ChangeState(eDeviceState_FwCommit);
-		break;
-
-	case NVME_OPC_ADMIN_GET_FEATURES:
-		Device_ChangeState(eDeviceState_GetFeatures);
-		break;
-
-	case NVME_OPC_ADMIN_SET_FEATURES:
-		Device_ChangeState(eDeviceState_SetFeatures);
-		break;
-
-	default:
-		Device_SetNvmeStatus(cq, eSF_InvalidCommandOpcode);
-		Device_ChangeState(eDeviceState_ReturnStatus);
-		break;
+	for (i = 0; i < sizeof (table) / sizeof (table[0]); ++i) {
+		if (sqe->CDW0.OPC == table[i].opcode) {
+			Device_ChangeState(table[i].state);
+			return TRUE;
+		}
 	}
 
+	Device_SetNvmeStatus(cq, eSF_InvalidCommandOpcode);
+	Device_ChangeState(eDeviceState_ReturnStatus);
 	return TRUE;
 }
 

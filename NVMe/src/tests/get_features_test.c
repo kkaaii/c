@@ -1169,9 +1169,11 @@ UINT32 HostTest_GetFeaturesParameters(void)
 		Host_RingDoorbell_CQH(cqid);
 
 		if (testcases[i].status != status) {
-			HOST_ERR_MSG("FAILED: expected %04xh, actual %04xh\n",
+			HOST_MSG(FAILED": expected %04xh, actual %04xh\n",
 				testcases[i].status, status);
 			++failed;
+		} else {
+			HOST_MSG(PASSED": %04Xh\n", status);
 		}
 	}
 
