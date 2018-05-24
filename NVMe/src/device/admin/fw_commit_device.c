@@ -12,7 +12,7 @@ BOOL Device_FwCommit(NVME_QID sqid, NVME_QID cqid)
 
 	switch (sqe->CDW10.fwCommit.CA) {
 	case eCA_ACTIVATE_IMMEDIATELY:
-		if (0 == (FRMW & BIT(4))) {
+		if (0 == FRMW_SUPPORT_IMMEDIATE_FW_ACTIVATION) {
 			status = eSF_DoNotRetry | eSF_InvalidFieldInCommand;
 			Device_SetNvmeStatus(cq, status);
         		Device_ChangeState(eDeviceState_ReturnStatus);
@@ -36,7 +36,7 @@ BOOL Device_FwCommit(NVME_QID sqid, NVME_QID cqid)
 			break;
 		}
 
-		if (1 < sqe->CDW10.fwCommit.FS) {
+		if (FRMW_NUMBER_OF_FW_SLOTS < sqe->CDW10.fwCommit.FS) {
 			status = eSF_DoNotRetry | eSF_InvalidFirmwareSlot;
 			break;
 		}
