@@ -3,6 +3,7 @@
 
 BOOL Device_FwCommit(NVME_QID sqid, NVME_QID cqid)
 {
+	NVME_STATUS	status = eSF_SuccessfulCompletion;
 	NVME_QUEUE	*sq = Device_GetSubmissionQueue(sqid);
 	NVME_QUEUE	*cq = Device_GetCompletionQueue(cqid);
 	ASSERT(NULL != sq && NULL != cq);
@@ -12,7 +13,8 @@ BOOL Device_FwCommit(NVME_QID sqid, NVME_QID cqid)
 	switch (sqe->CDW10.fwCommit.CA) {
 	case eCA_ACTIVATE_IMMEDIATELY:
 		if (0 == (FRMW & BIT(4))) {
-			Device_SetNvmeStatus(cq, eSF_InvalidFieldInCommand);
+			status = eSF_DoNotRetry | eSF_InvalidFieldInCommand;
+			Device_SetNvmeStatus(cq, status);
         		Device_ChangeState(eDeviceState_ReturnStatus);
 			return TRUE;
 		}
@@ -22,24 +24,27 @@ BOOL Device_FwCommit(NVME_QID sqid, NVME_QID cqid)
 		break;
 
 	default:
-		Device_SetNvmeStatus(cq, eSF_InvalidFieldInCommand);
-       		Device_ChangeState(eDeviceState_ReturnStatus);
-		return TRUE;
-	}
-
-	if (NVME_NSID_NONE != sqe->NSID) {
-		Device_SetNvmeStatus(cq, eSF_InvalidNamespaceOrFormat);
+		status = eSF_DoNotRetry | eSF_InvalidFieldInCommand;
+		Device_SetNvmeStatus(cq, status);
         	Device_ChangeState(eDeviceState_ReturnStatus);
-	        return TRUE;
-	}
-
-	if (1 < sqe->CDW10.fwCommit.FS) {
-		Device_SetNvmeStatus(cq, eSF_InvalidFirmwareSlot);
-		Device_ChangeState(eDeviceState_ReturnStatus);
 		return TRUE;
 	}
 
-	Device_SetNvmeStatus(cq, eSF_InvalidFirmwareImage);
+	do {
+		if (NVME_NSID_NONE != sqe->NSID) {
+			status = eSF_DoNotRetry | eSF_InvalidNamespaceOrFormat;
+			break;
+		}
+
+		if (1 < sqe->CDW10.fwCommit.FS) {
+			status = eSF_DoNotRetry | eSF_InvalidFirmwareSlot;
+			break;
+		}
+
+		status = eSF_InvalidFirmwareImage;
+	} while (FALSE);
+
+	Device_SetNvmeStatus(cq, status);
 	Device_ChangeState(eDeviceState_ReturnStatus);
 	return TRUE;
 }

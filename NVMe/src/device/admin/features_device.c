@@ -35,6 +35,7 @@ CC_STATIC	struct {
 
 BOOL Device_GetFeatures(NVME_QID sqid, NVME_QID cqid)
 {
+	NVME_STATUS	status = eSF_SuccessfulCompletion;
 	NVME_QUEUE	*sq = Device_GetSubmissionQueue(sqid);
 	NVME_QUEUE	*cq = Device_GetCompletionQueue(cqid);
 	ASSERT(NULL != sq && NULL != cq);
@@ -42,15 +43,17 @@ BOOL Device_GetFeatures(NVME_QID sqid, NVME_QID cqid)
 	NVME_SQE	*sqe = Device_GetSubmissionQueueEntry(sq);
 
 	if (NVME_NSID_INVALID <= sqe->NSID && NVME_NSID_GLOBAL != sqe->NSID) {
-		Device_SetNvmeStatus(cq, eSF_InvalidNamespaceOrFormat);
+		status = eSF_DoNotRetry | eSF_InvalidNamespaceOrFormat;
 	}
 
+	Device_SetNvmeStatus(cq, status);
 	Device_ChangeState(eDeviceState_ReturnStatus);
 	return TRUE;
 }
 
 BOOL Device_SetFeatures(NVME_QID sqid, NVME_QID cqid)
 {
+	NVME_STATUS	status = eSF_SuccessfulCompletion;
 	NVME_QUEUE	*sq = Device_GetSubmissionQueue(sqid);
 	NVME_QUEUE	*cq = Device_GetCompletionQueue(cqid);
 	ASSERT(NULL != sq && NULL != cq);
@@ -58,26 +61,26 @@ BOOL Device_SetFeatures(NVME_QID sqid, NVME_QID cqid)
 	NVME_SQE	*sqe = Device_GetSubmissionQueueEntry(sq);
 	NVME_FID	fid = sqe->CDW10.setFeatures.FID;
 
-	if (sqe->CDW10.setFeatures.SV && !fidConfig[fid].saveable) {
-		Device_SetNvmeStatus(cq, eSF_FeatureIdentifierNotSaveable);
-		Device_ChangeState(eDeviceState_ReturnStatus);
-		return TRUE;
-	}
-
-	if (NVME_NSID_NONE != sqe->NSID && NVME_NSID_GLOBAL != sqe->NSID) {
-		if (NVME_NSID_INVALID <= sqe->NSID) {
-			Device_SetNvmeStatus(cq, eSF_InvalidNamespaceOrFormat);
-			Device_ChangeState(eDeviceState_ReturnStatus);
-			return TRUE;
+	do {
+		if (sqe->CDW10.setFeatures.SV && !fidConfig[fid].saveable) {
+			status = eSF_DoNotRetry | eSF_FeatureIdentifierNotSaveable;
+			break;
 		}
 
-		if (!fidConfig[fid].ns_specific) {
-			Device_SetNvmeStatus(cq, eSF_FeatureNotNamespaceSpecific);
-			Device_ChangeState(eDeviceState_ReturnStatus);
-			return TRUE;
-		}
-	}
+		if (NVME_NSID_NONE != sqe->NSID && NVME_NSID_GLOBAL != sqe->NSID) {
+			if (NVME_NSID_INVALID <= sqe->NSID) {
+				status = eSF_DoNotRetry | eSF_InvalidNamespaceOrFormat;
+				break;
+			}
 
+			if (!fidConfig[fid].ns_specific) {
+				status = eSF_DoNotRetry | eSF_FeatureNotNamespaceSpecific;
+				break;
+			}
+		}
+	} while (FALSE);
+
+	Device_SetNvmeStatus(cq, status);
 	Device_ChangeState(eDeviceState_ReturnStatus);
 	return TRUE;
 }
