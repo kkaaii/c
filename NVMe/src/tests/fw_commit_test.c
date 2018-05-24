@@ -269,7 +269,6 @@ UINT32 HostTest_FwCommitParameters(void)
 
 	UINT32	i;
 	UINT32	failed = 0;
-	UINT8	buf[4096];
 
 	for (i = 0; i < sizeof (testcases) / sizeof (testcases[0]); ++i) {
 		HOST_MSG("Case %02d: FIRMWARE COMMIT w/NSID = %08Xh; CA = %d; FS = %d\n",

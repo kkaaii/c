@@ -25,7 +25,7 @@
 
 #define	ASSERT(x)	do {					\
 	if (!(x)) {						\
-		DBG_MSG("!!! assert failure: %s\n", #x);	\
+		ERR_MSG("!!! assert failure: %s\n", #x);	\
 		exit(1);					\
 	}							\
 } while (FALSE)

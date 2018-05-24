@@ -178,7 +178,7 @@ UINT32 HostTest_GetLogPageParameters(void)
 		NVME_STATUS status = Host_WaitForCompletion(NVME_CQID_ADMIN, cid)->dw3.SF;
 		Host_RingDoorbell_CQH(NVME_CQID_ADMIN);
 
-		failed += HostTest_CheckStatus(testcases[i].status, status);
+		failed += !HostTest_CheckStatus(testcases[i].status, status);
 	}
 
 	return failed;

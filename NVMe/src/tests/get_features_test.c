@@ -1168,7 +1168,7 @@ UINT32 HostTest_GetFeaturesParameters(void)
 		NVME_STATUS status = Host_WaitForCompletion(cqid, cid)->dw3.SF;
 		Host_RingDoorbell_CQH(cqid);
 
-		failed += HostTest_CheckStatus(testcases[i].status, status);
+		failed += !HostTest_CheckStatus(testcases[i].status, status);
 	}
 
 	return failed;

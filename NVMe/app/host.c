@@ -187,12 +187,12 @@ void *HostMain(void *context CC_ATTRIB_UNUSED)
 		Host_RingDoorbell_SQT(NVME_SQID_ADMIN);
 		ASSERT(eSF_SuccessfulCompletion == Host_WaitForCompletion(cqid, cid));
 #endif
-		HostTest_IdentifyParameters();
-		HostTest_GetLogPageParameters();
-		HostTest_FwDownloadParameters();
-		HostTest_FwCommitParameters();
-		HostTest_GetFeaturesParameters();
-		HostTest_SetFeaturesParameters();
+		ASSERT(0 == HostTest_IdentifyParameters());
+		ASSERT(0 == HostTest_GetLogPageParameters());
+		ASSERT(0 == HostTest_FwDownloadParameters());
+		ASSERT(0 == HostTest_FwCommitParameters());
+		ASSERT(0 == HostTest_GetFeaturesParameters());
+		ASSERT(0 == HostTest_SetFeaturesParameters());
 	}
 
 #if 0
