@@ -283,13 +283,7 @@ UINT32 HostTest_FwCommitParameters(void)
 		NVME_STATUS status = Host_WaitForCompletion(NVME_CQID_ADMIN, cid)->dw3.SF;
 		Host_RingDoorbell_CQH(NVME_CQID_ADMIN);
 
-		if (testcases[i].status != status) {
-			HOST_MSG(FAILED": expected %04xh, actual %04xh\n",
-				testcases[i].status, status);
-			++failed;
-		} else {
-			HOST_MSG(PASSED": %04Xh\n", status);
-		}
+		failed += !HostTest_CheckStatus(testcases[i].status, status);
 	}
 
 	return failed;

@@ -612,13 +612,7 @@ UINT32 HostTest_SetFeaturesParameters(void)
 
 		Host_RingDoorbell_SQT(sqid);
 		cqe = Host_WaitForCompletion(cqid, cid);
-		if (testcases[i].status != cqe->dw3.SF) {
-			HOST_MSG(FAILED": expected %04xh, actual %04xh\n",
-				testcases[i].status, cqe->dw3.SF);
-			++failed;
-		} else {
-			HOST_MSG(PASSED": %04Xh\n", cqe->dw3.SF);
-		}
+		failed += HostTest_CheckStatus(testcases[i].status, cqe->dw3.SF);
 		Host_RingDoorbell_CQH(cqid);
 	}
 

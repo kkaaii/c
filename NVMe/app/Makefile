@@ -21,6 +21,7 @@ SOURCES=\
 	../src/device/admin/fw_download_device.c\
 	../src/device/admin/fw_commit_device.c\
         ../src/device/admin/features_device.c\
+	../src/tests/nvme_test.c\
 	../src/tests/identify_test.c\
 	../src/tests/get_logpage_test.c\
 	../src/tests/fw_download_test.c\
