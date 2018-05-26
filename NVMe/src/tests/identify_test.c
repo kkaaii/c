@@ -100,7 +100,7 @@ UINT32 HostTest_IdentifyParameters(void)
 
 	UINT32	i;
 	UINT32	failed = 0;
-	void	*buf = Platform_MemAlign(HOST_PAGE_SIZE, HOST_PAGE_SIZE);
+	UINT8	buf[4096];
 
 	for (i = 0; i < sizeof (testcases) / sizeof (testcases[0]); ++i) {
 		HOST_MSG("Case %02d: Identify NSID = %08Xh; CNS = %d; CNTID = %d\n",
@@ -110,7 +110,7 @@ UINT32 HostTest_IdentifyParameters(void)
 			testcases[i].cns,
 			testcases[i].cntid,
 			buf,
-			HOST_PAGE_SIZE);
+			sizeof buf);
 
 		Host_RingDoorbell_SQT(NVME_SQID_ADMIN);
 		NVME_STATUS status = Host_WaitForCompletion(NVME_CQID_ADMIN, cid)->dw3.SF;
@@ -119,7 +119,6 @@ UINT32 HostTest_IdentifyParameters(void)
 		failed += !HostTest_CheckStatus(testcases[i].status, status);
 	}
 
-	free(buf);
 	return failed;
 }
 

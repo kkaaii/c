@@ -17,7 +17,7 @@ Host_Identify(
 	sqe->CDW10.identify.CNS = cns;
 	sqe->CDW10.identify.CNTID = cntid;
 
-	Host_BuildPRP1(sqe, buf, bytes);
+	Host_BuildPRPs(sqe, buf, bytes);
 
 	return Host_IssueCommand(asq);
 }
