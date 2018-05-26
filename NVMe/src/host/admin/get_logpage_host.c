@@ -21,7 +21,7 @@ Host_GetLogPage(
 	sqe->CDW12.getLogPage.LPOL = (UINT32)ofst;
 	sqe->CDW13.getLogPage.LPOU = (UINT32)(ofst >> 32);
 
-	Host_BuildPRP1(sqe, buf, bytes);
+	Host_BuildPRPs(sqe, buf, bytes);
 
 	return Host_IssueCommand(asq);
 }

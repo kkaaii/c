@@ -17,7 +17,7 @@ Host_FwDownload(
 	sqe->CDW10.fwDownload.NUMD = numd;
 	sqe->CDW11.fwDownload.OFST = ofst;
 
-	Host_BuildPRP1(sqe, buf, bytes);
+	Host_BuildPRPs(sqe, buf, bytes);
 
 	return Host_IssueCommand(asq);
 }

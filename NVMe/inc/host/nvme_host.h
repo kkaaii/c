@@ -17,6 +17,8 @@ void Host_RingBoorbell_CQH(NVME_QID cqid);
 void Host_RingBoorbell_SQT(NVME_QID sqid);
 
 BOOL Host_BuildPRP1(NVME_SQE *sqe, void *buf, UINT32 bytes);
+BOOL Host_BuildPRPs(NVME_SQE *sqe, void *buf, UINT64 bytes);
+
 NVME_CID Host_IssueCommand(NVME_QUEUE *sq);
 
 CC_STATIC_ALWAYS_INLINE
