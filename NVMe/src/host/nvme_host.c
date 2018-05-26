@@ -30,27 +30,88 @@ NVME_CID Host_IssueCommand(NVME_QUEUE *sq)
 	return _IssueCommand(sq);
 }
 
+CC_STATIC
+BOOL Host_BuildPrpList(UINT64 *prp, UINT64 addr, UINT32 entries)
+{
+	UINT32	n = HOST_PAGE_SIZE / sizeof (UINT64) - 1;
+	UINT32	pages = (entries + n - 1) / n;
+	UINT64	*entry;
+	UINT32	i;
+
+	ASSERT(entries >= 2);
+
+	entry = (UINT64 *)Platform_MemAlign(HOST_PAGE_SIZE, HOST_PAGE_SIZE * pages);
+	if (NULL == entry) {
+		return FALSE;
+	}
+
+	for (; entries > 0; entries -= n) {
+		*prp = CAST_PTR(UINT64)(entry);
+
+		if (n > entries)
+			n = entries;
+
+		for (i = 0; i < n; ++i) {
+			*entry++ = addr;
+			addr += HOST_PAGE_SIZE;
+		}
+		prp = entry++;
+	}
+
+	return TRUE;
+}
+
 BOOL Host_BuildPRP1(NVME_SQE *sqe, void *buf, UINT32 bytes)
 {
 	UINT64	s = CAST_PTR(UINT64)(buf);
 	UINT64	e = s + bytes - 1;
-	UINT32	n = (UINT32)((e >> HOST_PAGE_SIZE_BITS) - (s >> HOST_PAGE_SIZE_BITS) + 1);
+	UINT32	n = (UINT32)((e / HOST_PAGE_SIZE) - (s / HOST_PAGE_SIZE) + 1);
 
-	ASSERT(n < HOST_PAGE_SIZE / sizeof (UINT64));
+	ASSERT(0 == (s % HOST_PAGE_SIZE));
 
-	if (1 == n) {
+	switch (n) {
+	case 0:
+		break;
+
+	case 1:	/* PRP1 entry */
 		sqe->DPTR.PRP1 = s;
-		return TRUE;
+		break;
+
+	default:
+		Host_BuildPrpList(&sqe->DPTR.PRP1, s, n);
+		return FALSE;
 	}
 
-	UINT64	*p = (UINT64 *)malloc_align(HOST_PAGE_SIZE, HOST_PAGE_SIZE);
-	while (n--) {
-		*p++ = s;
-		s = (s + HOST_PAGE_SIZE) & ~(UINT64)HOST_PAGE_SIZE_MASK;
+	return TRUE;
+}
+
+BOOL Host_BuildPRPs(NVME_SQE *sqe, void *buf, UINT64 bytes)
+{
+	UINT64	s = CAST_PTR(UINT64)(buf);
+	UINT64	e = s + bytes - 1;
+	UINT32	n = (UINT32)((e / HOST_PAGE_SIZE) - (s / HOST_PAGE_SIZE) + 1);
+
+	sqe->DPTR.PRP1 = s;
+	s = (s + HOST_PAGE_SIZE) & ~(HOST_PAGE_SIZE - 1);
+
+	switch (n) {
+	case 0:
+		break;
+
+	case 1:	/* PRP1 entry only */
+		sqe->DPTR.PRP2 = 0;
+		break;
+
+	case 2:	/* PRP1 entry & PRP2 entry */
+		sqe->DPTR.PRP2 = s;
+		return FALSE;
+
+	default:/* PRP1 entry & PRP2 list */
+		Host_BuildPrpList(&sqe->DPTR.PRP2, s, n - 1);
+		return FALSE;
 	}
 
-	sqe->DPTR.PRP1 = CAST_PTR(UINT64)(p);
-	return FALSE;
+	return TRUE;
 }
 
 NVME_CQE *Host_WaitForCompletion(NVME_QID cqid, NVME_CID cid)
