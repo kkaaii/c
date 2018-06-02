@@ -7,15 +7,37 @@
 
 #define	MAX_QUEUES	8
 
-#define	QDEPTH_ADMIN	ZERO_BASED(16)
+#define	QSIZE_ASQ	ZERO_BASED(HOST_PAGE_SIZE / sizeof (NVME_SQE))
+#define	QSIZE_ACQ	ZERO_BASED(HOST_PAGE_SIZE / sizeof (NVME_CQE))
+
 #define	QDEPTH_IOCQ	ZERO_BASED(65536)
 #define	QDEPTH_IOSQ	ZERO_BASED(16384)
 
-CC_STATIC	NVME_CQE	cqAdmin[QDEPTH_ADMIN + 1]	CC_ATTRIB_ALIGNED(4096);
-CC_STATIC	NVME_SQE	sqAdmin[QDEPTH_ADMIN + 1]	CC_ATTRIB_ALIGNED(4096);
+CC_STATIC	NVME_CQE	cqeAdmin[QSIZE_ACQ + 1]	CC_ATTRIB_ALIGNED(HOST_PAGE_SIZE);
+CC_STATIC	NVME_SQE	sqeAdmin[QSIZE_ASQ + 1]	CC_ATTRIB_ALIGNED(HOST_PAGE_SIZE);
 
 NVME_QUEUE	hostCq[MAX_QUEUES];
 NVME_QUEUE	hostSq[MAX_QUEUES];
+
+NVME_QUEUE *Host_InitCompletionQueue(NVME_QID cqid, void *buf, UINT16 qsize)
+{
+	ASSERT(cqid < MAX_QUEUES);
+	NVME_QUEUE	*cq = &hostCq[cqid];
+	ASSERT(!NVME_QUEUE_IS_VALID(cq));
+
+	NvmeQ_Init(cq, buf, qsize);
+	return cq;
+}
+
+NVME_QUEUE *Host_InitSubmissionQueue(NVME_QID sqid, void *buf, UINT16 qsize)
+{
+	ASSERT(sqid < MAX_QUEUES);
+	NVME_QUEUE	*sq = &hostSq[sqid];
+	ASSERT(!NVME_QUEUE_IS_VALID(sq));
+
+	NvmeQ_Init(sq, buf, qsize);
+	return sq;
+}
 
 NVME_QUEUE *Host_GetCompletionQueue(NVME_QID cqid)
 {
@@ -46,17 +68,15 @@ void Host_Init(void)
 	memset(hostCq, 0, sizeof hostCq);
 	memset(hostSq, 0, sizeof hostSq);
 
-	NVME_QUEUE	*acq = &hostCq[NVME_CQID_ADMIN];
-	NVME_QUEUE	*asq = &hostSq[NVME_SQID_ADMIN];
-	NvmeQ_Init(acq, cqAdmin, QDEPTH_ADMIN);
-	NvmeQ_Init(asq, sqAdmin, QDEPTH_ADMIN);
+	NVME_QUEUE *acq = Host_InitCompletionQueue(NVME_CQID_ADMIN, cqeAdmin, QSIZE_ACQ);
+	NVME_QUEUE *asq = Host_InitSubmissionQueue(NVME_SQID_ADMIN, sqeAdmin, QSIZE_ASQ);
 
 	NVME_CONTROLLER *controller = (NVME_CONTROLLER *)PCIe_GetControllerRegBase(0);
 
 	NVME_REG32_AQA	AQA;
 	AQA.reg = 0;
-	AQA.ACQS = QDEPTH_ADMIN;
-	AQA.ASQS = QDEPTH_ADMIN;
+	AQA.ACQS = QSIZE_ACQ;
+	AQA.ASQS = QSIZE_ASQ;
 	PCIe_WriteReg32(&controller->AQA.reg, AQA.reg);
 
 	PCIe_WriteReg64(&controller->ACQ.reg, CAST_PTR(UINT64)(acq->base));
@@ -141,18 +161,18 @@ NVME_CQE *Host_CheckResponse(NVME_QUEUE *cq)
 
 	return cqe;
 }
-/*
-NVME_STATUS Host_GetStatus(NVME_QUEUE *cq, NVME_CID cid)
+
+BOOL Host_SyncAdminCommand(NVME_CID cid)
 {
-	NVME_CQE	*cqe;
+	NVME_STATUS	status;
 
-	do {
-		cqe = Host_CheckResponse(cq);
-	} while(NULL == cqe || cid != cqe->dw3.CID);
+	Host_RingDoorbell_SQT(NVME_SQID_ADMIN);
+	status = Host_WaitForCompletion(NVME_CQID_ADMIN, cid)->dw3.SF;
+	Host_RingDoorbell_CQH(NVME_CQID_ADMIN);
 
-	return cqe->dw3.SF;
+	return (eSF_SuccessfulCompletion == status);
 }
-*/
+
 void *HostMain(void *context CC_ATTRIB_UNUSED)
 {
 	ENTER();
@@ -163,41 +183,39 @@ void *HostMain(void *context CC_ATTRIB_UNUSED)
 	NVME_QUEUE	*asq = Host_GetSubmissionQueue(sqid);
 	NVME_QUEUE	*acq = Host_GetCompletionQueue(cqid);
 
-	{
-#if 0
-		UINT32	bytes;
-		void	*buf;
+	NVME_CID	cid;
 
-		bytes = (QDEPTH_IOCQ + 1) * sizeof (NVME_CQE);
-		buf = malloc_align(HOST_PAGE_SIZE, bytes);
-
-		NVME_CID	cid;
-		NVME_QID	cqid = 1;
-		NvmeQ_Init(&hostCq[cqid], buf, QDEPTH_IOCQ);
-		cid = Host_CreateIoCq(asq, cqid, buf, bytes);
-		Host_RingDoorbell_SQT(NVME_SQID_ADMIN);
-		ASSERT(eSF_SuccessfulCompletion == Host_WaitForCompletion(cqid, cid));
-
-		bytes = (QDEPTH_IOSQ + 1) * sizeof (NVME_SQE);
-		buf = malloc_align(HOST_PAGE_SIZE, bytes);
-
-		NVME_QID	sqid = 1;
-		NvmeQ_Init(&hostCq[sqid], buf, QDEPTH_IOSQ);
-		cid = Host_CreateIoSq(asq, sqid, buf, bytes);
-		Host_RingDoorbell_SQT(NVME_SQID_ADMIN);
-		ASSERT(eSF_SuccessfulCompletion == Host_WaitForCompletion(cqid, cid));
-#endif
-		ASSERT(0 == HostTest_IdentifyParameters());
-		ASSERT(0 == HostTest_GetLogPageParameters());
-		ASSERT(0 == HostTest_FwDownloadParameters());
-		ASSERT(0 == HostTest_FwCommitParameters());
-		ASSERT(0 == HostTest_GetFeaturesParameters());
-		ASSERT(0 == HostTest_SetFeaturesParameters());
-		ASSERT(0 == HostTest_CreateIoCompletionQueueParameters());
-		ASSERT(0 == HostTest_CreateIoSubmissionQueueParameters());
-		ASSERT(0 == HostTest_DeleteIoSubmissionQueueParameters());
-		ASSERT(0 == HostTest_DeleteIoCompletionQueueParameters());
+	cid = Host_SetFeatures(NVME_NSID_NONE, eFID_Arbitration, 3, FALSE, NULL, 0);
+	if (!Host_SyncAdminCommand(cid)) {
+		return NULL;
 	}
+
+	UINT8	*buf = Platform_MemAlign(HOST_PAGE_SIZE, HOST_PAGE_SIZE * 2);
+	Host_InitCompletionQueue(1, buf, ZERO_BASED(HOST_PAGE_SIZE / sizeof (NVME_CQE)));
+	cid = Host_CreateIoCompletionQueue(NVME_NSID_NONE, 1, buf, HOST_PAGE_SIZE);
+	if (!Host_SyncAdminCommand(cid)) {
+		free(buf);
+		return NULL;
+	}
+
+	buf += HOST_PAGE_SIZE;
+	Host_InitSubmissionQueue(1, buf, ZERO_BASED(HOST_PAGE_SIZE / sizeof (NVME_SQE)));
+	cid = Host_CreateIoSubmissionQueue(NVME_NSID_NONE, 1, 1, buf, HOST_PAGE_SIZE);
+	if (!Host_SyncAdminCommand(cid)) {
+		free(buf - HOST_PAGE_SIZE);
+		return NULL;
+	}
+	
+	ASSERT(0 == HostTest_IdentifyParameters());
+	ASSERT(0 == HostTest_GetLogPageParameters());
+	ASSERT(0 == HostTest_FwDownloadParameters());
+	ASSERT(0 == HostTest_FwCommitParameters());
+	ASSERT(0 == HostTest_GetFeaturesParameters());
+	ASSERT(0 == HostTest_SetFeaturesParameters());
+	ASSERT(0 == HostTest_CreateIoCompletionQueueParameters());
+	ASSERT(0 == HostTest_CreateIoSubmissionQueueParameters());
+	ASSERT(0 == HostTest_DeleteIoSubmissionQueueParameters());
+	ASSERT(0 == HostTest_DeleteIoCompletionQueueParameters());
 
 #if 0
 	for (;;) {
@@ -215,7 +233,15 @@ void *HostMain(void *context CC_ATTRIB_UNUSED)
 			Host_RingDoorbell_CQH(cqid);
 	}
 #endif
+
+	cid = Host_DeleteIoSubmissionQueue(NVME_NSID_NONE, 1);
+	Host_SyncAdminCommand(cid);
+
+	cid = Host_DeleteIoCompletionQueue(NVME_NSID_NONE, 1);
+	Host_SyncAdminCommand(cid);
+
 	LEAVE();
+	free(buf - HOST_PAGE_SIZE);
 	return NULL;
 }
 

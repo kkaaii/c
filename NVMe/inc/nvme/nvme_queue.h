@@ -54,7 +54,7 @@ typedef	struct {
 ** pointer definition.
 */
 #define	NVME_MIN_QSIZE	2
-#define	NVME_MAX_QSIZE	63
+#define	NVME_MAX_QSIZE	255
 
 #define	NVME_QSIZE_IS_VALID(qsize)	\
 	(NVME_MIN_QSIZE <= (qsize) && (qsize) <= NVME_MAX_QSIZE)

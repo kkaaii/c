@@ -27,6 +27,7 @@
 #define	ASSERT(x)	do {					\
 	if (!(x)) {						\
 		ERR_MSG("!!! assert failure: %s\n", #x);	\
+		ERR_MSG("%s:%d\n", __FILE__, __LINE__);		\
 		exit(1);					\
 	}							\
 } while (FALSE)

@@ -77,10 +77,10 @@ void Device_Init(void)
 	NVME_REG64_ACQ	ACQ;
 	ACQ.reg = PCIe_ReadReg64(&controller->ACQ.reg);
 
-	NVME_QUEUE *acq = &devCq[NVME_CQID_ADMIN];
-	NVME_QUEUE *asq = &devSq[NVME_SQID_ADMIN];
-	NvmeQ_Init(acq, CAST_PTR(void *)(ACQ.reg), AQA.ACQS);
-	NvmeQ_Init(asq, CAST_PTR(void *)(ASQ.reg), AQA.ASQS);
+	Device_InitCompletionQueue(NVME_CQID_ADMIN, CAST_PTR(void *)(ACQ.reg), AQA.ACQS);
+	ASSERT(NULL != Device_GetCompletionQueue(NVME_CQID_ADMIN));
+	Device_InitSubmissionQueue(NVME_SQID_ADMIN, CAST_PTR(void *)(ASQ.reg), AQA.ASQS);
+	ASSERT(NULL != Device_GetSubmissionQueue(NVME_SQID_ADMIN));
 
 	NVME_REG32_CSTS	CSTS;
 	CSTS.reg = PCIe_ReadReg32(&controller->CSTS.reg);
@@ -114,36 +114,6 @@ BOOL Device_UpdateCQH(UINT16 cqid, UINT16 head)
 
 	cq->head = head;
 	return TRUE;
-}
-
-BOOL Device_HandleCommand(UINT16 sqid, UINT16 cqid)
-{
-	NVME_QUEUE	*sq = Device_GetSubmissionQueue(sqid);
-	NVME_QUEUE	*cq = Device_GetCompletionQueue(cqid);
-
-	if (NULL == sq || NULL == cq)
-		return FALSE;
-
-	if (NVME_QUEUE_IS_EMPTY(sq))
-		return FALSE;
-
-	if (NVME_QUEUE_IS_FULL(cq))
-		return FALSE;
-
-	NVME_SQE	*sqe = (NVME_SQE *)(sq->base) + sq->head;
-	UINT16		cid = sqe->CDW0.CID;
-
-	NVME_CQE	*cqe = (NVME_CQE *)(cq->base) + cq->tail;
-	cqe->dw2.SQID	= sqid;
-	cqe->dw2.SQHD	= sq->head;
-	cqe->dw3.CID	= cid;
-	cqe->dw3.P	= !cqe->dw3.P;
-
-	NVME_QUEUE_INC_HEAD(sq);
-	NVME_QUEUE_INC_TAIL(cq);
-
-	DEV_DBG_MSG("(%02d|%02d)(%02d|%02d) 0x%04x %1x\n",
-		sq->head, sq->tail, cq->head, cq->tail, cid, cqe->dw3.P);
 }
 
 void *DeviceMain(void *context CC_ATTRIB_UNUSED)

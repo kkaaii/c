@@ -7,7 +7,7 @@
 #define	DEV_ERR_MSG(...)	ERR_MSG(DEV __VA_ARGS__)
 #define	DEV_MSG(...)		ALL_MSG(DEV __VA_ARGS__)
 
-#define	MQES			64
+#define	MQES			256
 #define	MAX_QUEUES		8
 
 enum {
@@ -53,6 +53,13 @@ NVME_SQE *Device_GetSubmissionQueueEntry(NVME_QUEUE *sq)
 	ASSERT(!NVME_QUEUE_IS_EMPTY(sq));
 
 	return (NVME_SQE *)(sq->base) + sq->head;
+}
+
+CC_STATIC_ALWAYS_INLINE
+void Device_SetCommandSpecific(NVME_QUEUE *cq, UINT32 value)
+{
+	NVME_CQE	*cqe = Device_GetCompletionQueueEntry(cq);
+	cqe->dw0.all = value;
 }
 
 void Device_CommandHandler(NVME_QID sqid, NVME_QID cqid);

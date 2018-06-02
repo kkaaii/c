@@ -32,13 +32,13 @@ BOOL Device_CreateIoCompletionQueue(NVME_QID sqid, NVME_QID cqid)
 			break;
 		}
 
-		if (0 == sqe->CDW11.createIoCompletionQueue.PC) {
-			status = eSF_DoNotRetry | eSF_InvalidFieldInCommand;
+		if (qsize > ZERO_BASED(MQES)) {
+			status = eSF_DoNotRetry | eSF_InvalidQueueSize;
 			break;
 		}
 
-		if (qsize > ZERO_BASED(MQES)) {
-			status = eSF_DoNotRetry | eSF_InvalidQueueSize;
+		if (0 == sqe->CDW11.createIoCompletionQueue.PC) {
+			status = eSF_DoNotRetry | eSF_InvalidFieldInCommand;
 			break;
 		}
 
@@ -131,11 +131,6 @@ BOOL Device_CreateIoSubmissionQueue(NVME_QID sqid, NVME_QID cqid)
 			break;
 		}
 
-		if (0 == sqe->CDW11.createIoSubmissionQueue.PC) {
-			status = eSF_DoNotRetry | eSF_InvalidFieldInCommand;
-			break;
-		}
-
 		if (NULL == Device_GetCompletionQueue(cqid)) {
 			status = eSF_DoNotRetry | eSF_CompletionQueueInvalid;
 			break;
@@ -143,6 +138,11 @@ BOOL Device_CreateIoSubmissionQueue(NVME_QID sqid, NVME_QID cqid)
 
 		if (!DeviceArbitration_AddQueuePair(qid, cqid)) {
 			status = eSF_DoNotRetry | eSF_InvalidQueueIdentifier;
+			break;
+		}
+
+		if (0 == sqe->CDW11.createIoSubmissionQueue.PC) {
+			status = eSF_DoNotRetry | eSF_InvalidFieldInCommand;
 			break;
 		}
 

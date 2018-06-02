@@ -13,6 +13,9 @@
 NVME_QUEUE *Host_GetCompletionQueue(NVME_QID cqid);
 NVME_QUEUE *Host_GetSubmissionQueue(NVME_QID sqid);
 
+NVME_QUEUE *Host_InitCompletionQueue(NVME_QID cqid, void *buf, UINT16 qsize);
+NVME_QUEUE *Host_InitSubmissionQueue(NVME_QID sqid, void *buf, UINT16 qsize);
+
 void Host_RingBoorbell_CQH(NVME_QID cqid);
 void Host_RingBoorbell_SQT(NVME_QID sqid);
 
@@ -39,6 +42,10 @@ NVME_CQE *Host_CheckResponse(NVME_QUEUE *cq);
 #include "admin/fw_download_host.h"
 #include "admin/fw_commit_host.h"
 #include "admin/features_host.h"
+#include "admin/create_iocq_host.h"
+#include "admin/create_iosq_host.h"
+#include "admin/delete_iosq_host.h"
+#include "admin/delete_iocq_host.h"
 
 #endif	/* _NVME_HOST_H */
 

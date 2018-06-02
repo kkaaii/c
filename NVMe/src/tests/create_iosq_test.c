@@ -20,35 +20,35 @@ UINT32 HostTest_CreateIoSubmissionQueueParameters(void)
 			.nsid	= NVME_NSID_GLOBAL,
 			.qid	= SQID_VALID,
 			.cqid	= CQID_VALID,
-			.qsize	= ZERO_BASED(MQES),
+			.qsize	= ZERO_BASED(MQES / 4),
 			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		{
 			.nsid	= NVME_NSID_INVALID,
 			.qid	= SQID_VALID,
 			.cqid	= CQID_VALID,
-			.qsize	= ZERO_BASED(MQES),
+			.qsize	= ZERO_BASED(MQES / 4),
 			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		{
 			.nsid	= NVME_NSID_ACTIVE,
 			.qid	= SQID_VALID,
 			.cqid	= CQID_VALID,
-			.qsize	= ZERO_BASED(MQES),
+			.qsize	= ZERO_BASED(MQES / 4),
 			.status	= eSF_InvalidNamespaceOrFormat
 		},
 		{
 			.nsid	= NVME_NSID_NONE,
 			.qid	= NVME_SQID_ADMIN,
 			.cqid	= CQID_VALID,
-			.qsize	= ZERO_BASED(MQES),
+			.qsize	= ZERO_BASED(MQES / 4),
 			.status	= eSF_InvalidQueueIdentifier
 		},
 		{
 			.nsid	= NVME_NSID_NONE,
 			.qid	= MAX_QUEUES,
 			.cqid	= CQID_VALID,
-			.qsize	= ZERO_BASED(MQES),
+			.qsize	= ZERO_BASED(MQES / 4),
 			.status	= eSF_InvalidQueueIdentifier
 		},
 		{
@@ -62,14 +62,14 @@ UINT32 HostTest_CreateIoSubmissionQueueParameters(void)
 			.nsid	= NVME_NSID_NONE,
 			.qid	= SQID_VALID,
 			.cqid	= CQID_INVALID,
-			.qsize	= ZERO_BASED(MQES),
+			.qsize	= ZERO_BASED(MQES / 4),
 			.status	= eSF_CompletionQueueInvalid
 		},
 		{
 			.nsid	= NVME_NSID_NONE,
 			.qid	= SQID_VALID,
 			.cqid	= CQID_VALID,
-			.qsize	= ZERO_BASED(MQES),
+			.qsize	= ZERO_BASED(MQES / 4),
 			.status	= eSF_SuccessfulCompletion
 		},
 	};

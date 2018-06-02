@@ -1,8 +1,6 @@
 #include "nvme/nvme.h"
 #include "nvme_device.h"
 
-CC_STATIC	UINT32	gNumberOfQueues = MAX_QUEUES;
-
 struct node {
 	struct node	*prev;
 	struct node	*next;
@@ -51,15 +49,10 @@ static struct {
 
 void rr_switch(void)
 {
-#if 1
-	rr.node = rr.node->next;
-	rr.count = 4;
-#else
-	UINT32 value = Device_GetFeatureValue(eFID_Arbitration, eSEL_Current);
+	UINT32 value = Device_GetFeatureDword(eFID_Arbitration, eSEL_Current);
 
 	rr.node = rr.node->next;
 	rr.count = (1 << ((FEAT_ARB *)&value)->AB);
-#endif
 }
 
 struct node *rr_get(void)
@@ -76,15 +69,13 @@ BOOL DeviceArbitration_AddQueuePair(NVME_QID sqid, NVME_QID cqid)
 {
 	DEV_DBG_MSG("SQID = %04Xh; CQID = %04Xh\n", sqid, cqid);
 
-	if (sqid > gNumberOfQueues) {
+	UINT32 value = Device_GetFeatureDword(eFID_NumberOfQueues, eSEL_Current);
+
+	if (sqid > ((FEAT_NQ *)&value)->NSQR) {
 		return FALSE;
 	}
 	ASSERT(sqid < MAX_QUEUES);
 
-WATCH(nodes[0].prev);
-WATCH(nodes[1].prev);
-WATCH(nodes[2].prev);
-WATCH(nodes[3].prev);
 	struct node *node = &nodes[sqid];
 	if (NULL != node->prev) {
 		return FALSE;
