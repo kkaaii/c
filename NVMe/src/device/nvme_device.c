@@ -10,8 +10,12 @@ CC_STATIC	EDeviceState	gState = eDeviceState_FetchCommand;
 
 CC_STATIC	StateHandler	gHandlers[] = {
 	[eDeviceState_FetchCommand]	= Device_FetchCommand,
-	[eDeviceState_Identify]		= Device_Identify,
+	[eDeviceState_DeleteIoSq]	= Device_DeleteIoSubmissionQueue,
+	[eDeviceState_CreateIoSq]	= Device_CreateIoSubmissionQueue,
 	[eDeviceState_GetLogPage]	= Device_GetLogPage,
+	[eDeviceState_DeleteIoCq]	= Device_DeleteIoCompletionQueue,
+	[eDeviceState_CreateIoCq]	= Device_CreateIoCompletionQueue,
+	[eDeviceState_Identify]		= Device_Identify,
 	[eDeviceState_FwDownload]	= Device_FwDownload,
 	[eDeviceState_FwCommit]		= Device_FwCommit,
 	[eDeviceState_GetFeatures]	= Device_GetFeatures,
@@ -46,10 +50,14 @@ BOOL Device_FetchCommand(NVME_QID sqid, NVME_QID cqid)
 		UINT8           opcode;
 		EDeviceState    state;
 	} table[] = {
+		{NVME_OPC_ADMIN_DELETE_IOSQ,	eDeviceState_DeleteIoSq},
+		{NVME_OPC_ADMIN_CREATE_IOSQ,	eDeviceState_CreateIoSq},
+		{NVME_OPC_ADMIN_GET_LOG_PAGE,   eDeviceState_GetLogPage},
+		{NVME_OPC_ADMIN_DELETE_IOCQ,	eDeviceState_DeleteIoCq},
+		{NVME_OPC_ADMIN_CREATE_IOCQ,	eDeviceState_CreateIoCq},
 		{NVME_OPC_ADMIN_IDENTIFY,       eDeviceState_Identify},
 		{NVME_OPC_ADMIN_GET_FEATURES,   eDeviceState_GetFeatures},
 		{NVME_OPC_ADMIN_SET_FEATURES,   eDeviceState_SetFeatures},
-		{NVME_OPC_ADMIN_GET_LOG_PAGE,   eDeviceState_GetLogPage},
 		{NVME_OPC_ADMIN_FW_DOWNLOAD,    eDeviceState_FwDownload},
 		{NVME_OPC_ADMIN_FW_COMMIT,      eDeviceState_FwCommit}
 	};

@@ -12,7 +12,7 @@ CC_STATIC	NVME_REG64_CAP	CAP;
 
 NVME_QUEUE *Device_GetCompletionQueue(UINT16 cqid)
 {
-	if (cqid > CAP.MQES)
+	if (cqid >= MAX_QUEUES)
 		return NULL;
 
 	NVME_QUEUE	*cq = &devCq[cqid];
@@ -24,7 +24,7 @@ NVME_QUEUE *Device_GetCompletionQueue(UINT16 cqid)
 
 NVME_QUEUE *Device_GetSubmissionQueue(UINT16 sqid)
 {
-	if (sqid > CAP.MQES)
+	if (sqid >= MAX_QUEUES)
 		return NULL;
 
 	NVME_QUEUE	*sq = &devSq[sqid];
@@ -32,6 +32,26 @@ NVME_QUEUE *Device_GetSubmissionQueue(UINT16 sqid)
 		return NULL;
 
 	return sq;
+}
+
+void Device_InitCompletionQueue(NVME_QID cqid, void *buf, UINT16 qsize)
+{
+	ASSERT(cqid < MAX_QUEUES);
+
+	NVME_QUEUE *cq = &devCq[cqid];
+	ASSERT(!NVME_QUEUE_IS_VALID(cq));
+
+	NvmeQ_Init(cq, buf, qsize);
+}
+
+void Device_InitSubmissionQueue(NVME_QID sqid, void *buf, UINT16 qsize)
+{
+	ASSERT(sqid < MAX_QUEUES);
+
+	NVME_QUEUE *sq = &devSq[sqid];
+	ASSERT(!NVME_QUEUE_IS_VALID(sq));
+
+	NvmeQ_Init(sq, buf, qsize);
 }
 
 void Device_Init(void)
@@ -45,8 +65,8 @@ void Device_Init(void)
 	} while (0 == CC.EN);
 
 	CAP.reg = PCIe_ReadReg64(&controller->CAP.reg);
-	devCq = (NVME_QUEUE *)calloc(CAP.MQES + 1, sizeof (NVME_QUEUE));
-	devSq = (NVME_QUEUE *)calloc(CAP.MQES + 1, sizeof (NVME_QUEUE));
+	devCq = (NVME_QUEUE *)calloc(MAX_QUEUES + 1, sizeof (NVME_QUEUE));
+	devSq = (NVME_QUEUE *)calloc(MAX_QUEUES + 1, sizeof (NVME_QUEUE));
 
 	NVME_REG32_AQA	AQA;
 	AQA.reg = PCIe_ReadReg32(&controller->AQA.reg);
@@ -66,6 +86,8 @@ void Device_Init(void)
 	CSTS.reg = PCIe_ReadReg32(&controller->CSTS.reg);
 	CSTS.RDY = 1;
 	PCIe_WriteReg32(&controller->CSTS.reg, CSTS.reg);
+
+	DeviceArbitration_Init();
 }
 
 BOOL Device_UpdateSQT(UINT16 sqid, UINT16 tail)

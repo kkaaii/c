@@ -14,8 +14,8 @@ Host_FwDownload(
 
 	sqe->CDW0.OPC = NVME_OPC_ADMIN_FW_DOWNLOAD;
 	sqe->NSID = nsid;
-	sqe->CDW10.fwDownload.NUMD = numd;
-	sqe->CDW11.fwDownload.OFST = ofst;
+	sqe->CDW10.firmwareImageDownload.NUMD = numd;
+	sqe->CDW11.firmwareImageDownload.OFST = ofst;
 
 	Host_BuildPRPs(sqe, buf, bytes);
 

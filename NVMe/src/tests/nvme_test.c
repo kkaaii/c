@@ -15,3 +15,16 @@ BOOL HostTest_CheckStatus(NVME_STATUS expected, NVME_STATUS actual)
 	return TRUE;
 }
 
+NVME_STATUS HostTest_SyncExecuteAdmin(NVME_CID cid)
+{
+	NVME_QID	cqid = NVME_CQID_ADMIN;
+	NVME_QID	sqid = NVME_SQID_ADMIN;
+	NVME_STATUS	status;
+
+	Host_RingDoorbell_SQT(sqid);
+	status = Host_WaitForCompletion(cqid, cid)->dw3.SF;
+	Host_RingDoorbell_CQH(cqid);
+
+	return status;
+}
+

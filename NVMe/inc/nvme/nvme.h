@@ -2,6 +2,7 @@
 #define	_NVME_H
 
 #include <stdint.h>
+#include <string.h>
 
 #define	CC_CONCAT(x, y)		x##y
 #define	CC_CONCAT_EXPAND(x, y)	CC_CONCAT(x, y)

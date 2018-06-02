@@ -193,6 +193,10 @@ void *HostMain(void *context CC_ATTRIB_UNUSED)
 		ASSERT(0 == HostTest_FwCommitParameters());
 		ASSERT(0 == HostTest_GetFeaturesParameters());
 		ASSERT(0 == HostTest_SetFeaturesParameters());
+		ASSERT(0 == HostTest_CreateIoCompletionQueueParameters());
+		ASSERT(0 == HostTest_CreateIoSubmissionQueueParameters());
+		ASSERT(0 == HostTest_DeleteIoSubmissionQueueParameters());
+		ASSERT(0 == HostTest_DeleteIoCompletionQueueParameters());
 	}
 
 #if 0

@@ -10,6 +10,7 @@
 #define	DBG_LVL_DEBUG	3
 
 #define	DBG_LEVEL	DBG_LVL_ERROR
+//#define	DBG_LEVEL	DBG_LVL_DEBUG
 
 #define	MSG(level, ...)	do {if ((level) <= DBG_LEVEL) printf(__VA_ARGS__);} while(0)
 

@@ -30,27 +30,12 @@ typedef union {
 
 CC_ASSERT(sizeof(UINT32) == sizeof (NVME_SQE_DW0));
 
-typedef struct {
-	UINT16		sqid;		/* Submission Queue Identifier (SQID) */
-	UINT16		cid;		/* Command Identifier (CID) */
-} NVME_CDW10_ABORT;
-
-typedef struct {
-	UINT16		qid;		/* Queue Identifier (QID) */
-	UINT16		rsvd;		/* reserved */
-} NVME_CDW10_DELETEQ;
-
 typedef enum {
 	eSTC_SHORT		= 0x1,	/* Start a short device self-test operation */
 	eSTC_EXTENDED		= 0x2,	/* Start an extended device self-test operation */
 	eSTC_VS			= 0xE,	/* Vendor specific */
 	eSTC_ABORT		= 0xF	/* Abort device self-test operation */
 } SELFTEST_CODE;
-
-typedef struct {
-	UINT32		stc	: 4;	/* Self-test Code (STC) */
-	UINT32		rsvd	: 28;	/* reserved */
-} NVME_CDW10_SELFTEST;
 
 typedef enum {
 	eCA_UPDATE_FS		= 0x0,	/* Downloaded image replaces the
@@ -79,78 +64,117 @@ typedef enum {
 					BPINFO.ABPID */
 } COMMIT_ACTION;
 
-typedef struct {
-	UINT32		FS	: 3;	/* Firmware Slot (FS) */
-	UINT32		CA	: 3;	/* Commit Action (CA) */
-	UINT32		rsvd	: 25;	/* reserved */
-	UINT32		bpid	: 1;	/* Boot Partition ID (BPID) */
-} NVME_CDW10_FWCOMMIT;
-
-typedef struct {
-	UINT32		NUMD;		/* Number of DWords (NUMD) */
-} NVME_CDW10_NUMD;
-
-typedef struct {
-	UINT32		FID	: 8;	/* Feature Identifier (FID) */
-	UINT32		SEL	: 3;	/* Select (SEL) */
-	UINT32		rsvd	: 21;	/* reserved */
-} NVME_CDW10_GET_FEATURES;
-
-typedef struct {
-	UINT32		LID	: 8;	/* Log Page Identifier (LID) */
-	UINT32		lsp	: 4;	/* Log Specific Field (LSP) */
-	UINT32		rsvd	: 3;	/* reserved */
-	UINT32		rae	: 1;	/* Retain Asynchronous Event (RAE) */
-	UINT32		NUMDL	: 16;	/* Number of Dwords Lower (NUMDL) */
-} NVME_CDW10_GET_LOG_PAGE;
-
-typedef struct {
-	UINT32		CNS	: 8;	/* Controller or Namespace Structure (CNS) */
-	UINT32		rsvd	: 8;	/* reserved */
-	UINT32		CNTID	: 16;	/* Controller Identifier (CNTID) */
-} NVME_CDW10_IDENTIFY;
-
-typedef struct {
-	UINT32		FID	: 8;	/* Feature Identifier (FID) */
-	UINT32		rsvd	: 23;	/* reserved */
-	UINT32		SV	: 1;	/* Save (SV) */
-} NVME_CDW10_SET_FEATURES;
-
 typedef union {
-	UINT32			val;
-	NVME_CDW10_ABORT	abort;
-	NVME_CDW10_DELETEQ	deleteq;
-	NVME_CDW10_SELFTEST	selftest;
-	NVME_CDW10_FWCOMMIT	fwCommit;
-	NVME_CDW10_NUMD		fwDownload;
-	NVME_CDW10_GET_FEATURES	getFeatures;
-	NVME_CDW10_GET_LOG_PAGE	getLogPage;
-	NVME_CDW10_IDENTIFY	identify;
-	NVME_CDW10_SET_FEATURES	setFeatures;
+	UINT32		val;
+
+	/*
+	** Figure 43: Abort - Command Dword 10
+	*/
+	struct {
+		UINT32	SQID	: 16;	/* Submission Queue Identifier */
+		UINT32	CID	: 16;	/* Command Identifier */
+	} abort;
 
 	/*
 	** Figure 52: Create I/O Completion Queue - Command Dword 10
+	*/
+	struct {
+		UINT32	QID	: 16;	/* Queue Identifier */
+		UINT32	QSIZE	: 16;	/* Queue Size */
+	} createIoCompletionQueue;
+
+	/*
 	** Figure 56: Create I/O Submission Queue - Command Dword 10
 	*/
 	struct {
 		UINT32	QID	: 16;	/* Queue Identifier */
 		UINT32	QSIZE	: 16;	/* Queue Size */
-	} createq;
+	} createIoSubmissionQueue;
+
+	/*
+	** Figure 59: Delete I/O Completion Queue - Command Dword 10
+	*/
+	struct {
+		UINT32	QID	: 16;	/* Queue Identifier */
+		UINT32	rsvd16	: 16;
+	} deleteIoCompletionQueue;
+
+	/*
+	** Figure 61: Delete I/O Submission Queue - Command Dword 10
+	*/
+	struct {
+		UINT32	QID	: 16;	/* Queue Identifier */
+		UINT32	rsvd16	: 16;
+	} deleteIoSubmissionQueue;
+
+	/*
+	** Figure 67: Device Self-test - Command Dword 10
+	*/
+	struct {
+		UINT32	STC	: 4;	/* Self-test Code */
+		UINT32	rsvd4	: 28;
+	} deviceSelfTest;
+
+	/*
+	** Figure 76: Firmware Commit - Command Dword 10
+	*/
+	struct {
+		UINT32	FS	: 3;	/* Firmware Slot */
+		UINT32	CA	: 3;	/* Commit Action */
+		UINT32	rsvd8	: 25;
+		UINT32	BPID	: 1;	/* Boot Partition ID */
+	} firmwareCommit;
+
+	/*
+	** Figure 79: Firmware Image Download - Command Dword 10
+	*/
+	struct {
+		UINT32	NUMD;		/* Number of Dwords */
+	} firmwareImageDownload;
+
+	/*
+	** Figure 83: Get Features - Command Dword 10
+	*/
+	struct {
+		UINT32	FID	: 8;	/* Feature Identifier */
+		UINT32	SEL	: 3;	/* Select */
+		UINT32	rsvd11	: 21;
+	} getFeatures;
+
+	/*
+	** Figure 86: Get Log Page - Command Dword 10
+	*/
+	struct {
+		UINT32	LID	: 8;	/* Log Page Identifier */
+		UINT32	LSP	: 4;	/* Log Specific Field */
+		UINT32	rsvd12	: 3;
+		UINT32	RAE	: 1;	/* Retain Asynchronous Event */
+		UINT32	NUMDL	: 16;	/* Number of Dwords Lower */
+	} getLogPage;
+
+	/*
+	** Figure 108: Identify - Command Dword 10
+	*/
+	struct {
+		UINT32	CNS	: 8;	/* Controller or Namespace Structure */
+		UINT32	rsvd	: 8;
+		UINT32	CNTID	: 16;	/* Controller Identifier */
+	} identify;
+
+	/*
+	** Figure 133: Set Features - Command Dword 10
+	*/
+	struct {
+		UINT32	FID	: 8;	/* Feature Identifier */
+		UINT32	rsvd8	: 23;
+		UINT32	SV	: 1;	/* Save */
+	} setFeatures;
 } NVME_SQE_DW10;
 
-typedef struct {
-	UINT32		OFST;		/* Offset (OFST) */
-} NVME_CDW11_OFST;
-
-typedef struct {
-	UINT16		NUMDU;		/* Number of Dwords Upper (NUMDU) */
-	UINT16		rsvd;		/* reserved */
-} NVME_CDW11_GET_LOG_PAGE;
+CC_ASSERT(sizeof(UINT32) == sizeof (NVME_SQE_DW10));
 
 typedef union {
 	UINT32			val;
-	NVME_CDW11_OFST		fwDownload;
-	NVME_CDW11_GET_LOG_PAGE	getLogPage;
 
 	/*
 	** Figure 53: Create I/O Completion Queue - Command Dword 11
@@ -159,8 +183,8 @@ typedef union {
 		UINT32	PC	: 1;	/* 00:00 Physically Contiguous */
 		UINT32	IEN	: 1;	/* 01:01 Interrupts Enabled */
 		UINT32	rsvd2	: 14;	/* 15:02 reserved */
-		UINT32	IV;		/* 31:16 Interrupt Vector */
-	} iocq;
+		UINT32	IV	: 16;	/* 31:16 Interrupt Vector */
+	} createIoCompletionQueue;
 
 	/*
 	** Figure 57: Create I/O Submission Queue - Command Dword 11
@@ -169,26 +193,47 @@ typedef union {
 		UINT32	PC	: 1;	/* 00:00 Physically Contiguous */
 		UINT32	QPRIO	: 2;	/* 02:01 Queue Priority */
 		UINT32	rsvd	: 13;	/* 15:03 reserved */
-		UINT32	CQID;		/* 31:16 Completion Queue ID */
-	} iosq;
+		UINT32	CQID	: 16;	/* 31:16 Completion Queue ID */
+	} createIoSubmissionQueue;
+
+	/*
+	** Figure 80: Firmware Image Download - Command Dword 11
+	*/
+	struct {
+		UINT32	OFST;		/* Offset */
+	} firmwareImageDownload;
+
+	/*
+	** Figure 87: Get Log Page - Command Dword 11
+	*/
+	struct {
+		UINT32	NUMDU	: 16;	/* Number of Dwords Upper */
+		UINT32	rsvd16	: 16;
+	} getLogPage;
 } NVME_SQE_DW11;
 
-typedef struct {
-	UINT32		LPOL;		/* Log Page Offset Lower (LPOL) */
-} NVME_CDW12_GET_LOG_PAGE;
+CC_ASSERT(sizeof(UINT32) == sizeof (NVME_SQE_DW11));
 
 typedef union {
 	UINT32			val;
-	NVME_CDW12_GET_LOG_PAGE	getLogPage;
+
+	/*
+	** Figure 88: Get Log Page - Command Dword 12
+	*/
+	struct {
+		UINT32	LPOL;		/* Log Page Offset Lower */
+	} getLogPage;
 } NVME_SQE_CDW12;
 
-typedef struct {
-	UINT32		LPOU;		/* Log Page Offset Upper (LPOU) */
-} NVME_CDW13_GET_LOG_PAGE;
-
 typedef union {
 	UINT32			val;
-	NVME_CDW13_GET_LOG_PAGE	getLogPage;
+
+	/*
+	** Figure 89: Get Log Page - Command Dword 13
+	*/
+	struct {
+		UINT32		LPOU;	/* Log Page Offset Upper */
+	} getLogPage;
 } NVME_SQE_CDW13;
 
 typedef union {
@@ -220,6 +265,8 @@ typedef struct {
 	NVME_CDW14	cdw14;		/* 59:56 Command Dword 14 (CDW14) */
 	NVME_CDW15	cdw15;		/* 63:60 Command Dword 15 (CDW15) */
 } NVME_SQE;
+
+CC_ASSERT(64 == sizeof (NVME_SQE));
 
 typedef	enum {
 /*

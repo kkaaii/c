@@ -136,15 +136,15 @@ NVME_CID Host_CreateIoCq(NVME_QUEUE *asq, NVME_QID cqid, void *buf, UINT32 bytes
 
 	sqe->CDW0.OPC = NVME_OPC_ADMIN_CREATE_IOCQ;
 
-	sqe->CDW10.createq.QID = cqid;
-	sqe->CDW10.createq.QSIZE = ZERO_BASED(bytes / sizeof (NVME_CQE));
+	sqe->CDW10.createIoCompletionQueue.QID = cqid;
+	sqe->CDW10.createIoCompletionQueue.QSIZE = ZERO_BASED(bytes / sizeof (NVME_CQE));
 
 #if 1	/* TODO */
-	sqe->CDW11.iocq.IEN = 0;
-	sqe->CDW11.iocq.IV = 0;
+	sqe->CDW11.createIoCompletionQueue.IEN = 0;
+	sqe->CDW11.createIoCompletionQueue.IV = 0;
 #endif
 
-	sqe->CDW11.iocq.PC = Host_BuildPRP1(sqe, buf, bytes);
+	sqe->CDW11.createIoCompletionQueue.PC = Host_BuildPRP1(sqe, buf, bytes);
 
 	return _IssueCommand(asq);
 }
@@ -158,15 +158,15 @@ NVME_CID Host_CreateIoSq(NVME_QUEUE *asq, NVME_QID sqid, void *buf, UINT32 bytes
 
 	sqe->CDW0.OPC = NVME_OPC_ADMIN_CREATE_IOSQ;
 
-	sqe->CDW10.createq.QID = sqid;
-	sqe->CDW10.createq.QSIZE = ZERO_BASED(bytes / sizeof (NVME_SQE));
+	sqe->CDW10.createIoSubmissionQueue.QID = sqid;
+	sqe->CDW10.createIoSubmissionQueue.QSIZE = ZERO_BASED(bytes / sizeof (NVME_SQE));
 
 #if 1	/* TODO */
-	sqe->CDW11.iosq.QPRIO = 0;
-	sqe->CDW11.iosq.CQID = 0;
+	sqe->CDW11.createIoSubmissionQueue.QPRIO = 0;
+	sqe->CDW11.createIoSubmissionQueue.CQID = 0;
 #endif
 
-	sqe->CDW11.iocq.PC = Host_BuildPRP1(sqe, buf, bytes);
+	sqe->CDW11.createIoSubmissionQueue.PC = Host_BuildPRP1(sqe, buf, bytes);
 
 	return _IssueCommand(asq);
 }
