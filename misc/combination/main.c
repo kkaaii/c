@@ -55,6 +55,11 @@ static inline void add_link4(unsigned int key, const char *name)
 	add_link(&data[key].link4, name);
 }
 
+static inline int match(UINT64 link, UINT64 mask)
+{
+	return (0 != link && link == (link & mask));
+}
+
 static char *get_name(char **line)
 {
 	char	*name = *line;
@@ -104,17 +109,19 @@ int main(void)
 	UINT64	x = BIT64(8) - 1;
 	while (x < BIT64(n + 1)) {
 		unsigned int	score = 0;
-		for (i = 0; i < n; ++i) {
-			if (0 == (x & BIT64(i)))
-				continue;
+		UINT64	mask = x & -x;
+		while (mask != 0) {
+			i = __builtin_ctzl(mask);
 
-			UINT64	mask = x ^ BIT64(i);
-			if (data[i].link2 != 0 && data[i].link2 == (data[i].link2 & mask))
+			if (match(data[i].link2, x ^ mask))
 				score += SCORE2;
-			if (data[i].link3 != 0 && data[i].link3 == (data[i].link3 & mask))
+			if (match(data[i].link3, x ^ mask))
 				score += SCORE3;
-			if (data[i].link4 != 0 && data[i].link4 == (data[i].link4 & mask))
+			if (match(data[i].link4, x ^ mask))
 				score += SCORE4;
+
+			mask = x & ~(mask | (mask - 1));
+			mask = mask & -mask;
 		}
 
 		if (score >= THRESHOLD8) {
