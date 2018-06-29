@@ -14,7 +14,7 @@ static struct {
 		.nsid	= NVME_NSID_NONE,
 		.fid	= eFID_Arbitration,
 		.sv	= FALSE,
-		.status	= eSF_SuccessfulCompletion
+		.status	= eSF_FeatureNotChangeable
 	},
 	/* Sub Case 02: FID = Power Management */
 	{
@@ -63,7 +63,7 @@ static struct {
 		.nsid	= NVME_NSID_NONE,
 		.fid	= eFID_WriteAtomicityNormal,
 		.sv	= FALSE,
-		.status	= eSF_SuccessfulCompletion
+		.status	= eSF_FeatureNotChangeable
 	},
 	/* Sub Case 09: FID = Async Event Config */
 	{
@@ -156,7 +156,7 @@ static struct {
 		.nsid	= NVME_NSID_GLOBAL,
 		.fid	= eFID_Arbitration,
 		.sv	= FALSE,
-		.status	= eSF_SuccessfulCompletion
+		.status	= eSF_FeatureNotChangeable
 	},
 	/* Sub Case 02: FID = Power Management */
 	{
@@ -205,7 +205,7 @@ static struct {
 		.nsid	= NVME_NSID_GLOBAL,
 		.fid	= eFID_WriteAtomicityNormal,
 		.sv	= FALSE,
-		.status	= eSF_SuccessfulCompletion
+		.status	= eSF_FeatureNotChangeable
 	},
 	/* Sub Case 09: FID = Async Event Config */
 	{
@@ -298,7 +298,7 @@ static struct {
 		.nsid	= NVME_NSID_ACTIVE,
 		.fid	= eFID_Arbitration,
 		.sv	= FALSE,
-		.status	= eSF_FeatureNotNamespaceSpecific
+		.status	= eSF_FeatureNotChangeable
 	},
 	/* Sub Case 02: FID = Power Management */
 	{
@@ -347,7 +347,7 @@ static struct {
 		.nsid	= NVME_NSID_ACTIVE,
 		.fid	= eFID_WriteAtomicityNormal,
 		.sv	= FALSE,
-		.status	= eSF_FeatureNotNamespaceSpecific
+		.status	= eSF_FeatureNotChangeable
 	},
 	/* Sub Case 09: FID = Async Event Config */
 	{
@@ -511,7 +511,7 @@ static struct {
 		.nsid	= NVME_NSID_INVALID,
 		.fid	= eFID_Arbitration,
 		.sv	= TRUE,
-		.status	= eSF_FeatureIdentifierNotSaveable
+		.status	= eSF_InvalidNamespaceOrFormat
 	},
 	/* Sub Case 02: FID = Power Management */
 	{
@@ -525,42 +525,42 @@ static struct {
 		.nsid	= NVME_NSID_INVALID,
 		.fid	= eFID_TemperatureThreshold,
 		.sv	= TRUE,
-		.status	= eSF_FeatureIdentifierNotSaveable
+		.status	= eSF_InvalidNamespaceOrFormat
 	},
 	/* Sub Case 04: FID = Error Recovery */
 	{
 		.nsid	= NVME_NSID_INVALID,
 		.fid	= eFID_ErrorRecovery,
 		.sv	= TRUE,
-		.status	= eSF_FeatureIdentifierNotSaveable
+		.status	= eSF_InvalidNamespaceOrFormat
 	},
 	/* Sub Case 05: FID = Volatile Write Cache */
 	{
 		.nsid	= NVME_NSID_INVALID,
 		.fid	= eFID_VolatileWriteCache,
 		.sv	= TRUE,
-		.status	= eSF_FeatureIdentifierNotSaveable
+		.status	= eSF_InvalidNamespaceOrFormat
 	},
 	/* Sub Case 06: FID = Number of Queues */
 	{
 		.nsid	= NVME_NSID_INVALID,
 		.fid	= eFID_NumberOfQueues,
 		.sv	= TRUE,
-		.status	= eSF_FeatureIdentifierNotSaveable
+		.status	= eSF_InvalidNamespaceOrFormat
 	},
 	/* Sub Case 07: FID = Interrupt Coalescing */
 	{
 		.nsid	= NVME_NSID_INVALID,
 		.fid	= eFID_InterruptCoalescing,
 		.sv	= TRUE,
-		.status	= eSF_FeatureIdentifierNotSaveable
+		.status	= eSF_InvalidNamespaceOrFormat
 	},
 	/* Sub Case 08: FID = Write Atomicity */
 	{
 		.nsid	= NVME_NSID_INVALID,
 		.fid	= eFID_WriteAtomicityNormal,
 		.sv	= TRUE,
-		.status	= eSF_FeatureIdentifierNotSaveable
+		.status	= eSF_InvalidNamespaceOrFormat
 	},
 	/* Sub Case 09: FID = Async Event Config */
 	{

@@ -185,10 +185,12 @@ void *HostMain(void *context CC_ATTRIB_UNUSED)
 
 	NVME_CID	cid;
 
+#if 0
 	cid = Host_SetFeatures(NVME_NSID_NONE, eFID_Arbitration, 3, FALSE, NULL, 0);
 	if (!Host_SyncAdminCommand(cid)) {
 		return NULL;
 	}
+#endif
 
 	UINT8	*buf = Platform_MemAlign(HOST_PAGE_SIZE, HOST_PAGE_SIZE * 2);
 	Host_InitCompletionQueue(1, buf, ZERO_BASED(HOST_PAGE_SIZE / sizeof (NVME_CQE)));

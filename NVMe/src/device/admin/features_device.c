@@ -65,6 +65,12 @@ BOOL Feature_IsSaveable(Feature *feature)
 	return (0 != (feature->vCapabilities & eCAP_Saveable));
 }
 
+CC_STATIC_ALWAYS_INLINE
+BOOL Feature_IsChangeable(Feature *feature)
+{
+	return (0 != (feature->vCapabilities & eCAP_Changeable));
+}
+
 CC_STATIC
 Feature *Device_GetFeature(NVME_FID fid)
 {
@@ -155,17 +161,24 @@ BOOL Device_SetFeatures(NVME_QID sqid, NVME_QID cqid)
 			break;
 		}
 
-		if (sqe->CDW10.setFeatures.SV && !Feature_IsSaveable(feature)) {
-			status = eSF_DoNotRetry | eSF_FeatureIdentifierNotSaveable;
-			break;
-		}
-
 		if (NVME_NSID_NONE != sqe->NSID && NVME_NSID_GLOBAL != sqe->NSID) {
 			if (NVME_NSID_INVALID <= sqe->NSID) {
 				status = eSF_DoNotRetry | eSF_InvalidNamespaceOrFormat;
 				break;
 			}
+		}
 
+		if (sqe->CDW10.setFeatures.SV && !Feature_IsSaveable(feature)) {
+			status = eSF_DoNotRetry | eSF_FeatureIdentifierNotSaveable;
+			break;
+		}
+
+		if (!Feature_IsChangeable(feature)) {
+			status = eSF_DoNotRetry | eSF_FeatureNotChangeable;
+			break;
+		}
+
+		if (NVME_NSID_NONE != sqe->NSID && NVME_NSID_GLOBAL != sqe->NSID) {
 			if (!Feature_IsNamespaceSpecific(feature)) {
 				status = eSF_DoNotRetry | eSF_FeatureNotNamespaceSpecific;
 				break;
