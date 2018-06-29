@@ -1,8 +1,14 @@
 typedef struct {
+	int	tail;
 } CircularBuffer;
 
-bool CircularBuffer_IsEmpty(CircularBuffer *self __attribute__((unused)))
+bool CircularBuffer_IsEmpty(CircularBuffer *self)
 {
-	return true;
+	return self->tail == 0;
+}
+
+void CircularBuffer_Put(CircularBuffer *self, int value __attribute__((unused)))
+{
+	++self->tail;
 }
 
