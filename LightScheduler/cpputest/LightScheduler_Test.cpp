@@ -17,48 +17,46 @@ TEST_GROUP(LightScheduler)
 		LightController_Destroy();
 		LightScheduler_Destroy();
 	}
+
+	void TransitionClockTo(int day, int minute) {
+		FakeTimeService_SetDay(day);
+		FakeTimeService_SetMinute(minute);
+		LightScheduler_Wakeup();
+	}
 };
 
+#define	LIGHTS_ARE_UNCHANGED()						do {	\
+	LONGS_EQUAL(LIGHT_ID_NONE, LightControllerSpy_GetLastId());		\
+	LONGS_EQUAL(LIGHT_STATE_UNKNOWN, LightControllerSpy_GetLastState());	\
+} while (0)
+
+#define	THEN_LIGHT_IS_ON(id)					do {	\
+	LONGS_EQUAL((id), LightControllerSpy_GetLastId());		\
+	LONGS_EQUAL(LIGHT_STATE_ON, LightControllerSpy_GetLastState());	\
+} while (0)
+	
 TEST(LightScheduler, no_lights_controlled_during_creation)
 {
-	LONGS_EQUAL(LIGHT_ID_NONE, LightControllerSpy_GetLastId());
-	LONGS_EQUAL(LIGHT_STATE_UNKNOWN, LightControllerSpy_GetLastState());
+	LIGHTS_ARE_UNCHANGED();
 }
 
 TEST(LightScheduler, no_lights_controlled_when_none_scheduled)
 {
 	LightScheduler_Wakeup();
-	LONGS_EQUAL(LIGHT_ID_NONE, LightControllerSpy_GetLastId());
-	LONGS_EQUAL(LIGHT_STATE_UNKNOWN, LightControllerSpy_GetLastState());
-}
-
-TEST(LightScheduler, lights_turned_on_at_the_right_time_scheduled_everyday)
-{
-	LightScheduler_AddTurnOn(3, EVERYDAY, 1200);
-	FakeTimeService_SetDay(SUNDAY);
-	FakeTimeService_SetMinute(1200);
-	LightScheduler_Wakeup();
-	LONGS_EQUAL(3, LightControllerSpy_GetLastId());
-	LONGS_EQUAL(LIGHT_STATE_ON, LightControllerSpy_GetLastState());
+	LIGHTS_ARE_UNCHANGED();
 }
 
 TEST(LightScheduler, no_lights_controlled_when_its_not_the_scheduled_time)
 {
 	LightScheduler_AddTurnOn(3, EVERYDAY, 1200);
-	FakeTimeService_SetDay(SUNDAY);
-	FakeTimeService_SetMinute(1200 - 1);
-	LightScheduler_Wakeup();
-	LONGS_EQUAL(LIGHT_ID_NONE, LightControllerSpy_GetLastId());
-	LONGS_EQUAL(LIGHT_STATE_UNKNOWN, LightControllerSpy_GetLastState());
+	TransitionClockTo(SUNDAY, 1199);
+	LIGHTS_ARE_UNCHANGED();
 }
 
 TEST(LightScheduler, light_turns_on_at_the_scheduled_time_for_everyday)
 {
 	LightScheduler_AddTurnOn(3, EVERYDAY, 1200);
-	FakeTimeService_SetDay(SUNDAY);
-	FakeTimeService_SetMinute(1200);
-	LightScheduler_Wakeup();
-	LONGS_EQUAL(3, LightControllerSpy_GetLastId());
-	LONGS_EQUAL(LIGHT_STATE_ON, LightControllerSpy_GetLastState());
+	TransitionClockTo(SUNDAY, 1200);
+	THEN_LIGHT_IS_ON(3);
 }
 
