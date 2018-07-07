@@ -44,7 +44,11 @@ SingleLinkedListNode *SingleLinkedList_RemoveHead(SingleLinkedList *list)
 	SingleLinkedListNode	*node = list->head;
 
 	list->head = node->next;
-	list->tail = NULL;
+
+	if (node == list->tail) {
+		list->tail = NULL;
+	}
+
 	return node;
 }
 
