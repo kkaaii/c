@@ -23,6 +23,7 @@ void SingleLinkedList_AddToTail(
 	SingleLinkedListNode	*node)
 {
 	list->tail = node;
+	list->head = node;
 }
 
 SingleLinkedListNode *SingleLinkedList_RemoveHead(SingleLinkedList *list)
@@ -30,6 +31,7 @@ SingleLinkedListNode *SingleLinkedList_RemoveHead(SingleLinkedList *list)
 	SingleLinkedListNode	*node = list->head;
 
 	list->head = NULL;
+	list->tail = NULL;
 	return node;
 }
 
