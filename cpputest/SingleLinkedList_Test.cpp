@@ -67,3 +67,16 @@ TEST(SingleLinkedList, LastInFirstOut)
 	POINTERS_EQUAL(&node[0], SingleLinkedList_RemoveHead(&list));
 }
 
+TEST(SingleLinkedList, FirstInFirstOut)
+{
+	SingleLinkedListNode	node[3];
+
+	SingleLinkedList_AddToTail(&list, &node[0]);
+	SingleLinkedList_AddToTail(&list, &node[1]);
+	SingleLinkedList_AddToTail(&list, &node[2]);
+
+	POINTERS_EQUAL(&node[0], SingleLinkedList_RemoveHead(&list));
+	POINTERS_EQUAL(&node[1], SingleLinkedList_RemoveHead(&list));
+	POINTERS_EQUAL(&node[2], SingleLinkedList_RemoveHead(&list));
+}
+
