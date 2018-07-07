@@ -34,3 +34,13 @@ TEST(SingleLinkedList, NotEmptyAfterAddingToTail)
 	CHECK(!SingleLinkedList_IsEmpty(&list));
 }
 
+TEST(SingleLinkedList, NotEmptyAfterAddingToHeadThenEmpty)
+{
+	SingleLinkedListNode	node;
+
+	SingleLinkedList_AddToHead(&list, &node);
+	CHECK(!SingleLinkedList_IsEmpty(&list));
+	POINTERS_EQUAL(&node, SingleLinkedList_RemoveHead(&list));
+	CHECK(SingleLinkedList_IsEmpty(&list));
+}
+

@@ -25,3 +25,11 @@ void SingleLinkedList_AddToTail(
 	list->tail = node;
 }
 
+SingleLinkedListNode *SingleLinkedList_RemoveHead(SingleLinkedList *list)
+{
+	SingleLinkedListNode	*node = list->head;
+
+	list->head = NULL;
+	return node;
+}
+
