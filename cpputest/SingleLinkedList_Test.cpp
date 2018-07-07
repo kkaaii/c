@@ -26,3 +26,11 @@ TEST(SingleLinkedList, NotEmptyAfterAddingToHead)
 	CHECK(!SingleLinkedList_IsEmpty(&list));
 }
 
+TEST(SingleLinkedList, NotEmptyAfterAddingToTail)
+{
+	SingleLinkedListNode	node;
+
+	SingleLinkedList_AddToTail(&list, &node);
+	CHECK(!SingleLinkedList_IsEmpty(&list));
+}
+
