@@ -80,3 +80,14 @@ TEST(SingleLinkedList, FirstInFirstOut)
 	POINTERS_EQUAL(&node[2], SingleLinkedList_RemoveHead(&list));
 }
 
+TEST(SingleLinkedList, AddToHeadThenAddToTail)
+{
+	SingleLinkedListNode	node[2];
+
+	SingleLinkedList_AddToHead(&list, &node[0]);
+	SingleLinkedList_AddToTail(&list, &node[1]);
+
+	POINTERS_EQUAL(&node[0], SingleLinkedList_RemoveHead(&list));
+	POINTERS_EQUAL(&node[1], SingleLinkedList_RemoveHead(&list));
+}
+

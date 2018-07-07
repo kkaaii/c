@@ -17,6 +17,10 @@ void SingleLinkedList_AddToHead(
 {
 	node->next = list->head;
 	list->head = node;
+
+	if (NULL == list->tail) {
+		list->tail = node;
+	}
 }
 
 void SingleLinkedList_AddToTail(
