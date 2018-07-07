@@ -104,3 +104,8 @@ TEST(SingleLinkedList, RemoveHeadThenAddToTail)
 	POINTERS_EQUAL(&node[2], SingleLinkedList_RemoveHead(&list));
 }
 
+TEST(SingleLinkedList, RemoveFromEmpty)
+{
+	CHECK(NULL == SingleLinkedList_RemoveHead(&list));
+}
+
