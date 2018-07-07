@@ -18,3 +18,11 @@ TEST(SingleLinkedList, EmptyAfterCreation)
 	CHECK(SingleLinkedList_IsEmpty(&list));
 }
 
+TEST(SingleLinkedList, NotEmptyAfterAddingToHead)
+{
+	SingleLinkedListNode	node;
+
+	SingleLinkedList_AddToHead(&list, &node);
+	CHECK(!SingleLinkedList_IsEmpty(&list));
+}
+
