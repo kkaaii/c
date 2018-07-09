@@ -14,9 +14,11 @@ LD_LIBRARIES = -L$(CPPUTEST_HOME)/lib -lCppUTest -lCppUTestExt
 SRC_DIRS = \
 	./\
 	../SinglyLinkedList	\
+	../CircularlySinglyLinkedList	\
 
 INCLUDE_DIRS = \
 	../SinglyLinkedList	\
+	../CircularlySinglyLinkedList	\
 	$(CPPUTEST_HOME)/include
 
 include $(CPPUTEST_HOME)/build/MakefileWorker.mk
