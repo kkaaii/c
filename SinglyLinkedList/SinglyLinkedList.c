@@ -11,9 +11,7 @@ int SinglyLinkedList_IsEmpty(SinglyLinkedList *list)
 	return NULL == list->head && NULL == list->tail;
 }
 
-void SinglyLinkedList_AddToHead(
-	SinglyLinkedList	*list,
-	SinglyLinkedListNode	*node)
+void SinglyLinkedList_AddToHead(SinglyLinkedList *list, SinglyLinkedNode *node)
 {
 	node->next = list->head;
 	list->head = node;
@@ -23,11 +21,9 @@ void SinglyLinkedList_AddToHead(
 	}
 }
 
-void SinglyLinkedList_AddToTail(
-	SinglyLinkedList	*list,
-	SinglyLinkedListNode	*node)
+void SinglyLinkedList_AddToTail(SinglyLinkedList *list, SinglyLinkedNode *node)
 {
-	SinglyLinkedListNode	*tail = list->tail;
+	SinglyLinkedNode *tail = list->tail;
 
 	list->tail = node;
 	node->next = NULL;
@@ -39,9 +35,9 @@ void SinglyLinkedList_AddToTail(
 	}
 }
 
-SinglyLinkedListNode *SinglyLinkedList_RemoveHead(SinglyLinkedList *list)
+SinglyLinkedNode *SinglyLinkedList_RemoveHead(SinglyLinkedList *list)
 {
-	SinglyLinkedListNode	*node = list->head;
+	SinglyLinkedNode *node = list->head;
 
 	if (node == list->tail) {
 		list->head = NULL;
@@ -51,5 +47,23 @@ SinglyLinkedListNode *SinglyLinkedList_RemoveHead(SinglyLinkedList *list)
 	}
 
 	return node;
+}
+
+void SinglyLinkedList_Reverse(SinglyLinkedList *list)
+{
+	SinglyLinkedNode *prev = NULL;
+	SinglyLinkedNode *node = list->head;
+	SinglyLinkedNode *next;
+
+	while (NULL != node) {
+		next = node->next;
+
+		node->next = prev;
+		prev = node;
+		node = next;
+	}
+
+	list->tail = list->head;
+	list->head = prev;
 }
 

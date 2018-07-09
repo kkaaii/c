@@ -20,7 +20,7 @@ TEST(SinglyLinkedList, EmptyAfterCreation)
 
 TEST(SinglyLinkedList, NotEmptyAfterAddingToHead)
 {
-	SinglyLinkedListNode	node;
+	SinglyLinkedNode node;
 
 	SinglyLinkedList_AddToHead(&list, &node);
 	CHECK(!SinglyLinkedList_IsEmpty(&list));
@@ -28,7 +28,7 @@ TEST(SinglyLinkedList, NotEmptyAfterAddingToHead)
 
 TEST(SinglyLinkedList, NotEmptyAfterAddingToTail)
 {
-	SinglyLinkedListNode	node;
+	SinglyLinkedNode node;
 
 	SinglyLinkedList_AddToTail(&list, &node);
 	CHECK(!SinglyLinkedList_IsEmpty(&list));
@@ -36,7 +36,7 @@ TEST(SinglyLinkedList, NotEmptyAfterAddingToTail)
 
 TEST(SinglyLinkedList, NotEmptyAfterAddingToHeadThenEmpty)
 {
-	SinglyLinkedListNode	node;
+	SinglyLinkedNode node;
 
 	SinglyLinkedList_AddToHead(&list, &node);
 	CHECK(!SinglyLinkedList_IsEmpty(&list));
@@ -46,7 +46,7 @@ TEST(SinglyLinkedList, NotEmptyAfterAddingToHeadThenEmpty)
 
 TEST(SinglyLinkedList, NotEmptyAfterAddingToTailThenEmpty)
 {
-	SinglyLinkedListNode	node;
+	SinglyLinkedNode node;
 
 	SinglyLinkedList_AddToTail(&list, &node);
 	CHECK(!SinglyLinkedList_IsEmpty(&list));
@@ -56,7 +56,7 @@ TEST(SinglyLinkedList, NotEmptyAfterAddingToTailThenEmpty)
 
 TEST(SinglyLinkedList, LastInFirstOut)
 {
-	SinglyLinkedListNode	node[3];
+	SinglyLinkedNode node[3];
 
 	SinglyLinkedList_AddToHead(&list, &node[0]);
 	SinglyLinkedList_AddToHead(&list, &node[1]);
@@ -69,7 +69,7 @@ TEST(SinglyLinkedList, LastInFirstOut)
 
 TEST(SinglyLinkedList, FirstInFirstOut)
 {
-	SinglyLinkedListNode	node[3];
+	SinglyLinkedNode node[3];
 
 	SinglyLinkedList_AddToTail(&list, &node[0]);
 	SinglyLinkedList_AddToTail(&list, &node[1]);
@@ -82,7 +82,7 @@ TEST(SinglyLinkedList, FirstInFirstOut)
 
 TEST(SinglyLinkedList, AddToHeadThenAddToTail)
 {
-	SinglyLinkedListNode	node[2];
+	SinglyLinkedNode node[2];
 
 	SinglyLinkedList_AddToHead(&list, &node[0]);
 	SinglyLinkedList_AddToTail(&list, &node[1]);
@@ -93,7 +93,7 @@ TEST(SinglyLinkedList, AddToHeadThenAddToTail)
 
 TEST(SinglyLinkedList, RemoveHeadThenAddToTail)
 {
-	SinglyLinkedListNode	node[3];
+	SinglyLinkedNode node[3];
 
 	SinglyLinkedList_AddToTail(&list, &node[0]);
 	SinglyLinkedList_AddToTail(&list, &node[1]);
@@ -107,5 +107,20 @@ TEST(SinglyLinkedList, RemoveHeadThenAddToTail)
 TEST(SinglyLinkedList, RemoveFromEmpty)
 {
 	CHECK(NULL == SinglyLinkedList_RemoveHead(&list));
+}
+
+TEST(SinglyLinkedList, Reverse)
+{
+	SinglyLinkedNode node[3];
+
+	SinglyLinkedList_AddToHead(&list, &node[0]);
+	SinglyLinkedList_AddToHead(&list, &node[1]);
+	SinglyLinkedList_AddToHead(&list, &node[2]);
+
+	SinglyLinkedList_Reverse(&list);
+
+	POINTERS_EQUAL(&node[0], SinglyLinkedList_RemoveHead(&list));
+	POINTERS_EQUAL(&node[1], SinglyLinkedList_RemoveHead(&list));
+	POINTERS_EQUAL(&node[2], SinglyLinkedList_RemoveHead(&list));
 }
 
