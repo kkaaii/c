@@ -15,10 +15,12 @@ SRC_DIRS = \
 	./\
 	../SinglyLinkedList	\
 	../CircularlySinglyLinkedList	\
+	../misc/gen_forward	\
 
 INCLUDE_DIRS = \
 	../SinglyLinkedList	\
 	../CircularlySinglyLinkedList	\
+	../misc/gen_forward	\
 	$(CPPUTEST_HOME)/include
 
 include $(CPPUTEST_HOME)/build/MakefileWorker.mk
