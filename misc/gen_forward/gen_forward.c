@@ -130,6 +130,47 @@ void QueryMysql(void)
 	}	
 }
 
+void database_enableVip(const char *Vip)
+{
+    sprintf(sql, "update useip set Vflag=1 where Vip='%s'", Vip);
+    QueryMysql();
+}
+
+static void database_createVip(const char *Vip, const char *Sip, const char *Sport)
+{
+	sprintf(sql, "insert into server (Vip,Sip,Sport) value('%s','%s','%s')", Vip, Sip, Sport);
+	QueryMysql();
+}
+
+static void Append(const char *Vip, const char *Sip, const char *Sport)
+{
+	iptables_add(Vip, Sip, Sport, g.Fip);
+	database_createVip(Vip, Sip, Sport);
+}
+
+typedef void (*Callback)(const char *Vip, const char *Sip, const char *Sport);
+void ForeachPort(const char *Vip, const char *Sip, const char (*Vports)[MAXBUF + 1], Callback append)
+{
+	MYSQL_RES	*res;
+
+	for (; strlen(*Vports) > 0; ++Vports) {
+		sprintf(sql, "select * from server where Sip='%s' and Sport='%s'", Sip, *Vports);
+		QueryMysql();
+
+		res = mysql_store_result(conn);
+		if (mysql_num_rows(res) <= 0) {
+			if (append) {
+				(*append)(Vip, Sip, *Vports);
+			}
+		} else {
+/*
+			if (remove) {
+				(*remove)(Vip, Sip, *Vports);
+			}
+*/		}
+	}
+}
+
 int Case0(const char *Sip)
 {
 	MYSQL_RES	*res;
@@ -147,6 +188,76 @@ int Case0(const char *Sip)
 	QueryMysql();
 
 	iptables_del(row[0], row[1], row[2], g.Fip);
+
+	return 1;
+}
+
+int Case1(const char *Sip, const char (*Vports)[MAXBUF + 1])
+{
+	MYSQL_RES	*res;
+	MYSQL_ROW	row;
+
+	if (0 == strlen(Vports[0]))
+		return 0;
+
+	sprintf(sql, "Select Vip from server where Sip='%s'", Sip);
+	QueryMysql();
+
+	res = mysql_store_result(conn);
+	if (mysql_num_rows(res) > 0) {
+		row = mysql_fetch_row(res);
+	} else {
+		sprintf(sql, "select Vip,NetMask from useip where Vflag=0 and Fzone=0 limit 0,1");
+		QueryMysql();
+
+		res = mysql_store_result(conn);
+		if (mysql_num_rows(res) <= 0)
+			return 0;
+
+		row = mysql_fetch_row(res);
+		ifcfg("add", row[0], row[1]);
+		database_enableVip(row[0]);
+	}
+
+	ForeachPort(row[0], Sip, Vports, Append);
+	return 1;
+}
+
+int Case3(const char *Sip, const char (*Vports)[MAXBUF + 1])
+{
+	MYSQL_RES	*res;
+	MYSQL_ROW	row;
+
+	sprintf(sql, "Select Vip from server where Sip='%s'", Sip);
+	QueryMysql();
+
+	res = mysql_store_result(conn);
+	if (0 == mysql_num_rows(res))
+		return 0;
+
+	row = mysql_fetch_row(res);
+	ForeachPort(row[0], Sip, Vports, Append);
+	return 1;
+}
+
+int Case4(char *req, const char *Sip)
+{
+	MYSQL_RES	*res;
+	MYSQL_ROW	row;
+
+	sprintf(sql, "select Vip,Sport from server where Sip='%s'", Sip);
+	QueryMysql();
+
+	res = mysql_store_result(conn);
+	if (0 == mysql_num_rows(res))
+		return 0;
+
+	row = mysql_fetch_row(res);
+	sprintf(req, "OK! V=%sI=%sP=%s", row[0], Sip, row[1]);
+	while (NULL != (row = mysql_fetch_row(res))) {
+		strcat(req, "+");
+		strcat(req, row[1]);
+	}
 
 	return 1;
 }

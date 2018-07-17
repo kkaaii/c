@@ -14,6 +14,11 @@ const char	*iptables_addpost(char *cmd, const char *Fip, const char *Sip, const 
 const char	*iptables_delpost(char *cmd, const char *Fip, const char *Sip, const char *Sport);
 
 void		ParseRequest(const char *req, char *Vtype, char *Sip, char (*Vports)[MAXBUF + 1]);
+void		ForeachPorts(const char *Vip, const char *Sip, const char (*Vports)[MAXBUF + 1]);
+
 int		Case0(const char *Sip);
+int		Case1(const char *Sip, const char (*Vports)[MAXBUF + 1]);
+int		Case3(const char *Sip, const char (*Vports)[MAXBUF + 1]);
+int		Case4(char *req, const char *Sip);
 
 #endif	/* _GEN_FORWARD_H */
