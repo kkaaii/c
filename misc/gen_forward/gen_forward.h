@@ -20,5 +20,6 @@ int		Case0(const char *Sip);
 int		Case1(const char *Sip, const char (*Vports)[MAXBUF + 1]);
 int		Case3(const char *Sip, const char (*Vports)[MAXBUF + 1]);
 int		Case4(char *req, const char *Sip);
+int		Case5(const char *Sip, const char (*Vports)[MAXBUF + 1]);
 
 #endif	/* _GEN_FORWARD_H */

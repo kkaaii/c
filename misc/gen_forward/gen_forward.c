@@ -130,6 +130,18 @@ void QueryMysql(void)
 	}	
 }
 
+MYSQL_RES *QueryMysqlWithRes(void)
+{
+	MYSQL_RES	*res;
+
+	QueryMysql();
+	res = mysql_store_result(conn);
+	if (0 == mysql_num_rows(res))
+		return NULL;
+
+	return res;
+}
+
 void database_enableVip(const char *Vip)
 {
     sprintf(sql, "update useip set Vflag=1 where Vip='%s'", Vip);
@@ -155,10 +167,7 @@ void ForeachPort(const char *Vip, const char *Sip, const char (*Vports)[MAXBUF +
 
 	for (; strlen(*Vports) > 0; ++Vports) {
 		sprintf(sql, "select * from server where Sip='%s' and Sport='%s'", Sip, *Vports);
-		QueryMysql();
-
-		res = mysql_store_result(conn);
-		if (mysql_num_rows(res) <= 0) {
+		if (NULL == (res = QueryMysqlWithRes())) {
 			if (append) {
 				(*append)(Vip, Sip, *Vports);
 			}
@@ -177,10 +186,7 @@ int Case0(const char *Sip)
 	MYSQL_ROW	row;
 
 	sprintf(sql, "select Vip,Sip,Sport from server where Sip='%s'", Sip);
-	QueryMysql();
-
-	res = mysql_store_result(conn);
-	if (mysql_num_rows(res) <= 0)
+	if (NULL == (res = QueryMysqlWithRes()))
 		return 0;
 
 	row = mysql_fetch_row(res);
@@ -201,17 +207,11 @@ int Case1(const char *Sip, const char (*Vports)[MAXBUF + 1])
 		return 0;
 
 	sprintf(sql, "Select Vip from server where Sip='%s'", Sip);
-	QueryMysql();
-
-	res = mysql_store_result(conn);
-	if (mysql_num_rows(res) > 0) {
+	if (NULL != (res = QueryMysqlWithRes())) {
 		row = mysql_fetch_row(res);
 	} else {
 		sprintf(sql, "select Vip,NetMask from useip where Vflag=0 and Fzone=0 limit 0,1");
-		QueryMysql();
-
-		res = mysql_store_result(conn);
-		if (mysql_num_rows(res) <= 0)
+		if (NULL == (res = QueryMysqlWithRes()))
 			return 0;
 
 		row = mysql_fetch_row(res);
@@ -229,10 +229,7 @@ int Case3(const char *Sip, const char (*Vports)[MAXBUF + 1])
 	MYSQL_ROW	row;
 
 	sprintf(sql, "Select Vip from server where Sip='%s'", Sip);
-	QueryMysql();
-
-	res = mysql_store_result(conn);
-	if (0 == mysql_num_rows(res))
+	if (NULL == (res = QueryMysqlWithRes()))
 		return 0;
 
 	row = mysql_fetch_row(res);
@@ -246,10 +243,7 @@ int Case4(char *req, const char *Sip)
 	MYSQL_ROW	row;
 
 	sprintf(sql, "select Vip,Sport from server where Sip='%s'", Sip);
-	QueryMysql();
-
-	res = mysql_store_result(conn);
-	if (0 == mysql_num_rows(res))
+	if (NULL == (res = QueryMysqlWithRes()))
 		return 0;
 
 	row = mysql_fetch_row(res);
@@ -259,6 +253,29 @@ int Case4(char *req, const char *Sip)
 		strcat(req, row[1]);
 	}
 
+	return 1;
+}
+
+int Case5(const char *Sip, const char (*Vports)[MAXBUF + 1])
+{
+	MYSQL_RES	*res;
+	MYSQL_ROW	row;
+	const char	*Vip = Vports[0];
+
+	if (0 == strlen(Vip))
+		return 0;
+
+	sprintf(sql, "select Sport from server where Vip='%s' and Sip='%s'", Vip, Vports[1]);
+	if (NULL == (res = QueryMysqlWithRes()))
+		return 0;
+
+	while (NULL != (row = mysql_fetch_row(res))) {
+		iptables_del(Vip, Vports[1], row[0], g.Fip);
+		iptables_add(Vip, Sip, row[0], g.Fip);
+	}
+
+	sprintf(sql, "update server set Sip='%s' where Vip='%s' and Sip='%s'", Sip, Vip, Vports[1]);
+	QueryMysql();
 	return 1;
 }
 

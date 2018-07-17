@@ -336,3 +336,17 @@ TEST(GenForward, Case4_has_more_records)
 	STRCMP_EQUAL("OK! V=" VIP "I=" SIP "P=" P0 "+" P1, req);
 }
 
+TEST(GenForward, Case5__no_vip)
+{
+	const char	Vports[][MAXBUF + 1] = {""};
+	LONGS_EQUAL(0, Case5(SIP, Vports));
+}
+
+TEST(GenForward, Case5__no_record)
+{
+	const char	Vports[][MAXBUF + 1] = {VIP};
+
+	this->query(0);
+	LONGS_EQUAL(0, Case5(SIP, Vports));
+}
+
