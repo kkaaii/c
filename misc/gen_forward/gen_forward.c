@@ -3,13 +3,12 @@
 
 #include "mysql.h"
 
+#include "ifcfg.h"
 #include "iptables.h"
 
 #pragma GCC diagnostic ignored "-Wpedantic"
 
 #define	FORWARDIP	"10.105.1.200"
-
-#define	IFCFG		"/sbin/ifcfg eth0"
 
 #define	MAXBUF		1024
 
@@ -23,14 +22,6 @@ struct global {
 };
 
 int (*System)(const char * command) = system;
-
-void ifcfg(const char *op, const char *Vip, const char *Netmask)
-{
-	char	cmd[MAXBUF + 1];
-
-	sprintf(cmd, IFCFG " %s %s/%s", op, Vip, Netmask);
-	System(cmd);
-}
 
 static const char *GetVtype(char *Vtype, const char *req)
 {
@@ -174,7 +165,7 @@ int Case1(const char *Sip, const char (*Vports)[MAXBUF + 1])
 			return 0;
 
 		row = mysql_fetch_row(res);
-		ifcfg("add", row[0], row[1]);
+		ifcfg_add(row[0], row[1]);
 		database_enableVip(row[0]);
 	}
 

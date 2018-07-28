@@ -5,6 +5,7 @@
 #include "MockSystem.h"
 
 extern "C" {
+#include "ifcfg.h"
 #include "gen_forward.h"
 }
 
@@ -77,6 +78,12 @@ TEST(GenForward, iptables_delpost)
 
 	iptables_delpost(cmd, FIP, SIP, P0);
 	STRCMP_EQUAL("/sbin/iptables -t nat -D POSTROUTING -p tcp -d " SIP " --dport " P0 " -j SNAT --to " FIP, cmd);
+}
+
+TEST(GenForward, ifcfg_add)
+{
+	ifcfg_add("ip", "mask");
+	STRCMP_EQUAL(IFCFG " add ip/mask", MockSystem_GetCommand());
 }
 
 #if 0
