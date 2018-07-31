@@ -5,6 +5,52 @@
 #include <stdint.h>
 #define	CAST_PTR(T)	(T)(intptr_t)
 
+MYSQL *mysql_init(MYSQL *mysql)
+{
+	return (MYSQL *)mock("mysql")
+		.actualCall("mysql_init")
+		.withParameter("mysql", mysql)
+		.returnValue().getPointerValue();
+}
+
+void mysql_close(MYSQL *mysql)
+{
+	mock("mysql")
+		.actualCall("mysql_close")
+		.withParameter("mysql", mysql);
+}
+
+const char *mysql_error(MYSQL *mysql)
+{
+	return (const char *)mock("mysql")
+		.actualCall("mysql_error")
+		.withParameter("mysql", mysql)
+		.returnValue().getPointerValue();
+}
+
+MYSQL *mysql_real_connect(
+	MYSQL		*mysql,
+	const char	*host,
+	const char	*user,
+	const char	*passwd,
+	const char	*db,
+	unsigned int	port,
+	const char	*unix_socket,
+	unsigned long	client_flag)
+{
+	return (MYSQL *)mock("mysql")
+		.actualCall("mysql_real_connect")
+		.withParameter("mysql", mysql)
+		.withParameter("host", host)
+		.withParameter("user", user)
+		.withParameter("passwd", passwd)
+		.withParameter("db", db)
+		.withParameter("port", port)
+		.withParameter("unix_socket", unix_socket)
+		.withParameter("client_flag", client_flag)
+		.returnValue().getPointerValue();
+}
+
 int mysql_query(MYSQL *conn, const char *sql)
 {
 	return mock("mysql")

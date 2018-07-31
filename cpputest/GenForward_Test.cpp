@@ -230,9 +230,8 @@ TEST(GenForward, Case0__no_record)
 
 TEST(GenForward, Case0__has_record)
 {
-	char		tmp[][1024] = {VIP, SIP, P0};
+	const char	*row[] = {VIP, SIP, P0};
 	MYSQL_RES	*res = this->query(1);
-	MYSQL_ROW	row = tmp;
 
 	mock("mysql")
 		.expectOneCall("mysql_fetch_row")
@@ -312,7 +311,7 @@ TEST(GenForward, Case4__no_record)
 TEST(GenForward, Case4_has_one_record)
 {
 	MYSQL_RES	*res = this->query(1);
-	char		row[][MAXBUF] = {VIP, P0};
+	const char	*row[] = {VIP, P0};
 	char		req[MAXBUF + 1];
 
 	mock("mysql")
@@ -332,8 +331,8 @@ TEST(GenForward, Case4_has_one_record)
 TEST(GenForward, Case4_has_more_records)
 {
 	MYSQL_RES	*res = this->query(1);
-	char		row0[][MAXBUF] = {VIP, P0};
-	char		row1[][MAXBUF] = {VIP, P1};
+	const char	*row0[] = {VIP, P0};
+	const char	*row1[] = {VIP, P1};
 	char		req[MAXBUF + 1];
 
 	mock("mysql")
