@@ -82,8 +82,20 @@ TEST(GenForward, iptables_delpost)
 
 TEST(GenForward, ifcfg_add)
 {
+	mock("stdlib")
+		.expectOneCall("MockSystem")
+		.withParameter("command", IFCFG " add ip/mask")
+		.andReturnValue(0);
 	ifcfg_add("ip", "mask");
-	STRCMP_EQUAL(IFCFG " add ip/mask", MockSystem_GetCommand());
+}
+
+TEST(GenForward, ifcfg_del)
+{
+	mock("stdlib")
+		.expectOneCall("MockSystem")
+		.withParameter("command", IFCFG " del ip/mask")
+		.andReturnValue(0);
+	ifcfg_del("ip", "mask");
 }
 
 #if 0
@@ -232,13 +244,13 @@ TEST(GenForward, Case0__has_record)
 		.withParameter("conn", conn)
 		.withParameter("sql", sql);
 
-	mock("system")
-		.expectOneCall("system")
+	mock("stdlib")
+		.expectOneCall("MockSystem")
 		.withParameter("command", "/sbin/iptables -t nat -D PREROUTING -p tcp -d " VIP " --dport " P0 " -j DNAT --to " SIP)
 		.andReturnValue(0);
 
-	mock("system")
-		.expectOneCall("system")
+	mock("stdlib")
+		.expectOneCall("MockSystem")
 		.withParameter("command", "/sbin/iptables -t nat -D POSTROUTING -p tcp -d " SIP " --dport " P0 " -j SNAT --to 10.105.1.200")
 		.andReturnValue(0);
 

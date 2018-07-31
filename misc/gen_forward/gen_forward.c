@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "mysql.h"
@@ -21,26 +22,38 @@ struct global {
 	.Fip	= FORWARDIP
 };
 
+#if 1
+int (*System)(const char * command) = NULL;
+#else
 int (*System)(const char * command) = system;
+#endif
 
 static const char *GetVtype(char *Vtype, const char *req)
 {
-	req = strchr(req, '=');
-	if (NULL != req && '\0' != *++req)
-		*Vtype = *req;
+	if ('V' != *req++)
+		return NULL;
+
+	if ('=' != *req++)
+		return NULL;
+
+	if ('\0' != *req)
+		*Vtype = *req++;
+
 	return req;
 }
 
 static const char *GetSip(char *Sip, const char *req)
 {
-	req = strchr(req, '=');
-	if (NULL != req) {
-		++req;
-		while ('\0' != *req && 'P' != *req) {
-			*Sip++ = *req++;
-		}
-		*Sip = '\0';
+	if ('I' != *req++)
+		return NULL;
+
+	if ('=' != *req++)
+		return NULL;
+
+	while ('\0' != *req && 'P' != *req) {
+		*Sip++ = *req++;
 	}
+	*Sip = '\0';
 
 	return req;
 }
