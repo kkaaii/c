@@ -4,5 +4,7 @@
 void DelVip(const char *Vip);
 void AddVip(const char *Vip, const char *Sip, const char *Sport, const char *Fip);
 
+void GenForwardFile(void);
+
 #endif	/* _COMMON_H */
 

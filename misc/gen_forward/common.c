@@ -13,9 +13,13 @@ void DelVip(const char *Vip)
 
 	db_query("select NetMask from useip where Vip='%s'", Vip);
 	res = mysql_store_result(conn);
-	row = mysql_fetch_row(res);
-	ifcfg_del(cmd, Vip, row[0]);
-	system(cmd);
+
+	if (mysql_num_rows(res) > 0) {
+		row = mysql_fetch_row(res);
+		ifcfg_del(cmd, Vip, row[0]);
+		system(cmd);
+	}
+
 	mysql_free_result(res);
 }
 
@@ -32,5 +36,39 @@ void AddVip(const char *Vip, const char *Sip, const char *Sport, const char *Fip
 	}
 
 	mysql_free_result(res);
+}
+    
+#define	FORWARDFILE	"/etc/ipforward"
+
+void GenForwardFile(void)
+{
+	MYSQL_RES	*res;
+	MYSQL_ROW	row;
+	FILE		*fp;
+	char		cmd[MAXBUF + 1];
+
+	fp = fopen(FORWARDFILE, "w");
+
+	db_query("select Vip,NetMask from useip where Vflag=1");
+	res = mysql_store_result(conn);
+
+	while (NULL != (row = mysql_fetch_row(res))) {
+		ifcfg_add(cmd, row[0], row[1]);
+		fputs(cmd, fp);
+	}
+
+	mysql_free_result(res);
+
+	db_query("select * from server where not (Sflag=3)");
+	res = mysql_store_result(conn);
+
+	while (NULL != (row = mysql_fetch_row(res))) {
+		iptables_addpre(cmd, row[1], row[3], row[2]);
+		fputs(cmd, fp);
+	}
+
+	mysql_free_result(res);
+
+	fclose(fp);
 }
 

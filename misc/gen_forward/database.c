@@ -6,8 +6,7 @@
 
 #define	MAXBUF	1024
 
-static MYSQL	*conn = NULL;
-char	sql[MAXBUF + 1];
+MYSQL	*conn = NULL;
 
 void db_init(struct database *db)
 {
@@ -28,8 +27,15 @@ void db_exit(void)
 	}
 }
 
-void db_query(void)
+void db_query(const char *format, ...)
 {
+	static char	sql[MAXBUF + 1];
+	va_list		args;
+
+	va_start(args, format);
+	vsprintf(sql, format, args);
+	va_end(args);
+
 	LOG("SQL: %s\n", sql);
 	if (mysql_query(conn, sql)) {
 		ERR("mysql_query: %s", mysql_error(conn));
@@ -37,7 +43,7 @@ void db_query(void)
 	}
 }
 
-int db_foreach(void (*callback)(const char **row, va_list args), ...)
+int db_foreach(void (*callback)(const char **row, va_list args, int n), ...)
 {
 	MYSQL_ROW	row;
 	MYSQL_RES	*res = mysql_store_result(conn);
@@ -46,8 +52,8 @@ int db_foreach(void (*callback)(const char **row, va_list args), ...)
 
 	va_start(args, callback);
 	while ((row = mysql_fetch_row(res)) != NULL) {
+		(*callback)(row, args, n);
 		++n;
-		(*callback)(row, args);
 	}
 	va_end(args);
 

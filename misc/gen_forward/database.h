@@ -14,8 +14,8 @@ struct database {
 void db_init(struct database *db);
 void db_exit(void);
 
-void db_query(void);
-int  db_foreach(void (*callback)(const char **row, va_list args), ...);
+void db_query(const char *format, ...);
+int db_foreach(void (*callback)(const char **row, va_list args, int n), ...);
 
 #endif	/* _DATABASE_H */
 
