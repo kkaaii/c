@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "gen_forward.h"
+#include "config.h"
 #include "database.h"
 #include "iptables.h"
 #include "common.h"

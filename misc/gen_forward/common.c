@@ -17,7 +17,7 @@ void DelVip(const char *Vip)
 	if (mysql_num_rows(res) > 0) {
 		row = mysql_fetch_row(res);
 		ifcfg_del(cmd, Vip, row[0]);
-		system(cmd);
+		System(cmd);
 	}
 
 	mysql_free_result(res);
@@ -47,7 +47,9 @@ void GenForwardFile(void)
 	FILE		*fp;
 	char		cmd[MAXBUF + 1];
 
-	fp = fopen(FORWARDFILE, "w");
+	if (NULL == (fp = fopen(FORWARDFILE, "w"))) {
+		return ;
+	}
 
 	db_query("select Vip,NetMask from useip where Vflag=1");
 	res = mysql_store_result(conn);
@@ -57,8 +59,6 @@ void GenForwardFile(void)
 		fputs(cmd, fp);
 	}
 
-	mysql_free_result(res);
-
 	db_query("select * from server where not (Sflag=3)");
 	res = mysql_store_result(conn);
 
@@ -66,8 +66,6 @@ void GenForwardFile(void)
 		iptables_addpre(cmd, row[1], row[3], row[2]);
 		fputs(cmd, fp);
 	}
-
-	mysql_free_result(res);
 
 	fclose(fp);
 }

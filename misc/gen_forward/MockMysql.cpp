@@ -68,6 +68,13 @@ MYSQL_RES *mysql_store_result(MYSQL *conn)
 		.returnValue().getPointerValue();
 }
 
+void mysql_free_result(MYSQL_RES *result)
+{
+	mock("mysql")
+		.actualCall("mysql_free_result")
+		.withParameter("result", result);
+}
+
 int mysql_num_rows(MYSQL_RES *res)
 {
 	return mock("mysql")

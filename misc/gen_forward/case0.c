@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "gen_forward.h"
+#include "config.h"
 #include "database.h"
 #include "common.h"
 #include "iptables.h"

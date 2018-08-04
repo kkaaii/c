@@ -5,14 +5,6 @@
 
 #define	MAXBUF		1024
 
-struct host {
-	const char  *ip;
-	const char  *port;
-	const char  *back;
-	const char  *logdir;
-	const char  *fip;
-};
-
 extern MYSQL		*conn;
 extern struct host	host;
 
