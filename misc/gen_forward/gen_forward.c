@@ -11,6 +11,9 @@
 #define	FORWARDIP	"10.105.1.200"
 
 #define	MAXBUF		1024
+#define	MAXPORT		10
+
+char	V_port[MAXPORT][MAXBUF + 1];
 
 struct global {
 	const char	*Fip;

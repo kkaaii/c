@@ -6,6 +6,7 @@
 
 extern "C" {
 #include <stdio.h>
+#include <string.h>
 #include "log.h"
 #include "ifcfg.h"
 #include "iptables.h"
@@ -15,7 +16,7 @@ extern "C" {
 
 #define	VIP	"1.2.3.4"
 #define	SIP	"4.3.2.1"
-#define	FIP	"5.6.7.8"
+#define	FIP	"10.105.1.200"
 #define	P0	"100"
 #define	P1	"200"
 
@@ -69,10 +70,40 @@ TEST_GROUP(GenForward)
 			.ignoreOtherParameters();
 	}
 
+	void expectIfcfgAdd() {
+		mock("stdlib")
+			.expectOneCall("MockSystem")
+			.withParameter("command", IFCFG " add " VIP "/NetMask");
+	}
+
 	void expectIfcfgDel() {
 		mock("stdlib")
 			.expectOneCall("MockSystem")
 			.withParameter("command", IFCFG " del " VIP "/NetMask");
+	}
+
+	void expectIptablesAdd0() {
+		mock("stdlib")
+			.expectOneCall("MockSystem")
+			.withParameter("command", "/sbin/iptables -t nat -A PREROUTING -p tcp -d " VIP " --dport " P0 " -j DNAT --to " SIP)
+			.andReturnValue(0);
+
+		mock("stdlib")
+			.expectOneCall("MockSystem")
+			.withParameter("command", "/sbin/iptables -t nat -A POSTROUTING -p tcp -d " SIP " --dport " P0 " -j SNAT --to 10.105.1.200")
+			.andReturnValue(0);
+	}
+
+	void expectIptablesAdd1() {
+		mock("stdlib")
+			.expectOneCall("MockSystem")
+			.withParameter("command", "/sbin/iptables -t nat -A PREROUTING -p tcp -d " VIP " --dport " P1 " -j DNAT --to " SIP)
+			.andReturnValue(0);
+
+		mock("stdlib")
+			.expectOneCall("MockSystem")
+			.withParameter("command", "/sbin/iptables -t nat -A POSTROUTING -p tcp -d " SIP " --dport " P1 " -j SNAT --to 10.105.1.200")
+			.andReturnValue(0);
 	}
 
 	void expectIptablesDel0() {
@@ -114,7 +145,7 @@ TEST_GROUP(GenForward)
 		expectMysqlQuery("select * from server where Sip='" SIP "' and Sport='" P0 "'");
 		expectMysqlStoreResult();
 		expectMysqlNumRows(0);
-		mock("stdlib").expectNCalls(2, "MockSystem").ignoreOtherParameters();
+		expectIptablesAdd0();
 		expectMysqlQuery("insert into server (Vip,Sip,Sport) value('" VIP "','" SIP "','" P0 "')");
 		expectMysqlFreeResult();
 	}
@@ -475,6 +506,7 @@ TEST(GenForward, common_del_vip)
 TEST(GenForward, common_add_vip)
 {
 	expectAddVip();
+
 	AddVip(VIP, SIP, P0, FIP);
 }
 
@@ -531,3 +563,65 @@ TEST(GenForward, case0_more_rows)
 	case0(stderr, SIP);
 }
 
+TEST(GenForward, case1_no_port)
+{
+	V_port[0][0] = '\0';
+
+	case1(stderr, SIP);
+}
+
+TEST(GenForward, case1_no_vip)
+{
+	strcpy(V_port[0], P0);
+
+	expectMysqlQuery("select Vip from server where Sip='" SIP "'");
+	expectMysqlStoreResult();
+	expectMysqlNumRows(0);
+	expectMysqlFreeResult();
+
+	expectMysqlQuery("select Vip,NetMask from useip where Vflag=0 and Fzone=0 limit 0,1");
+	expectMysqlStoreResult();
+	expectMysqlNumRows(0);
+	expectMysqlFreeResult();
+
+	case1(stderr, SIP);
+}
+
+TEST(GenForward, case1_vip_in_server)
+{
+	const char	*row[] = {VIP};
+	strcpy(V_port[0], P0);
+
+	expectMysqlQuery("select Vip from server where Sip='" SIP "'");
+	expectMysqlStoreResult();
+	expectMysqlNumRows(1);
+	expectMysqlFetchRow(row);
+	expectMysqlFreeResult();
+
+	expectAddVip();
+
+	case1(stderr, SIP);
+}
+
+TEST(GenForward, case1_vip_in_useip)
+{
+	const char	*row[] = {VIP, "NetMask"};
+	strcpy(V_port[0], P0);
+
+	expectMysqlQuery("select Vip from server where Sip='" SIP "'");
+	expectMysqlStoreResult();
+	expectMysqlNumRows(0);
+	expectMysqlFreeResult();
+
+	expectMysqlQuery("select Vip,NetMask from useip where Vflag=0 and Fzone=0 limit 0,1");
+	expectMysqlStoreResult();
+	expectMysqlNumRows(1);
+	expectMysqlFetchRow(row);
+	expectIfcfgAdd();
+	expectMysqlQuery("update useip set Vflag=1 where Vip='" VIP "'");
+	expectMysqlFreeResult();
+
+	expectAddVip();
+
+	case1(stderr, SIP);
+}

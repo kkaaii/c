@@ -24,6 +24,7 @@ void case1(FILE *client_sock, const char *Sip)
 	if (mysql_num_rows(res) > 0) {
 		row = mysql_fetch_row(res);
 	} else {
+		mysql_free_result(res);
 		db_query("select Vip,NetMask from useip where Vflag=0 and Fzone=0 limit 0,1");
 		res = mysql_store_result(conn);
 
@@ -33,7 +34,7 @@ void case1(FILE *client_sock, const char *Sip)
 
 		row = mysql_fetch_row(res);
 		ifcfg_add(cmd, row[0], row[1]);
-		system(cmd);
+		System(cmd);
 
 		db_query("update useip set Vflag=1 where Vip='%s'", row[0]);
 	}
