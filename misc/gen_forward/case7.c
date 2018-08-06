@@ -6,7 +6,7 @@
 #include "iptables.h"
 #include "common.h"
 
-void case6(FILE *client_sock, const char *Sip)
+void case7(FILE *client_sock, const char *Sip)
 {
 	MYSQL_RES	*res;
 	MYSQL_ROW	row;
