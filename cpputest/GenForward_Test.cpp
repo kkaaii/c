@@ -14,11 +14,11 @@ extern "C" {
 #include "common.h"
 }
 
-#define	VIP	"1.2.3.4"
-#define	SIP	"4.3.2.1"
+#define	VIP	"vip"
+#define	SIP	"sip"
 #define	FIP	"10.105.1.200"
-#define	P0	"100"
-#define	P1	"200"
+#define	P0	"p0"
+#define	P1	"p1"
 
 TEST_GROUP(GenForward)
 {
@@ -666,7 +666,7 @@ TEST(GenForward, case2_vip_in_both)
 	case2(stderr, SIP);
 }
 
-TEST(GenForward, case_vip_in_server_only)
+TEST(GenForward, case2_vip_in_server_only)
 {
 	const char	*row[] = {VIP};
 	strcpy(V_port[0], P0);
@@ -687,5 +687,70 @@ TEST(GenForward, case_vip_in_server_only)
 	expectMysqlFreeResult();
 
 	case2(stderr, SIP);
+}
+
+TEST(GenForward, case3_no_vip)
+{
+	expectMysqlQuery("select Vip from server where Sip='" SIP "'");
+	expectMysqlStoreResult();
+	expectMysqlNumRows(0);
+	expectMysqlFreeResult();
+
+	case3(stderr, SIP);
+}
+
+TEST(GenForward, case3_vip)
+{
+	const char	*row[] = {VIP};
+	strcpy(V_port[0], P0);
+
+	expectMysqlQuery("select Vip from server where Sip='" SIP "'");
+	expectMysqlStoreResult();
+	expectMysqlNumRows(1);
+	expectMysqlFetchRow(row);
+	expectAddVip();
+	expectMysqlFreeResult();
+
+	case3(stderr, SIP);
+}
+
+TEST(GenForward, case4_no_row)
+{
+	expectMysqlQuery("select Vip,Sport from server where Sip='" SIP "'");
+	expectMysqlStoreResult();
+	expectMysqlNumRows(0);
+	expectMysqlFreeResult();
+
+	case4(stderr, SIP);
+}
+
+TEST(GenForward, case4_one_row)
+{
+	const char	*row[] = {VIP, P0};
+
+	expectMysqlQuery("select Vip,Sport from server where Sip='" SIP "'");
+	expectMysqlStoreResult();
+	expectMysqlNumRows(1);
+	expectMysqlFetchRow(row);
+	expectMysqlFetchRow(NULL);
+	expectMysqlFreeResult();
+
+	case4(stderr, SIP);
+}
+
+TEST(GenForward, case4_multiple_rows)
+{
+	const char	*row0[] = {VIP, P0};
+	const char	*row1[] = {VIP, P1};
+
+	expectMysqlQuery("select Vip,Sport from server where Sip='" SIP "'");
+	expectMysqlStoreResult();
+	expectMysqlNumRows(1);
+	expectMysqlFetchRow(row0);
+	expectMysqlFetchRow(row1);
+	expectMysqlFetchRow(NULL);
+	expectMysqlFreeResult();
+
+	case4(stderr, SIP);
 }
 
