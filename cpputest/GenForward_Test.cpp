@@ -573,6 +573,7 @@ TEST(GenForward, case1_no_port)
 TEST(GenForward, case1_no_vip)
 {
 	strcpy(V_port[0], P0);
+	V_port[1][0] = '\0';
 
 	expectMysqlQuery("select Vip from server where Sip='" SIP "'");
 	expectMysqlStoreResult();
@@ -591,6 +592,7 @@ TEST(GenForward, case1_vip_in_server)
 {
 	const char	*row[] = {VIP};
 	strcpy(V_port[0], P0);
+	V_port[1][0] = '\0';
 
 	expectMysqlQuery("select Vip from server where Sip='" SIP "'");
 	expectMysqlStoreResult();
@@ -607,6 +609,7 @@ TEST(GenForward, case1_vip_in_useip)
 {
 	const char	*row[] = {VIP, "NetMask"};
 	strcpy(V_port[0], P0);
+	V_port[1][0] = '\0';
 
 	expectMysqlQuery("select Vip from server where Sip='" SIP "'");
 	expectMysqlStoreResult();
@@ -636,6 +639,7 @@ TEST(GenForward, case2_no_port)
 TEST(GenForward, case2_no_vip)
 {
 	strcpy(V_port[0], P0);
+	V_port[1][0] = '\0';
 
 	expectMysqlQuery("select Vip from server where Sip='" SIP "' and Sport='" P0 "'");
 	expectMysqlStoreResult();
@@ -649,6 +653,7 @@ TEST(GenForward, case2_vip_in_both)
 {
 	const char	*row[] = {VIP};
 	strcpy(V_port[0], P0);
+	V_port[1][0] = '\0';
 
 	expectMysqlQuery("select Vip from server where Sip='" SIP "' and Sport='" P0 "'");
 	expectMysqlStoreResult();
@@ -670,6 +675,7 @@ TEST(GenForward, case2_vip_in_server_only)
 {
 	const char	*row[] = {VIP};
 	strcpy(V_port[0], P0);
+	V_port[1][0] = '\0';
 
 	expectMysqlQuery("select Vip from server where Sip='" SIP "' and Sport='" P0 "'");
 	expectMysqlStoreResult();
@@ -703,6 +709,7 @@ TEST(GenForward, case3_vip)
 {
 	const char	*row[] = {VIP};
 	strcpy(V_port[0], P0);
+	V_port[1][0] = '\0';
 
 	expectMysqlQuery("select Vip from server where Sip='" SIP "'");
 	expectMysqlStoreResult();
@@ -752,5 +759,49 @@ TEST(GenForward, case4_multiple_rows)
 	expectMysqlFreeResult();
 
 	case4(stderr, SIP);
+}
+
+TEST(GenForward, case5_no_vip)
+{
+	V_port[0][0] = '\0';
+
+	case5(stderr, SIP);
+}
+
+TEST(GenForward, case5_no_row)
+{
+	strcpy(V_port[0], VIP);
+	strcpy(V_port[1], "Old");
+
+	expectMysqlQuery("select Sport from server where Vip='" VIP "' and Sip='Old'");
+	expectMysqlStoreResult();
+	expectMysqlNumRows(0);
+	expectMysqlFreeResult();
+
+	case5(stderr, SIP);
+}
+
+TEST(GenForward, case5_has_rows)
+{
+	const char	*row0[] = {P0};
+	const char	*row1[] = {P1};
+
+	strcpy(V_port[0], VIP);
+	strcpy(V_port[1], "Old");
+
+	expectMysqlQuery("select Sport from server where Vip='" VIP "' and Sip='Old'");
+	expectMysqlStoreResult();
+	expectMysqlNumRows(2);
+	expectMysqlFetchRow(row0);
+	mock("stdlib").expectNCalls(2, "MockSystem").ignoreOtherParameters();
+	expectIptablesAdd0();
+	expectMysqlFetchRow(row1);
+	mock("stdlib").expectNCalls(2, "MockSystem").ignoreOtherParameters();
+	expectIptablesAdd1();
+	expectMysqlFetchRow(NULL);
+	expectMysqlQuery("update server set Sip='" SIP "' where Vip='" VIP "' and Sip='Old'");
+	expectMysqlFreeResult();
+
+	case5(stderr, SIP);
 }
 
