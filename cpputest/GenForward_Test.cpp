@@ -879,3 +879,64 @@ TEST(GenForward, case7_one_row)
 	case7(stderr, SIP);
 }
 
+TEST(GenForward, case8_no_port)
+{
+	V_port[0][0] = '\0';
+
+	case8(stderr, SIP);
+}
+
+TEST(GenForward, case8_no_vip)
+{
+	strcpy(V_port[0], P0);
+
+	expectMysqlQuery("select Vip from server where Sip='" SIP "'");
+	expectMysqlStoreResult();
+	expectMysqlNumRows(0);
+	expectMysqlFreeResult();
+
+	expectMysqlQuery("select Vip,NetMask from useip where Vflag=0 and Fzone=1 limit 0,1");
+	expectMysqlStoreResult();
+	expectMysqlNumRows(0);
+	expectMysqlFreeResult();
+
+	case8(stderr, SIP);
+}
+
+TEST(GenForward, case8_vip_in_server)
+{
+	const char	*row[] = {VIP};
+	strcpy(V_port[0], P0);
+
+	expectMysqlQuery("select Vip from server where Sip='" SIP "'");
+	expectMysqlStoreResult();
+	expectMysqlNumRows(1);
+	expectMysqlFetchRow(row);
+	expectAddVip();
+	expectMysqlFreeResult();
+
+	case8(stderr, SIP);
+}
+
+TEST(GenForward, case8_vip_in_useip)
+{
+	const char	*row[] = {VIP, "NetMask"};
+	strcpy(V_port[0], P0);
+
+	expectMysqlQuery("select Vip from server where Sip='" SIP "'");
+	expectMysqlStoreResult();
+	expectMysqlNumRows(0);
+	expectMysqlFreeResult();
+
+	expectMysqlQuery("select Vip,NetMask from useip where Vflag=0 and Fzone=1 limit 0,1");
+	expectMysqlStoreResult();
+	expectMysqlNumRows(1);
+	expectMysqlFetchRow(row);
+	expectIfcfgAdd();
+	expectMysqlQuery("update useip set Vflag=1 where vip='" VIP "'");
+	expectAddVip();
+	expectMysqlFreeResult();
+
+	case8(stderr, SIP);
+}
+

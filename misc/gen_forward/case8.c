@@ -14,7 +14,7 @@ void case8(FILE *client_sock, const char *Sip)
 	char		cmd[MAXBUF + 1];
 	int		i;
 
-	if ('\0' == V_port[0]) {
+	if ('\0' == V_port[0][0]) {
 		return;
 	}
 
@@ -36,7 +36,7 @@ void case8(FILE *client_sock, const char *Sip)
 
 		row = mysql_fetch_row(res);
 		ifcfg_add(cmd, row[0], row[1]);
-		system(cmd);
+		System(cmd);
 		db_query("update useip set Vflag=1 where vip='%s'", row[0]);
 	}
 
