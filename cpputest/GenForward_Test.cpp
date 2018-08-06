@@ -805,3 +805,40 @@ TEST(GenForward, case5_has_rows)
 	case5(stderr, SIP);
 }
 
+TEST(GenForward, case6_no_port)
+{
+	V_port[0][0] = '\0';
+
+	case6(stderr, SIP);
+}
+
+TEST(GenForward, case6_no_row)
+{
+	strcpy(V_port[0], P0);
+	V_port[1][0] = '\0';
+
+	expectMysqlQuery("select Vip from server where Sip='" SIP "' and Sport='" P0 "'");
+	expectMysqlStoreResult();
+	expectMysqlNumRows(0);
+	expectMysqlFreeResult();
+
+	case6(stderr, SIP);
+}
+
+TEST(GenForward, case6_one_row)
+{
+	const char	*row[] = {VIP};
+	strcpy(V_port[0], P0);
+	V_port[1][0] = '\0';
+
+	expectMysqlQuery("select Vip from server where Sip='" SIP "' and Sport='" P0 "'");
+	expectMysqlStoreResult();
+	expectMysqlNumRows(1);
+	expectMysqlFetchRow(row);
+	expectMysqlQuery("update server set Sflag=3 where Sip='" SIP "' and Sport='" P0 "' and Vip='" VIP "'");
+	expectIptablesDel0();
+	expectMysqlFreeResult();
+
+	case6(stderr, SIP);
+}
+
