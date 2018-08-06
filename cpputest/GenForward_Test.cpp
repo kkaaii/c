@@ -333,170 +333,6 @@ TEST(GenForward, ParseRequest__Vtype_Sip_Vports)
 	STRCMP_EQUAL(P1, Vports[1]);
 }
 
-#if 0
-TEST(GenForward, Case0__no_record)
-{
-	const char	*sql = "select Vip,Sip,Sport from server where Sip='" SIP "'";
-	this->query(sql, 0);
-	LONGS_EQUAL(0, Case0(SIP));
-}
-
-TEST(GenForward, Case0__has_record)
-{
-	const char	*sql = "select Vip,Sip,Sport from server where Sip='" SIP "'";
-	const char	*row[] = {VIP, SIP, P0};
-	this->query(sql, row);
-/*
-	mock("mysql")
-		.expectOneCall("mysql_fetch_row")
-		.withParameter("res", res)
-		.andReturnValue(row);
-*/
-
-//		db_query("select NetMask from useip where Vip='%s'", Vip);
-//		db_foreach(callback_ifcfg_del, Vip);
-	mock("mysql")
-		.expectOneCall("mysql_query")
-		.withParameter("sql", "delete from server where Sip='" SIP "'")
-		.ignoreOtherParameters()
-		.andReturnValue(0);
-
-	mock("mysql")
-		.expectOneCall("mysql_query")
-		.withParameter("sql", "update useip set Vflag=0 where Vip='" VIP "'")
-		.ignoreOtherParameters()
-		.andReturnValue(0);
-
-	sql = "select NetMask from useip where Vip='" VIP "'";
-	this->query(sql, 0);
-/*
-	mock("stdlib")
-		.expectOneCall("MockSystem")
-		.withParameter("command", "/sbin/iptables -t nat -D PREROUTING -p tcp -d " VIP " --dport " P0 " -j DNAT --to " SIP)
-		.andReturnValue(0);
-
-	mock("stdlib")
-		.expectOneCall("MockSystem")
-		.withParameter("command", "/sbin/iptables -t nat -D POSTROUTING -p tcp -d " SIP " --dport " P0 " -j SNAT --to 10.105.1.200")
-		.andReturnValue(0);
-*/
-	Case0(SIP);
-}
-#endif
-#if 0
-TEST(GenForward, Case1__no_port)
-{
-	const char	Vports[][MAXBUF + 1] = {""};
-
-	LONGS_EQUAL(0, Case1(SIP, Vports));
-}
-#if 0
-IGNORE_TEST(GenForward, Case1_has_record)
-{
-	const char	*Sip = "1.2.3.4";
-	const char	Vports[][MAXBUF + 1] = {"100"};
-
-	MYSQL_RES	*res = this->query(1);
-
-	mock("mysql")
-		.expectOneCall("mysql_fetch_row")
-		.withParameter("res", res)
-		.andReturnValue(row);
-
-	Case1(Sip, Vports);
-}
-
-IGNORE_TEST(GenForward, Case1_no_record)
-{
-	const char	*Sip = "1.2.3.4";
-	const char	Vports[][MAXBUF + 1] = {"100"};
-
-	this->query(1);
-	mock("mysql")
-		.expectOneCall("mysql_query")
-		.withParameter("conn", conn)
-		.withParameter("sql", "select Vip,NetMask from useip where Vflag=0 and Fzone=0 limit 0,1");
-
-	LONGS_EQUAL(0, Case1(Sip, Vports));
-}
-#endif
-TEST(GenForward, Case3__no_record)
-{
-	const char	Vports[][MAXBUF + 1] = {P0, P1};
-
-	this->query(0);
-	LONGS_EQUAL(0, Case3(SIP, Vports));
-}
-
-TEST(GenForward, Case4__no_record)
-{
-	char	req[MAXBUF + 1];
-
-	this->query(0);
-	LONGS_EQUAL(0, Case4(req, SIP));
-}
-
-TEST(GenForward, Case4_has_one_record)
-{
-	MYSQL_RES	*res = this->query(1);
-	const char	*row[] = {VIP, P0};
-	char		req[MAXBUF + 1];
-
-	mock("mysql")
-		.expectOneCall("mysql_fetch_row")
-		.withParameter("res", res)
-		.andReturnValue(row);
-
-	mock("mysql")
-		.expectOneCall("mysql_fetch_row")
-		.withParameter("res", res)
-		.andReturnValue((void *)0);
-
-	LONGS_EQUAL(1, Case4(req, SIP));
-	STRCMP_EQUAL("OK! V=" VIP "I=" SIP "P=" P0, req);
-}
-
-TEST(GenForward, Case4_has_more_records)
-{
-	MYSQL_RES	*res = this->query(1);
-	const char	*row0[] = {VIP, P0};
-	const char	*row1[] = {VIP, P1};
-	char		req[MAXBUF + 1];
-
-	mock("mysql")
-		.expectOneCall("mysql_fetch_row")
-		.withParameter("res", res)
-		.andReturnValue(row0);
-
-	mock("mysql")
-		.expectOneCall("mysql_fetch_row")
-		.withParameter("res", res)
-		.andReturnValue(row1);
-
-	mock("mysql")
-		.expectOneCall("mysql_fetch_row")
-		.withParameter("res", res)
-		.andReturnValue((void *)0);
-
-	LONGS_EQUAL(1, Case4(req, SIP));
-	STRCMP_EQUAL("OK! V=" VIP "I=" SIP "P=" P0 "+" P1, req);
-}
-
-TEST(GenForward, Case5__no_vip)
-{
-	const char	Vports[][MAXBUF + 1] = {""};
-	LONGS_EQUAL(0, Case5(SIP, Vports));
-}
-
-TEST(GenForward, Case5__no_record)
-{
-	const char	Vports[][MAXBUF + 1] = {VIP};
-
-	this->query(0);
-	LONGS_EQUAL(0, Case5(SIP, Vports));
-}
-#endif
-
 TEST(GenForward, common_del_vip)
 {
 	expectDelVip();
@@ -721,7 +557,7 @@ TEST(GenForward, case3_vip)
 	case3(stderr, SIP);
 }
 
-TEST(GenForward, case4_no_row)
+TEST(GenForward, case4_zero_row)
 {
 	expectMysqlQuery("select Vip,Sport from server where Sip='" SIP "'");
 	expectMysqlStoreResult();
@@ -768,7 +604,7 @@ TEST(GenForward, case5_no_vip)
 	case5(stderr, SIP);
 }
 
-TEST(GenForward, case5_no_row)
+TEST(GenForward, case5_zero_row)
 {
 	strcpy(V_port[0], VIP);
 	strcpy(V_port[1], "Old");
@@ -812,7 +648,7 @@ TEST(GenForward, case6_no_port)
 	case6(stderr, SIP);
 }
 
-TEST(GenForward, case6_no_row)
+TEST(GenForward, case6_zero_row)
 {
 	strcpy(V_port[0], P0);
 	V_port[1][0] = '\0';
@@ -849,7 +685,7 @@ TEST(GenForward, case7_no_port)
 	case7(stderr, SIP);
 }
 
-TEST(GenForward, case7_no_row)
+TEST(GenForward, case7_zero_row)
 {
 	strcpy(V_port[0], P0);
 	V_port[1][0] = '\0';
@@ -938,5 +774,10 @@ TEST(GenForward, case8_vip_in_useip)
 	expectMysqlFreeResult();
 
 	case8(stderr, SIP);
+}
+
+TEST(GenForward, case9)
+{
+	case9(stderr, SIP);
 }
 
