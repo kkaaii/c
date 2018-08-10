@@ -9,7 +9,16 @@ struct host {
 	const char	*fip;
 };
 
+struct database {
+	const char	*server;
+	const char	*port;
+	const char	*user;
+	const char	*password;
+	const char	*database;
+};
+
 extern struct host	host;
+extern struct database	database;
 
 #endif	/* _CONFIG_H */
 

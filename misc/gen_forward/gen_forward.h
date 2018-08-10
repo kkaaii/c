@@ -30,4 +30,6 @@ void case7(FILE *client_sock, const char *Sip);
 void case8(FILE *client_sock, const char *Sip);
 void case9(FILE *client_sock, const char *Sip);
 
+void Response(FILE *client_sock, const char *request);
+
 #endif	/* _GEN_FORWARD_H */

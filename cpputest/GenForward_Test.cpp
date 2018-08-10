@@ -1,7 +1,7 @@
 #include "CppUTest/TestHarness.h"
 #include "CppUTestExt/MockSupport.h"
 
-#include "MockMysql.h"
+#include "mysql.h"
 #include "MockSystem.h"
 
 extern "C" {
@@ -779,5 +779,10 @@ TEST(GenForward, case8_vip_in_useip)
 TEST(GenForward, case9)
 {
 	case9(stderr, SIP);
+}
+
+TEST(GenForward, Response)
+{
+	Response(stderr, "");
 }
 

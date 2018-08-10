@@ -15,9 +15,11 @@ SRC_DIRS = \
 	./\
 	../SinglyLinkedList	\
 	../CircularlySinglyLinkedList	\
+	./Mock \
 	../misc/gen_forward	\
 
 INCLUDE_DIRS = \
+	./Mock \
 	../SinglyLinkedList	\
 	../CircularlySinglyLinkedList	\
 	../misc/gen_forward	\
