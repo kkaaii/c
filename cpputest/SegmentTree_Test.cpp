@@ -41,9 +41,18 @@ TEST(SegmentTree, Query)
 	for (size_t i = 0; i < 6; ++i) {
 		for (size_t j = 0; j < i; ++j) {
 			T actual = SegmentTree_Query(mTree, j, i);
-			printf("expected[%lu][%lu] = %d - %d\n", i, j, expected[i][j], actual); 
 			LONGS_EQUAL(expected[i][j], actual);
 		}
+	}
+}
+
+TEST(SegmentTree, Update)
+{
+	int data[] = {-2, -5, -1, -4, -9, -3};
+
+	for (size_t i = 0; i < 6; ++i) {
+		SegmentTree_Update(mTree, i, i, data[i]);
+		LONGS_EQUAL(0, SegmentTree_Query(mTree, i, i));
 	}
 }
 

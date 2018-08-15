@@ -11,6 +11,7 @@ typedef struct SegmentTree SegmentTree;
 SegmentTree *SegmentTree_Create(T data[], size_t items);
 void SegmentTree_Delete(SegmentTree *tree);
 T SegmentTree_Query(SegmentTree *tree, size_t lower, size_t upper);
+void SegmentTree_Update(SegmentTree *tree, size_t lower, size_t upper, T delta);
 
 #ifdef	__cplusplus
 }
