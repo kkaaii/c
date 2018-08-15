@@ -1,5 +1,6 @@
 #include "CppUTest/TestHarness.h"
 
+#include <stdio.h>
 #include "SegmentTree.h"
 
 TEST_GROUP(SegmentTree)
@@ -24,5 +25,25 @@ TEST(SegmentTree, Create)
 	LONGS_EQUAL(4, SegmentTree_Query(mTree, 3, 3));
 	LONGS_EQUAL(9, SegmentTree_Query(mTree, 4, 4));
 	LONGS_EQUAL(3, SegmentTree_Query(mTree, 5, 5));
+}
+
+TEST(SegmentTree, Query)
+{
+	int	expected[][6] = {
+		{ 2},
+		{ 7,  5},
+		{ 8,  6,  1},
+		{12, 10,  5,  4},
+		{21, 19, 14, 13,  9},
+		{24, 22, 17, 16, 12, 3},
+	};
+
+	for (size_t i = 0; i < 6; ++i) {
+		for (size_t j = 0; j < i; ++j) {
+			T actual = SegmentTree_Query(mTree, j, i);
+			printf("expected[%lu][%lu] = %d - %d\n", i, j, expected[i][j], actual); 
+			LONGS_EQUAL(expected[i][j], actual);
+		}
+	}
 }
 
