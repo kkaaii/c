@@ -19,6 +19,28 @@ static size_t NextPowerOfTwo(size_t x)
 
 #define	RECURSIVE	0
 
+/*
+** Recursive way: Top-down
+**
+**            .---------[0-5]---------.
+**            |                       |
+**      .---[0-2]---.           .---[3-5]---.
+**      |           |           |           |
+**    [0-1]       [2-2]       [3-4]       [5-5]
+**    /   \                   /   \
+** [0-0] [1-1]             [3-3] [4-4]
+**
+** Iteration way: Bottom-up
+**
+**        .----- 0-5 -----.
+**        |               |
+**    .- 0-3 -.       .- 4-5
+**    |       |       |
+**  (0-1)   [2-3]   (4-5)
+**  /   \   /   \   /   \
+**  0  (1) [2] [3] [4] (5)
+*/
+
 #if RECURSIVE
 struct SegmentTree {
 	size_t	lower;
