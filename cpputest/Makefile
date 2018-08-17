@@ -15,6 +15,7 @@ SRC_DIRS = \
 	./\
 	../SinglyLinkedList	\
 	../CircularlySinglyLinkedList	\
+	../BinaryIndexedTree	\
 	../SegmentTree		\
 	./Mock \
 	../misc/gen_forward	\
@@ -23,6 +24,7 @@ INCLUDE_DIRS = \
 	./Mock \
 	../SinglyLinkedList	\
 	../CircularlySinglyLinkedList	\
+	../BinaryIndexedTree	\
 	../SegmentTree		\
 	../misc/gen_forward	\
 	$(CPPUTEST_HOME)/include

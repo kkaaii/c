@@ -7,5 +7,6 @@
 IMPORT_TEST_GROUP(CircularlySinglyLinkedList);
 IMPORT_TEST_GROUP(SinglyLinkedList);
 IMPORT_TEST_GROUP(GenForward);
+IMPORT_TEST_GROUP(BinaryIndexedTree);
 IMPORT_TEST_GROUP(SegmentTree);
 
