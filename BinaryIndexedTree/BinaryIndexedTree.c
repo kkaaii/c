@@ -1,6 +1,18 @@
 #include <stdlib.h>
 #include "BinaryIndexedTree.h"
 
+/*
+**                  .---------.----.- C[8]
+**                  |         |    |    |
+**        .----.- C[4]        |    |    |
+**        |    |    |         |    |    |
+**   .- C[2]   |    |    .- C[6]   |    |
+**   |    |    |    |    |    |    |    |
+** C[1]   |  C[3]   |  C[5]   |  C[7]   |
+**   |    |    |    |    |    |    |    |
+** A[1] A[2] A[3] A[4] A[5] A[6] A[7] A[8]
+*/
+
 struct BinaryIndexedTree {
 	size_t	n;
 	T	*data;
@@ -42,25 +54,3 @@ void BinaryIndexedTree_Update(BinaryIndexedTree *tree, size_t i, T delta)
 	}
 }
 
-
-/*
-static T _GetAt(BinaryIndexedTree *tree, size_t i)
-{
-	
-}
-
-static void _PutAt(BinaryIndexedTree *tree, size_t i, T x)
-{
-}
-
-void BinaryIndexedTree_PutAt(BinaryIndexedTree *tree, size_t i, T x)
-{
-	_PutAt(tree, i, x);
-}
-
-T BinaryIndexedTree_GetAt(BinaryIndexedTree *tree, size_t i)
-{
-	return _GetAt(tree, i);
-}
-
-*/
