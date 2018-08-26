@@ -1,9 +1,13 @@
+class Employee;
+
 class EmployeeType {
 public:
 	enum {ENGINEER = 0, SALESMAN = 1, MANAGER = 2};
 
 	virtual ~EmployeeType() {}
 	virtual int getTypeCode() const = 0;
+
+	virtual int payAmount(Employee &employee) = 0;
 
 	static EmployeeType *newType(int code);
 };
@@ -23,6 +27,10 @@ public:
 		return _type->getTypeCode();
 	}
 
+	int payAmount() {
+		return _type->payAmount(*this);
+	}
+
 	void setType(int code) {
 		if (0 != _type) {
 			delete _type;
@@ -32,13 +40,27 @@ public:
 		_type = EmployeeType::newType(code);
 	}
 
-	int payAmount();
+	int getMonthlySalary() const {
+		return _monthlySalary;
+	}
+
+	int getCommission() const {
+		return _commission;
+	}
+
+	int getBonus() const {
+		return _bonus;
+	}
 };
 
 class Engineer: public EmployeeType {
 public:
 	virtual int getTypeCode() const {
 		return EmployeeType::ENGINEER;
+	}
+
+	virtual int payAmount(Employee &employee) {
+		return employee.getMonthlySalary();
 	}
 };
 
@@ -47,12 +69,20 @@ public:
 	virtual int getTypeCode() const {
 		return EmployeeType::SALESMAN;
 	}
+
+	virtual int payAmount(Employee &employee) {
+		return employee.getMonthlySalary() + employee.getCommission();
+	}
 };
 
 class Manager: public EmployeeType {
 public:
 	virtual int getTypeCode() const {
 		return EmployeeType::MANAGER;
+	}
+
+	virtual int payAmount(Employee &employee) {
+		return employee.getMonthlySalary() + employee.getBonus();
 	}
 };
 
@@ -67,25 +97,6 @@ EmployeeType *EmployeeType::newType(int code)
 
 	case MANAGER:
 		return new Manager();
-
-	default:
-		break;
-	}
-
-	return 0;
-}
-
-int Employee::payAmount()
-{
-	switch (getType()) {
-	case EmployeeType::ENGINEER:
-		return _monthlySalary;
-
-	case EmployeeType::SALESMAN:
-		return _monthlySalary + _commission;
-
-	case EmployeeType::MANAGER:
-		return _monthlySalary + _bonus;
 
 	default:
 		break;
