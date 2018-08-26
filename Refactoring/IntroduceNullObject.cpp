@@ -7,7 +7,9 @@ class BillingPlan {
 
 class PaymentHistory {
 public:
-	int getWeeksDelinquentInLastYear() const {
+	static PaymentHistory *newNull();
+
+	virtual int getWeeksDelinquentInLastYear() const {
 		return _weeksDelinquentInLastYear;
 	}
 
@@ -15,38 +17,74 @@ private:
 	int _weeksDelinquentInLastYear;
 };
 
+class NullPaymentHistory: public PaymentHistory {
+public:
+	virtual int getWeeksDelinquentInLastYear() const {
+		return 0;
+	}
+};
+
+PaymentHistory *PaymentHistory::newNull()
+{
+	return new NullPaymentHistory();
+}
+
 class Customer {
 public:
-	String getName() const;
-	BillingPlan getPlan() const;
-	PaymentHistory *getHistory() const;
+	static Customer *newNull();
+
+	virtual bool isNull() const {
+		return false;
+	}
+
+	virtual String getName() const;
+	virtual BillingPlan getPlan() const;
+	virtual PaymentHistory *getHistory() const;
+};
+
+class NullCustomer: public Customer {
+public:
+	virtual bool isNull() const {
+		return true;
+	}
+
+	virtual String getName() const {
+		return "occupant";
+	}
+
+	virtual BillingPlan getPlan() const {
+		return BillingPlan::basic();
+	}
+
+	virtual PaymentHistory *getHistory() const {
+		return PaymentHistory::newNull();
+	}
 };
 
 class Site {
 public:
 	Customer *getCustomer() const {
-		return _customer;
+		return _customer ? _customer : Customer::newNull();
 	}
 
 private:
 	Customer *_customer;
 };
 
+Customer *Customer::newNull()
+{
+	return new NullCustomer();
+}
+
 int main()
 {
 	Site site;
 	Customer *customer = site.getCustomer();
 
-	BillingPlan plan;
-	if (0 == customer) plan = BillingPlan::basic();
-	else plan = customer->getPlan();
+	BillingPlan plan = customer->getPlan();
 
-	String customerName;
-	if (0 == customer) customerName = "occupant";
-	else customerName = customer->getName();
+	String customerName = customer->getName();
 
-	int weeksDelinquent;
-	if (0 == customer) weeksDelinquent = 0;
-	else weeksDelinquent = customer->getHistory()->getWeeksDelinquentInLastYear();
+	int weeksDelinquent = customer->getHistory()->getWeeksDelinquentInLastYear();
 }
 
