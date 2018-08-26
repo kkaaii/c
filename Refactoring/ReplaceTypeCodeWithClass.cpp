@@ -1,15 +1,33 @@
-class Person {
-	int _bloodGroup;
+class BloodGroup {
+	int _code;
+	static BloodGroup O;
+	static BloodGroup A;
+	static BloodGroup B;
+	static BloodGroup AB;
 public:
-	enum {O = 0, A = 1, B = 2, AB = 3};
+	BloodGroup(int code): _code(code) {}
 
-	Person(int bloodGroup): _bloodGroup(bloodGroup) {}
+private:
+	int getCode(void) {
+		return _code;
+	}
+};
 
-	void setBloodGroup(int bloodGroup) {
+BloodGroup BloodGroup::O = BloodGroup(0);
+BloodGroup BloodGroup::A = BloodGroup(1);
+BloodGroup BloodGroup::B = BloodGroup(2);
+BloodGroup BloodGroup::AB = BloodGroup(3);
+
+class Person {
+	BloodGroup &_bloodGroup;
+public:
+	Person(BloodGroup &bloodGroup): _bloodGroup(bloodGroup) {}
+
+	void setBloodGroup(BloodGroup &bloodGroup) {
 		_bloodGroup = bloodGroup;
 	}
 
-	int getBloodGroup(void) {
+	BloodGroup &getBloodGroup(void) {
 		return _bloodGroup;
 	}
 };
