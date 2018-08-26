@@ -1,27 +1,30 @@
 class Person {
 public:
-	virtual ~Person() {}
-	virtual bool isMale() const = 0;
-	virtual char getCode() const = 0;
-};
+	Person(bool isMale, char code):
+		_isMale(isMale), _code(code) {
+	}
 
-class Male: public Person {
-	virtual bool isMale() const {
-		return true;
+	bool isMale() const {
+		return _isMale;
 	}
 
 	virtual char getCode() const {
-		return 'M';
-	}
-};
-
-class Female: public Person {
-	virtual bool isMale() const {
-		return false;
+		return _code;
 	}
 
-	virtual char getCode() const {
-		return 'F';
-	}
+	static Person *createMale();
+	static Person *createFemale();
+
+private:
+	bool _isMale;
+	char _code;
 };
+
+Person *Person::createMale() {
+	return new Person(true, 'M');
+}
+
+Person *Person::createFemale() {
+	return new Person(false, 'F');
+}
 
