@@ -10,12 +10,10 @@ String foundMiscreant(std::vector<String> &people)
 {
 	for (int i = 0; i < people.size(); ++i) {
 		if (people[i] == "Don") {
-			sendAlert();
 			return "Don";
 		}
 
 		if (people[i] == "John") {
-			sendAlert();
 			return "John";
 		}
 	}
@@ -26,6 +24,8 @@ String foundMiscreant(std::vector<String> &people)
 void checkSecurity(std::vector<String> &people)
 {
 	String found = foundMiscreant(people);
+	if (found != "")
+		sendAlert();
 	someLaterCode(found);
 }
 
