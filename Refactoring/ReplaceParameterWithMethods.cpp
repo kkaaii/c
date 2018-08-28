@@ -1,17 +1,16 @@
-static double discountedPrice(int basePrice, int discountLevel)
+static double getBasePrice()
 {
-	if (discountLevel == 2) return basePrice * 0.9;
-	else return basePrice * 0.95;
+	return _quantity * _itemPrice;
 }
+
+static int getDiscountLevel()
+{
+	return (_quantity > 100) ? 2 : 1;
+}
+
 double getPrice()
 {
-	int basePrice = _quantity * _itemPrice;
-	int discountLevel;
-
-	if (_quantity > 100) discountLevel = 2;
-	else discountLevel = 1;
-
-	double finalPrice = discountedPrice(basePrice, discountLevel);
-	return finalPrice;
+	if (getDiscountLevel() == 2) return getBasePrice() * 0.9;
+	else return getBasePrice() * 0.95;
 }
 
