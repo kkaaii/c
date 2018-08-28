@@ -2,6 +2,17 @@
 
 class Date {};
 
+class DateRange {
+	const Date _start;
+	const Date _end;
+public:
+	DateRange(Date start, Date end): _start(start), _end(end) {}
+
+	bool includes(Date date) {
+		return _start <= date && date <= _end;
+	}
+};
+
 class Entry {
 	double _value;
 	Date _chargeDate;
@@ -21,10 +32,10 @@ class Account {
 	std::vector<Entry> _entries;
 	typedef std::vector<Entry>::iterator Iterator;
 public:
-	double getFlowBetween(Date start, Date end) {
+	double getFlowBetween(DateRange range) {
 		double result = 0.0;
 		for (Iterator it = _entries.begin(); it != _entries.end(); ++it) {
-			if (it->getDate() >= start) || it->getDate() <= end) {
+			if (range.includes(it->getDate())) {
 				result += it->getValue();
 			}
 		}
