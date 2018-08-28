@@ -10,28 +10,37 @@ public:
 class JobItem {
 	int	_unitPrice;
 	int	_quantity;
-	bool	_isLabor;
-	Employee *_employee;
 public:
-	JobItem(int unitPrice, int quantity, bool isLabor, Employee *employee):
+	JobItem(int unitPrice, int quantity):
 		_unitPrice(unitPrice),
-		_quantity(quantity),
-		_isLabor(isLabor),
-		_employee(employee) {
+		_quantity(quantity) {
 	}
-	
+
 	int getTotalPrice() const {
 		return getUnitPrice() * _quantity;
 	}
 
-	int getUnitPrice() const {
-		return _isLabor ? _employee->getRate() : _unitPrice;
+	virtual int getUnitPrice() const {
+		return _unitPrice;
 	}
 	
 	int getQuantity() const {
 		return _quantity;
 	}
-	
+};
+
+class LaborItem: public JobItem {
+	Employee *_employee;
+public:
+	LaborItem(int quantity, Employee *employee):
+		JobItem(0, quantity),
+		_employee(employee) {
+		}
+
+	virtual int getUnitPrice() const {
+		return _employee->getRate();
+	}
+
 	Employee *getEmployee() const {
 		return _employee;
 	}
