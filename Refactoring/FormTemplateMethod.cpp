@@ -14,37 +14,86 @@ public:
 	String getCharge() const;
 };
 
+class Customer;
+class Statement {
+public:
+	String value(const Customer &customer) const;
+	virtual String headerString(const Customer &customer) const = 0;
+	virtual String footerString(const Customer &customer) const = 0;
+	virtual String eachRentalString(const Rental &rental) const = 0;
+};
+
+class TextStatement: public Statement {
+public:
+	virtual String headerString(const Customer &customer) const;
+	virtual String footerString(const Customer &customer) const;
+	virtual String eachRentalString(const Rental &rental) const;
+};
+
+class HtmlStatement: public Statement {
+public:
+	virtual String headerString(const Customer &customer) const;
+	virtual String footerString(const Customer &customer) const;
+	virtual String eachRentalString(const Rental &rental) const;
+};
+
+typedef std::vector<Rental> Rentals;
+typedef Rentals::const_iterator Iterator;
+
 class Customer {
-	typedef std::vector<Rental> Rentals;
-	typedef Rentals::const_iterator Iterator;
 	Rentals _rentals;
 public:
 	String getName() const;
+	Rentals& getRentals() const;
 	String getTotalCharge() const;
 	String getTotalFrequentRenterPoints() const;
 
-	String statement() const;
-	String htmlStatement() const;
+	String statement() const {
+		return TextStatement().value(*this);
+	}
+	String htmlStatement() const {
+		return HtmlStatement().value(*this);
+	}
 };
 
-String Customer::statement() const
+String Statement::value(const Customer &customer) const
 {
-	String result = "Rental Record for " + getName() + "\n";
-	for (Iterator it = _rentals.begin(); it != _rentals.end(); ++it) {
-		result += "\t" + it->getMovie().getTitle() + "\t" + it->getCharge() + "\n";
+	String result = headerString(customer);
+	Rentals &rentals = customer.getRentals();
+	for (Iterator it = rentals.begin(); it != rentals.end(); ++it) {
+		result += eachRentalString(*it);
 	}
-	result += "Amount owed is " + String(getTotalCharge()) + "\n";
-	result += "You earned " + String(getTotalFrequentRenterPoints()) + " frequent renter points";
-	return result;
+	return result + footerString(customer);
 }
 
-String Customer::htmlStatement() const
+String TextStatement::headerString(const Customer &customer) const
 {
-	String result = "<H1>Rentals for <EM>" + getName() + "</EM></H1><P>\n";
-	for (Iterator it = _rentals.begin(); it != _rentals.end(); ++it) {
-		result += it->getMovie().getTitle() + ": " + it->getCharge() + "<BR>\n";
-	}
-	result += "<P> You owe <EM>" + String(getTotalCharge()) + "</EM>\n";
-	result += "<P>On this rental you earned <EM>" + String(getTotalFrequentRenterPoints()) + "</EM> frequent renter points\n";
-	return result;
+	return "Rental Record for " + customer.getName() + "\n";
+}
+
+String TextStatement::eachRentalString(const Rental &rental) const
+{
+	return "\t" + rental.getMovie().getTitle() + "\t" + rental.getCharge() + "\n";
+}
+
+String TextStatement::footerString(const Customer &customer) const
+{
+	return "Amount owed is " + String(customer.getTotalCharge()) + "\n" +
+		"You earned " + String(customer.getTotalFrequentRenterPoints()) + " frequent renter points";
+}
+
+String HtmlStatement::headerString(const Customer &customer) const
+{
+	return "<H1>Rentals for <EM>" + customer.getName() + "</EM></H1><P>\n";
+}
+
+String HtmlStatement::eachRentalString(const Rental &rental) const
+{
+	return rental.getMovie().getTitle() + ": " + rental.getCharge() + "<BR>\n";
+}
+
+String HtmlStatement::footerString(const Customer &customer) const
+{
+	return "<P> You owe <EM>" + String(customer.getTotalCharge()) + "</EM>\n" +
+		"<P>On this rental you earned <EM>" + String(customer.getTotalFrequentRenterPoints()) + "</EM> frequent renter points\n";
 }
