@@ -2,15 +2,24 @@
 
 typedef std::vector<int> Vector;
 
-class Stack: public Vector {
+class Stack {
+	Vector &_vector;
 public:
 	void push(int element) {
-		push_back(element);
+		_vector.push_back(element);
+	}
+
+	int pop() {
+		int element = _vector.back();
+		_vector.pop_back();
+		return element;
 	}
 	
-	int pop() {
-		int element = back();
-		pop_back();
-		return element;
+	int size() const {
+		return _vector.size();
+	}
+	
+	bool empty() const {
+		return _vector.empty();
 	}
 };
