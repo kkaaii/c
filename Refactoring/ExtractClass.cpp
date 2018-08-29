@@ -2,24 +2,40 @@
 
 typedef std::string String;
 
+class TelephoneNumber {
+	String _areaCode;
+	String _number;
+public:
+	String getTelephoneNumber() const {
+		return "(" + _areaCode + ")" + _number;
+	}
+	
+	String getAreaCode() const {
+		return _areaCode;
+	}
+	
+	String getNumber() const {
+		return _number;
+	}
+};
+
 class Person {
 	String _name;
-	String _officeAreaCode;
-	String _officeNumber;
+	TelephoneNumber &_officeTelephone;
 public:
 	String getName() const {
 		return _name;
 	}
 	
 	String getTelephoneNumber() const {
-		return "(" + _officeAreaCode + ")" + _officeNumber;
+		return "(" + getOfficeAreaCode() + ")" + getOfficeNumber();
 	}
 	
 	String getOfficeAreaCode() const {
-		return _officeAreaCode;
+		return _officeTelephone.getAreaCode();
 	}
 	
 	String getOfficeNumber() const {
-		return _officeNumber;
+		return _officeTelephone.getNumber();
 	}
 };
