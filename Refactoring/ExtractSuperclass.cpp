@@ -3,37 +3,44 @@
 
 typedef std::string String;
 
-class Employee {
+class Party {
 	String _name;
+public:
+	String getName() const {
+		return _name;
+	}
+
+	virtual int getAnnualCost() const = 0;
+
+protected:
+	Party(String name): _name(name) {}
+};
+
+class Employee: public Party {
 	String _id;
 	int _annualCost;
 public:
 	Employee(String name, String id, int annualCost):
-		_name(name), _id(id), _annualCost(annualCost) {
+		Party(name), _id(id), _annualCost(annualCost) {
 		}
 	
-	int getAnnualCost() const {
+	virtual int getAnnualCost() const {
 		return _annualCost;
 	}
 	
 	String getId() const {
 		return _id;
 	}
-	
-	String getName() const {
-		return _name;
-	}
 };
 
-class Department {
+class Department: public Party {
 	typedef std::vector<Employee> Employees;
 	typedef Employees::const_iterator Iterator;
-	String _name;
 	Employees _staff;
 public:
-	Department(String name): _name(name) {}
+	Department(String name): Party(name) {}
 	
-	int getTotalAnnualCost() const {
+	virtual int getAnnualCost() const {
 		int result = 0;
 		for (Iterator it = _staff.begin(); it != _staff.end(); ++it) {
 			result += it->getAnnualCost();
@@ -47,9 +54,5 @@ public:
 	
 	int addEmployee(const Employee& employee) {
 		_staff.push_back(employee);
-	}
-	
-	String getName() const {
-		return _name;
 	}
 };
