@@ -1,10 +1,15 @@
-class AccountType {};
+class AccountType {
+	double _interestRate;
+public:
+	double getInterestRate() const {
+		return _interestRate;
+	}
+};
 
 class Account {
 	AccountType &_type;
-	double _interestRate;
 	
 	double interestForAmount_days(double amount, int days) {
-		return _interestRate * amount * days / 365;
+		return _type.getInterestRate() * amount * days / 365;
 	}
 };
