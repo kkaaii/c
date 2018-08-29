@@ -6,16 +6,14 @@ typedef std::vector<String> PersonList;
 
 String foundPerson(const PersonList &people)
 {
+	PersonList candidates;
+	candidates.push_back("Don");
+	candidates.push_back("John");
+	candidates.push_back("Kent");
+
 	for (int i = 0; i < people.size(); ++i) {
-		if (people[i] == "Don") {
-			return "Don";
-		}
-		if (people[i] == "John") {
-			return "John";
-		}
-		if (people[i] == "Kent") {
-			return "Kent";
-		}
+		if (candidates.contains(people[i]))
+			return people[i];
 	}
 	
 	return "";
