@@ -1,20 +1,34 @@
 #include <iostream>
 using namespace std;
 
-void printOwing(double previousAmount)
+void printBanner()
 {
 	// print banner
 	cout << "************************" << endl;
 	cout << "***** Customer Owes *****" << endl;
 	cout << "************************" << endl;
-	
-	// calculate outstanding
-	double outstanding = previousAmount * 1.2;
-	for (it = _orders.begin(); it != _orders.end(); ++it) {
-		outstanding += it->getAmount();
-	}
-	
+}
+
+void printDetails(double outstanding)
+{
 	// print details
 	cout << "name: " << _name << endl;
 	cout << "amount: " << outstanding << endl;
+}
+
+double getOutstanding(double initialValue)
+{
+	// calculate outstanding
+	double result = initialValue;
+	for (it = _orders.begin(); it != _orders.end(); ++it) {
+		result += it->getAmount();
+	}
+	return result;
+}
+
+void printOwing(double previousAmount)
+{
+	printBanner();
+	double outstanding = getOutstanding(previousAmount * 1.2);
+	printDetails(outstanding);
 }
