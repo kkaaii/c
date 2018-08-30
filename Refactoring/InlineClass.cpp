@@ -27,13 +27,21 @@ public:
 		return _name;
 	}
 
-	TelephoneNumber &getOfficeTelephone() const {
-		return _officeTelephone;
+	String getTelephoneNumber() const {
+		return _officeTelephone.getTelephoneNumber();
+	}
+	
+	String getAreaCode() const {
+		return _officeTelephone.getAreaCode();
+	}
+	
+	String getNumber() const {
+		return _officeTelephone.getNumber();
 	}
 };
 
 void Foo()
 {
 	Person martin;
-	String telephoneNumber = martin.getOfficeTelephone().getTelephoneNumber();
+	String telephoneNumber = martin.getTelephoneNumber();
 }
