@@ -12,39 +12,45 @@ public:
 typedef std::set<Course *> CourseSet;
 
 class Person {
-	CourseSet *_courses;
+	CourseSet _courses;
 public:
-	CourseSet *getCourses() const {
-		return _courses;
+	int numberOfCourses() const {
+		return _courses.size();
 	}
 
-	void setCourses(CourseSet *courses) {
-		_courses = courses;
+	int numberOfAdvancedCourses() const {
+		int count = 0;
+		CourseSet::const_iterator it = _courses.begin();
+		while (it != _courses.end()) {
+			if ((*it)->isAdvanced()) ++count;
+			++it;
+		}
+		return count;
+	}
+
+	void addCourse(Course *course) {
+		_courses.insert(course);
+	}
+
+	void removeCourse(Course *course) {
+		_courses.erase(_courses.find(course));
 	}
 };
 
 void foo()
 {
-	CourseSet s;
-	s.insert(new Course("Smalltalk Programming", false));
-	s.insert(new Course("Appreciating Single Malts", true));
-
 	Person kent;
-	kent.setCourses(&s);
-	LONGS_EQUAL(2, kent.getCourses()->size());
+	kent.addCourse(new Course("Smalltalk Programming", false));
+	kent.addCourse(new Course("Appreciating Single Malts", true));
+	LONGS_EQUAL(2, kent.numberOfCourses());
 
 	Course *refact = new Course("Refactoring", true);
-	kent.getCourses()->insert(refact);
-	kent.getCourses()->insert(new Course("Brutal Sarcasm", false));
-	LONGS_EQUAL(4, kent.getCourses()->size());
+	kent.addCourse(refact);
+	kent.addCourse(new Course("Brutal Sarcasm", false));
+	LONGS_EQUAL(4, kent.numberOfCourses());
 
-	kent.getCourses()->erase(kent.getCourses()->find(refact));
-	LONGS_EQUAL(3, kent.getCourses()->size());
+	kent.removeCourse(refact);
+	LONGS_EQUAL(3, kent.numberOfCourses());
 
-	int count = 0;
-	CourseSet::iterator it = kent.getCourses()->begin();
-	while (it != kent.getCourses()->end()) {
-		if ((*it)->isAdvanced()) ++count;
-		++it;
-	}
+	int count = kent.numberOfAdvancedCourses();
 }
