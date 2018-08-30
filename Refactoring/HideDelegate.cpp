@@ -17,13 +17,13 @@ public:
 class Person {
 	Department *_department;
 public:
-	Department *getDepartment() const {
-		return _department;
+	Person *getManager() const {
+		return _department->getManager();
 	}
 };
 
 void foo()
 {
 	Person *john;
-	Person *manager = john->getDepartment()->getManager();
+	Person *manager = john->getManager();
 }
