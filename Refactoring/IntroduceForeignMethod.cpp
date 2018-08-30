@@ -4,11 +4,13 @@ public:
 	int getYear() const;
 	int getMonth() const;
 	int getDate() const;
+	
+	static Date *nextDay(const Date &date) {
+		return new Date(date.getYear(), date.getMonth(), date.getDate() + 1);
+	}
 };
 
 void foo(Date &previousEnd)
 {
-	Date newStart(previousEnd.getYear(),
-		previousEnd.getMonth(),
-		previousEnd.getDate() + 1);
+	Date *newStart = Date::nextDay(previousEnd);
 }
