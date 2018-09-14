@@ -1,13 +1,13 @@
 #include "CppUTest/TestHarness.h"
 
-#include "tree_rotate.h"
+#include "SplayTree.h"
 
 enum {G = 1, P, X, A, B, C, D};
 
-TEST_GROUP(TreeRotate)
+TEST_GROUP(SplayTree)
 {
 	void setup() {
-		tree_init();
+		SplayTree_Init();
 	}
 
 	void add_lchild(int u, int v) {
@@ -21,15 +21,16 @@ TEST_GROUP(TreeRotate)
 	}
 };
 
-TEST(TreeRotate, ZigStep)
+TEST(SplayTree, ZigStep)
 {
 	add_lchild(P, X);		/*     P   */
 	add_rchild(P, C);		/*    / \  */
 					/*  (X)  C */
-	add_lchild(X, A);		/*  /      */
-	add_rchild(X, B);		/* A       */
+	add_lchild(X, A);		/*  / \    */
+	add_rchild(X, B);		/* A   B   */
 
-	rotate_right(P);
+	//SplayTree_RotateRight(P);
+        SplayTree_Splay(X);
 
 	LONGS_EQUAL(A, LCHILD(X));	/*  (X)    */
 	LONGS_EQUAL(P, RCHILD(X));	/*  / \    */
@@ -38,7 +39,25 @@ TEST(TreeRotate, ZigStep)
 	LONGS_EQUAL(C, RCHILD(P));	/*   B   C */
 }
 
-TEST(TreeRotate, ZigZigStep)
+TEST(SplayTree, ZagStep)
+{
+	add_lchild(P, C);		/*   P     */
+	add_rchild(P, X);		/*  / \    */
+					/* C  (X)  */
+	add_lchild(X, B);		/*    / \  */
+	add_rchild(X, A);		/*   B   A */
+
+	//SplayTree_RotateLeft(P);
+        SplayTree_Splay(X);
+
+	LONGS_EQUAL(P, LCHILD(X));	/*    (X)  */
+	LONGS_EQUAL(A, RCHILD(X));	/*    / \  */
+					/*   P   A */
+	LONGS_EQUAL(C, LCHILD(P));	/*  / \    */
+	LONGS_EQUAL(B, RCHILD(P));	/* C   B   */
+}
+
+TEST(SplayTree, ZigZigStep)
 {
 	add_lchild(G, P);		/*           */
 	add_rchild(G, D);		/*       G   */
@@ -49,8 +68,9 @@ TEST(TreeRotate, ZigZigStep)
 	add_lchild(X, A);		/*  / \      */
 	add_rchild(X, B);		/* A   B     */
 
-	rotate_right(G);
-	rotate_right(P);
+	//SplayTree_RotateRight(G);
+	//SplayTree_RotateRight(P);
+        SplayTree_Splay(X);
 
 	LONGS_EQUAL(A, LCHILD(X));	/*           */
 	LONGS_EQUAL(P, RCHILD(X));	/*  (X)      */
@@ -62,7 +82,7 @@ TEST(TreeRotate, ZigZigStep)
 	LONGS_EQUAL(D, RCHILD(G));	/*     C   D */
 }
 
-TEST(TreeRotate, ZagZagStep)
+TEST(SplayTree, ZagZagStep)
 {
 	add_lchild(G, D);		/*           */
 	add_rchild(G, P);		/*   G       */
@@ -73,8 +93,9 @@ TEST(TreeRotate, ZagZagStep)
 	add_lchild(X, B);		/*      / \  */
 	add_rchild(X, A);		/*     B   A */
 
-	rotate_left(G);
-	rotate_left(P);
+	//SplayTree_RotateLeft(G);
+	//SplayTree_RotateLeft(P);
+        SplayTree_Splay(X);
 
 	LONGS_EQUAL(P, LCHILD(X));	/*           */
 	LONGS_EQUAL(A, RCHILD(X));	/*      (X)  */
@@ -86,7 +107,7 @@ TEST(TreeRotate, ZagZagStep)
 	LONGS_EQUAL(C, RCHILD(G));	/* D   C     */
 }
 
-TEST(TreeRotate, ZigZagStep)
+TEST(SplayTree, ZigZagStep)
 {
 	add_lchild(G, P);		/*         */
 	add_rchild(G, D);		/*     G   */
@@ -97,8 +118,9 @@ TEST(TreeRotate, ZigZagStep)
 	add_lchild(X, B);		/*    / \  */
 	add_rchild(X, C);		/*   B   C */
 
-	rotate_left(P);
-	rotate_right(G);
+	//SplayTree_RotateLeft(P);
+	//SplayTree_RotateRight(G);
+        SplayTree_Splay(X);
 
 	LONGS_EQUAL(P, LCHILD(X));	/*             */
 	LONGS_EQUAL(G, RCHILD(X));	/*     (X)     */
@@ -110,7 +132,7 @@ TEST(TreeRotate, ZigZagStep)
 	LONGS_EQUAL(D, RCHILD(G));	/*             */
 }
 
-TEST(TreeRotate, ZagZigStep)
+TEST(SplayTree, ZagZigStep)
 {
 	add_lchild(G, D);		/*         */
 	add_rchild(G, P);		/*   G     */
@@ -121,8 +143,9 @@ TEST(TreeRotate, ZagZigStep)
 	add_lchild(X, C);		/*  / \    */
 	add_rchild(X, B);		/* C   B   */
 
-	rotate_right(P);
-	rotate_left(G);
+	//SplayTree_RotateRight(P);
+	//SplayTree_RotateLeft(G);
+        SplayTree_Splay(X);
 
 	LONGS_EQUAL(G, LCHILD(X));	/*             */
 	LONGS_EQUAL(P, RCHILD(X));	/*     (X)     */
