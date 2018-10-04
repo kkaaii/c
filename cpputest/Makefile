@@ -13,9 +13,10 @@ LD_LIBRARIES = -L$(CPPUTEST_HOME)/lib -lCppUTest -lCppUTestExt
 
 SRC_DIRS = \
 	./\
+	../BinaryHeap		\
+	../BinaryIndexedTree	\
 	../SinglyLinkedList	\
 	../CircularlySinglyLinkedList	\
-	../BinaryIndexedTree	\
 	../SegmentTree		\
 	../SplayTree		\
 	./Mock \
@@ -23,9 +24,10 @@ SRC_DIRS = \
 
 INCLUDE_DIRS = \
 	./Mock \
+	../BinaryHeap		\
+	../BinaryIndexedTree	\
 	../SinglyLinkedList	\
 	../CircularlySinglyLinkedList	\
-	../BinaryIndexedTree	\
 	../SegmentTree		\
 	../SplayTree		\
 	../misc/gen_forward	\
