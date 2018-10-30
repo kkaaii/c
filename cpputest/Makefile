@@ -17,6 +17,7 @@ SRC_DIRS = \
 	../BinaryIndexedTree	\
 	../SinglyLinkedList	\
 	../CircularlySinglyLinkedList	\
+        ../CommonLog    \
 	../SegmentTree		\
 	../SplayTree		\
 	./Mock \
@@ -28,6 +29,7 @@ INCLUDE_DIRS = \
 	../BinaryIndexedTree	\
 	../SinglyLinkedList	\
 	../CircularlySinglyLinkedList	\
+        ../CommonLog    \
 	../SegmentTree		\
 	../SplayTree		\
 	../misc/gen_forward	\
