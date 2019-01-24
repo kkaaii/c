@@ -32,24 +32,21 @@ void BinaryKnapsack(Knapsack *k, int cost, int value)
 int main(void)
 {
 	Knapsack k;
-	int	i, data[] = {2, 6, 7, 9, 12};
+	int	data[] = {2, 6, 7, 9, 12};
+	int	sum = 0;
+	int	i;
 
 	memset(&k, 0, sizeof k);
 	for (i = 0; i < sizeof data / sizeof data[0]; ++i) {
-		k.volume += data[i];
+		sum += data[i];
 	}
-	k.volume /= 2;
+	k.volume = sum / 2;
 	
 	for (i = 0; i < sizeof data / sizeof data[0]; ++i) {
 		BinaryKnapsack(&k, data[i], data[i]);
 	}
 	
-	for (i = k.volume; i > 0; --i) {
-		if (k.best[i] != 0) {
-			printf("[%d] %d\n", i, k.best[i]);
-			break;
-		}
-	}
+	printf("best = %d\n", sum - k.best[k.volume]);
 	
 	return 0;
 }
