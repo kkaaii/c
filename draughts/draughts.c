@@ -324,3 +324,104 @@ void init_board(void)
     team->dir_last = 3;
     team->row_king = NROW - 1;
 }
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+void print_board(void)
+{
+    char row;
+    char col;
+    struct piece *piece;
+
+    for (row = 0; row < NROW; ++row) {
+        for (col = 0; col < NCOL; ++col) {
+            if (0 == ((row ^ col) & 1)) {
+                putchar(' ');
+                continue;
+            }
+
+            piece = pieces + board[row][col];
+            switch (piece->tid) {
+            case eDark:
+                putchar(piece->king ? 'K' : 'M');
+                break;
+            case eLight:
+                putchar(piece->king ? 'k' : 'm');
+                break;
+            default:
+                putchar('0');
+                break;
+            }
+        }
+        putchar('\n');
+    }
+}
+
+void print_path(PATH *path)
+{
+    POS *step;
+
+    for (step = &path->steps[0]; step < &path->steps[path->nstep]; ++step)
+        printf(" %d,%d", step->row, step->col);
+    putchar('\n');
+}
+
+PATH *select_jumpable(void)
+{
+    /* TODO */
+    return &longest[rand() % npath];
+}
+
+PATH *select_moveable(void)
+{
+    /* TODO */
+    return &longest[rand() % npath];
+}
+
+BOOL run(int round)
+{
+    PATH *path;
+
+    printf("==== ROUND %d ==== %d:", round, turn);
+
+    if (0 != find_jumpable()) {
+        path = select_jumpable();
+        print_path(path);
+        jump(path);
+    } else if (0 != find_moveable()) {
+        path = select_moveable();
+        print_path(path);
+        move(path);
+    } else {
+        puts("LOSE!!!");
+        return 0;
+    }
+
+    print_board();
+    turn ^= (eDark | eLight);
+    return 1;
+}
+
+#define MAX_ROUND   60
+
+int main(void)
+{
+    char round;
+    unsigned seed = time(NULL);
+
+    printf("seed = %u\n", seed);
+
+    init_pieces();
+    init_board();
+    print_board();
+
+    srand(seed);
+    for (round = 1; round <= MAX_ROUND; ++round) {
+        if (!run(round)) break;
+        if (!run(round)) break;
+    }
+
+    return 0;
+}
