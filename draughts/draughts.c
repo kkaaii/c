@@ -6,6 +6,7 @@
 #define NP      12
 
 #define MAX_NPATH   10
+#define MIN_NSTEP   2
 
 #define PID_NIL 0
 
@@ -64,6 +65,8 @@ TID turn = eDark;
 char npath = 0;
 PATH longest[MAX_NPATH];
 PATH current;
+
+static void dfs(PID pid);
 
 static inline BOOL is_in_board(char row, char col)
 {
@@ -184,6 +187,96 @@ void move(PATH *path)
     col = path->steps[1].col;
     drop(pid, row, col);
     crown(pid);
+}
+
+int find_moveable(void)
+{
+    PID pid;
+    char row_from, row_to;
+    char col_from, col_to;
+    char i, imax;
+
+    npath = 0;
+
+    for (pid = get_first(turn); PID_NIL != pid; pid = get_next(pid)) {
+        struct piece *piece = &pieces[pid];
+        if (piece->king) {
+            i = 0;
+            imax = 3;
+        } else {
+            i = teams[piece->tid].dir_first;
+            imax = teams[piece->tid].dir_last;
+        }
+
+        row_from = piece->row;
+        col_from = piece->col;
+        for (; i <= imax; ++i) {
+            row_to = row_from + dirs[i].drow;
+            col_to = col_from + dirs[i].dcol;
+
+            if (is_in_board(row_to, col_to) && PID_NIL == board[row_to][col_to])
+                add_move(row_from, col_from, row_to, col_to);
+        }
+    }
+
+    return npath;
+}
+
+int find_jumpable(void)
+{
+    PID pid;
+
+    npath = 0;
+    longest[0].nstep = MIN_NSTEP;
+
+    for (pid = get_first(turn); PID_NIL != pid; pid = get_next(pid)) {
+        current.nstep = 0;
+        dfs(pid);
+    }
+
+    return npath;
+}
+
+static void dfs(PID pid)
+{
+    char row0 = pieces[pid].row, row1, row2;
+    char col0 = pieces[pid].col, col1, col2;
+    PID  m;
+    char sum = 0;
+    const DIR *dir;
+
+    path_add_step(&current, row0, col0);
+    for (dir = &dirs[0]; dir < &dirs[4]; ++dir) {
+        row1 = row0 + dir->drow;
+        col1 = col0 + dir->dcol;
+
+        row2 = row1 + dir->drow;
+        col2 = col1 + dir->dcol;
+
+        if (!is_in_board(row2, col2))
+            continue;
+
+        m = board[row1][col1];
+        if (PID_NIL == m || PID_NIL != board[row2][col2] || pieces[m].tid == pieces[pid].tid)
+            continue;
+
+        ++sum;
+
+        board[row0][col0] = PID_NIL;
+        board[row1][col1] = PID_NIL;
+        drop(pid, row2, col2);
+
+        dfs(pid);
+
+        drop(pid, row0, col0);
+        board[row1][col1] = m;
+        board[row2][col2] = PID_NIL;
+    }
+
+    if (0 == sum) {
+        update_longest_path();
+        current.nstep = 0;
+    }
 }
 
 void init_pieces(void)
