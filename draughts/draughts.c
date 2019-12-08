@@ -185,3 +185,49 @@ void move(PATH *path)
     drop(pid, row, col);
     crown(pid);
 }
+
+void init_pieces(void)
+{
+    PID pid;
+    TID tid = eDark;
+    struct piece *piece;
+
+    memset(pieces, 0, sizeof pieces);
+    for (pid = 1, piece = &pieces[1]; pid <= NTEAM * NP; ++pid, ++piece) {
+        piece->prev = pid - 1;
+        piece->next = pid + 1;
+        piece->tid  = eDark + (pid > NP);
+    }
+
+    pieces[NP].next = PID_NIL;
+    teams[tid++].head = 1;
+
+    pieces[NP +  1].prev = PID_NIL;
+    pieces[NP + NP].next = PID_NIL;
+    teams[tid].head = NP + 1;
+}
+
+void init_board(void)
+{
+    char row;
+    char col;
+    PID  pid = 1;
+    TEAM *team = &teams[eDark];
+
+    for (row = NROW - NP * 2 / NCOL; row < NROW; ++row) {
+        for (col = (row & 1) ^ 1; col < NCOL; col += 2) {
+            drop(pid, row, col);
+            drop(NP + pid, NROW - 1 - row, NCOL - 1 - col);
+            ++pid;
+        }
+    }
+
+    team->dir_first = 0;
+    team->dir_last = 1;
+    team->row_king = 0;
+
+    ++team;
+    team->dir_first = 2;
+    team->dir_last = 3;
+    team->row_king = NROW - 1;
+}
