@@ -60,8 +60,6 @@ PID board[NROW][NCOL];
 struct piece pieces[1 + NTEAM * NP];
 TEAM teams[1 + NTEAM];
 
-TID turn = eDark;
-
 char npath = 0;
 PATH longest[MAX_NPATH];
 PATH current;
@@ -189,7 +187,7 @@ void move(PATH *path)
     crown(pid);
 }
 
-int find_moveable(void)
+int find_moveable(TID tid)
 {
     PID pid;
     char row_from, row_to;
@@ -198,7 +196,7 @@ int find_moveable(void)
 
     npath = 0;
 
-    for (pid = get_first(turn); PID_NIL != pid; pid = get_next(pid)) {
+    for (pid = get_first(tid); PID_NIL != pid; pid = get_next(pid)) {
         struct piece *piece = &pieces[pid];
         if (piece->king) {
             i = 0;
@@ -222,14 +220,14 @@ int find_moveable(void)
     return npath;
 }
 
-int find_jumpable(void)
+int find_jumpable(TID tid)
 {
     PID pid;
 
     npath = 0;
     longest[0].nstep = MIN_NSTEP;
 
-    for (pid = get_first(turn); PID_NIL != pid; pid = get_next(pid)) {
+    for (pid = get_first(tid); PID_NIL != pid; pid = get_next(pid)) {
         current.nstep = 0;
         dfs(pid);
     }
@@ -380,17 +378,17 @@ PATH *select_moveable(void)
     return &longest[rand() % npath];
 }
 
-BOOL run(int round)
+BOOL run(int round, TID tid)
 {
     PATH *path;
 
-    printf("==== ROUND %d ==== %d:", round, turn);
+    printf("==== ROUND %d ==== %d:", round, tid);
 
-    if (0 != find_jumpable()) {
+    if (0 != find_jumpable(tid)) {
         path = select_jumpable();
         print_path(path);
         jump(path);
-    } else if (0 != find_moveable()) {
+    } else if (0 != find_moveable(tid)) {
         path = select_moveable();
         print_path(path);
         move(path);
@@ -400,7 +398,6 @@ BOOL run(int round)
     }
 
     print_board();
-    turn ^= (eDark | eLight);
     return 1;
 }
 
@@ -419,8 +416,8 @@ int main(void)
 
     srand(seed);
     for (round = 1; round <= MAX_ROUND; ++round) {
-        if (!run(round)) break;
-        if (!run(round)) break;
+        if (!run(round, eDark)) break;
+        if (!run(round, eLight)) break;
     }
 
     return 0;
