@@ -213,7 +213,7 @@ int find_moveable(TID tid)
             col_to = col_from + dirs[i].dcol;
 
             if (is_in_board(row_to, col_to) && PID_NIL == board[row_to][col_to])
-                add_move(row_from, col_from, row_to, col_to);
+                path_add_move(row_from, col_from, row_to, col_to);
         }
     }
 
