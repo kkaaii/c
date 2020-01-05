@@ -64,8 +64,6 @@ char npath = 0;
 PATH longest[MAX_NPATH];
 PATH current;
 
-static void dfs(PID pid);
-
 static inline BOOL is_in_board(char row, char col)
 {
     return 0 <= row && row < NROW && 0 <= col && col < NCOL;
@@ -136,7 +134,7 @@ static inline void crown(PID pid)
         piece->king = TRUE;
 }
 
-static void kill(PID pid)
+static void killp(PID pid)
 {
     struct piece *piece = &pieces[pid];
     PID prev = piece->prev;
@@ -164,7 +162,7 @@ void jump(PATH *path)
 
     board[row][col] = PID_NIL;
     for (step = &path->steps[1]; step < &path->steps[path->nstep]; ++step) {
-        kill(board[(row + step->row) / 2][(col + step->col) / 2]);
+        killp(board[(row + step->row) / 2][(col + step->col) / 2]);
         row = step->row;
         col = step->col;
     }
@@ -187,6 +185,7 @@ void move(PATH *path)
     crown(pid);
 }
 
+#if defined(PLAYER)
 int find_moveable(TID tid)
 {
     PID pid;
@@ -219,6 +218,8 @@ int find_moveable(TID tid)
 
     return npath;
 }
+
+static void dfs(PID pid);
 
 int find_jumpable(TID tid)
 {
@@ -276,6 +277,7 @@ static void dfs(PID pid)
         current.nstep = 0;
     }
 }
+#endif
 
 void init_pieces(void)
 {
@@ -325,8 +327,39 @@ void init_board(void)
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 
+#define	LINE_LEN    80
+
+void place(const char *s)
+{
+    PATH *path = &current;
+    int i;
+    int row, col;
+
+    if (sscanf(s, "%d", &i)) {
+	path->nstep = i;
+	while (' ' == *s) ++s;
+	while (' ' != *s) ++s;
+    }
+
+    for (i = 0; i < path->nstep; ++i) {
+	if (2 == sscanf(s, "%d,%d", &row, &col)) {
+            path->steps[i].row = row;
+            path->steps[i].col = col;
+	    while (' ' == *s) ++s;
+	    while (',' == *s) ++s;
+	    while (' ' != *s) ++s;
+	}
+    }
+
+    if (path->nstep > 2 || 0 == ((path->steps[0].row ^ path->steps[1].row) & 1)) {
+	jump(path);
+    } else {
+	move(path);
+    }
+}
+
+#if defined(JUDGER)
 void print_board(void)
 {
     char row;
@@ -356,11 +389,14 @@ void print_board(void)
         putchar('\n');
     }
 }
+#endif
 
+#if defined(PLAYER)
 void print_path(PATH *path)
 {
     POS *step;
 
+    printf("PLACE %d", path->nstep);
     for (step = &path->steps[0]; step < &path->steps[path->nstep]; ++step)
         printf(" %d,%d", step->row, step->col);
     putchar('\n');
@@ -378,11 +414,9 @@ PATH *select_moveable(void)
     return &longest[rand() % npath];
 }
 
-BOOL run(int round, TID tid)
+BOOL run(TID tid)
 {
     PATH *path;
-
-    printf("==== ROUND %d ==== %d:", round, tid);
 
     if (0 != find_jumpable(tid)) {
         path = select_jumpable();
@@ -393,32 +427,182 @@ BOOL run(int round, TID tid)
         print_path(path);
         move(path);
     } else {
-        puts("LOSE!!!");
         return 0;
     }
 
-    print_board();
     return 1;
 }
 
-#define MAX_ROUND   60
-
 int main(void)
 {
-    char round;
-    unsigned seed = time(NULL);
+    char line[LINE_LEN + 1];
+    int  tid;
 
-    printf("seed = %u\n", seed);
+    init_pieces();
+    init_board();
+
+    setlinebuf(stdin);
+    setlinebuf(stdout);
+
+    for (;;) {
+	if (NULL == fgets(line, sizeof line - 1, stdin)) {
+	    continue;
+	}
+
+	if (0 == strncmp(line, "END", 3)) {
+	    break;
+    	}
+
+        if (0 == strncmp(line, "TURN", 4)) {
+	    run(tid);
+        } else if (0 == strncmp(line, "PLACE", 5)) {
+            place(&line[5]);
+	} else if (0 == strncmp(line, "START", 5)) {
+	    sscanf(&line[5], "%d", &tid);
+            puts("OK");
+        } else {
+            printf("DEBUG: Unknown command \"%s\"\n", line);
+        }	    
+    }
+
+    return 0;
+}
+#endif
+
+#if defined(JUDGER)
+
+#include <unistd.h>
+#include <sys/wait.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define R   0
+#define W   1
+
+#define MAX_ROUND   60
+
+typedef struct {
+    pid_t   pid;
+    int     dsp[2]; /* down-stream pipe */
+    int     usp[2]; /* up-stream pipe */
+} Channel;
+
+void contestant(Channel *channel, const char *path)
+{
+    if (pipe(channel->dsp) < 0) {
+        fputs("create pipe error", stderr);
+        exit(0);
+    }
+
+    if (pipe(channel->usp) < 0) {
+        fputs("create pipe error", stderr);
+        exit(0);
+    }
+
+    channel->pid = fork();
+    if (channel->pid < 0) {
+        fputs("create process error", stderr);
+        exit(0);
+    }
+
+    if (channel->pid > 0) {
+        close(channel->dsp[R]);
+        close(channel->usp[W]);
+    } else {
+        close(channel->dsp[W]);
+        close(channel->usp[R]);
+
+        if (channel->dsp[R] != STDIN_FILENO) {
+            dup2(channel->dsp[R], STDIN_FILENO);
+            close(channel->dsp[R]);
+        }
+
+        if (channel->usp[W] != STDOUT_FILENO) {
+            dup2(channel->usp[W], STDOUT_FILENO);
+            close(channel->usp[W]);
+        }
+
+        execl(path, "");
+    }
+}
+
+int waitfor(int fd, char line[], const char *expected, int size)
+{
+    FILE *fp = fdopen(fd, "r");
+
+    for (;;) {
+        fgets(line, LINE_LEN - 1, fp);
+        if (0 == strncmp(line, expected, size))
+            return strlen(line);
+
+        if (0 == strncmp(line, "DEBUG", 5)) {
+            fprintf(stderr, "%d: %s", getpid(), line);
+        }
+    }
+
+    return 0;
+}
+
+char start1[] = "START 1\n";
+char start2[] = "START 2\n";
+char turn[] = "TURN\n";
+char end1[] = "END\n";
+
+int main(int argc, char *argv[])
+{
+    Channel channelA, channelB;
+    char line[LINE_LEN + 1];
+    char round;
+    int  linelen;
+
+    if (argc < 3) {
+        fprintf(stderr, "Usage: %s {contestant 1} {contestant 2}\n", argv[0]);
+        return -1;
+    }
+
+    contestant(&channelA, argv[1]);
+    if (0 == channelA.pid)
+        return 0;
+
+    contestant(&channelB, argv[2]);
+
+    if (0 == channelB.pid)
+        return 0;
+
+    write(channelA.dsp[W], start1, sizeof start1 - 1);
+    waitfor(channelA.usp[R], line, "OK\n", 3);
+
+    write(channelB.dsp[W], start2, sizeof start2 - 1);
+    waitfor(channelB.usp[R], line, "OK\n", 3);
 
     init_pieces();
     init_board();
     print_board();
 
-    srand(seed);
-    for (round = 1; round <= MAX_ROUND; ++round) {
-        if (!run(round, eDark)) break;
-        if (!run(round, eLight)) break;
+    for (round = 0; round < MAX_ROUND; ++round) {
+        write(channelA.dsp[W], turn, sizeof turn - 1);
+        linelen = waitfor(channelA.usp[R], line, "PLACE", 5);
+        write(channelB.dsp[W], line, linelen);
+
+        printf("\nPLAYER 1 - ROUND %d: %s", round, line);
+        place(&line[5]);
+        print_board();
+
+        write(channelB.dsp[W], turn, sizeof turn - 1);
+        linelen = waitfor(channelB.usp[R], line, "PLACE", 5);
+        write(channelA.dsp[W], line, linelen);
+
+        printf("\nPLAYER 2 - ROUND %d: %s", round, line);
+        place(&line[5]);
+        print_board();
     }
 
+    write(channelA.dsp[W], end1, sizeof end1 - 1);
+    write(channelB.dsp[W], end1, sizeof end1 - 1);
+
+    waitpid(channelA.pid, NULL, 0);
+    waitpid(channelB.pid, NULL, 0);
     return 0;
 }
+#endif
