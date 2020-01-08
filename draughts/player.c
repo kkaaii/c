@@ -2,30 +2,25 @@
 
 #define NROW    8
 #define NCOL    8
+
 #define NTEAM   2
 #define NP      12
 
-#define MAX_NPATH   10
+#define NPATH   10
 #define MIN_NSTEP   2
 
+#define	FALSE	0
+#define	TRUE	(!FALSE)
+
+typedef char	BOOL;
+
 #define PID_NIL 0
-#define	NID_NIL	((NID)(-1))
 
-#define	NNODE	((((MAX_NPATH + 1) * MAX_NPATH + 1) * MAX_NPATH + 1) * MAX_NPATH)
+#define	NNODE	((((NPATH + 1) * NPATH + 1) * NPATH + 1) * NPATH + 1)
 
-typedef char    PID;    /* piece identifier */
-typedef char    DID;    /* direction identifier */
-typedef short	NID;	/* node id */
-
-typedef enum {
-    FALSE = 0,
-    TRUE = !FALSE
-} BOOL;
-
-typedef enum {
-    eDark = 1,
-    eLight = 2
-} TID;  /* team identifier */
+typedef char    PID;    /* piece id */
+typedef char    DID;    /* direction id */
+typedef char	TID;	/* team id */
 
 typedef struct piece {
     PID     prev;
@@ -34,7 +29,7 @@ typedef struct piece {
     char    row;
     char    col;
     BOOL    king;
-} CHESS;
+} PIECE;
 
 typedef struct dir {
     char    drow;
@@ -57,21 +52,23 @@ typedef struct path {
     POS     steps[1 + NP];
 } PATH;
 
-typedef struct node {
+typedef struct node NODE;
+
+struct node {
+    NODE    *next;
+    PIECE   pieces[1 + NTEAM * NP];
     PID	    board[NROW][NCOL];
-    CHESS   pieces[1 + NTEAM * NP];
-    PID	    head[1 + NTEAM];
+    PID	    teams[1 + NTEAM];
     char    npath;
-    PATH    longest[MAX_NPATH];
-    NID     child[MAX_NPATH];
-    NID	    next;
-} NODE;
+    PATH    longest[NPATH];
+    NODE    *children[NPATH];
+};
 
 const DIR dirs[] = {{-1, -1}, {-1, 1}, {1, 1}, {1, -1}};
 TEAM teams[1 + NTEAM];
 
 NODE nodes[NNODE];
-NID  nodehead;
+NODE *head;
 PATH current;
 
 static inline BOOL is_in_board(char row, char col)
@@ -81,7 +78,7 @@ static inline BOOL is_in_board(char row, char col)
 
 static inline PID get_first(NODE *node, TID tid)
 {
-    return node->head[tid];
+    return node->teams[tid];
 }
 
 static inline PID get_next(NODE *node, PID pid)
@@ -123,65 +120,63 @@ void update_longest_path(NODE *node)
     if (current.nstep > node->longest[0].nstep)
         node->npath = 0;
 
-    if (node->npath < MAX_NPATH)
+    if (node->npath < NPATH)
         memcpy(&node->longest[node->npath++], &current, sizeof (PATH));
 }
 
-static inline void drop(NODE *node, PID pid, char row, char col)
+static inline void piece_drop(NODE *node, PID pid, char row, char col)
 {
-    CHESS *piece = &node->pieces[pid];
+    PIECE *piece = &node->pieces[pid];
 
     piece->row = row;
     piece->col = col;
     node->board[row][col] = pid;
 }
 
-static inline void crown(NODE *node, PID pid)
+static inline void piece_crown(NODE *node, PID pid)
 {
-    CHESS *piece = &node->pieces[pid];
+    PIECE *piece = &node->pieces[pid];
 
     if (piece->row == teams[piece->tid].row_king)
         piece->king = TRUE;
 }
 
-static void killp(NODE *node, PID pid)
+static void piece_kill(NODE *node, PID pid)
 {
-    CHESS *piece = &node->pieces[pid];
+    PIECE *piece = &node->pieces[pid];
     PID prev = piece->prev;
     PID next = piece->next;
-    char row = piece->row;
-    char col = piece->col;
 
-    node->board[row][col] = PID_NIL;
+    node->board[piece->row][piece->col] = PID_NIL;
 
     if (PID_NIL != prev)
         node->pieces[prev].next = next;
     else
-        node->head[piece->tid] = next;
+        node->teams[piece->tid] = next;
 
     if (PID_NIL != next)
         node->pieces[next].prev = prev;
 }
 
-void jump(NODE *node, PATH *path)
+void piece_jump(NODE *node, PATH *path)
 {
-    char row = path->steps[0].row;
-    char col = path->steps[0].col;
+    POS *step = &path->steps[0];
+    char row = step->row;
+    char col = step->col;
     PID  pid = node->board[row][col];
-    POS *step;
 
     node->board[row][col] = PID_NIL;
-    for (step = &path->steps[1]; step < &path->steps[path->nstep]; ++step) {
-        killp(node, node->board[(row + step->row) / 2][(col + step->col) / 2]);
+    while (++step < &path->steps[path->nstep]) {
+        piece_kill(node, node->board[(row + step->row) / 2][(col + step->col) / 2]);
         row = step->row;
         col = step->col;
     }
 
-    drop(node, pid, row, col);
-    crown(node, pid);
+    piece_drop(node, pid, row, col);
+    piece_crown(node, pid);
 }
 
-void move(NODE *node, PATH *path)
+void piece_move(NODE *node, PATH *path)
 {
     char row = path->steps[0].row;
     char col = path->steps[0].col;
@@ -191,8 +186,8 @@ void move(NODE *node, PATH *path)
 
     row = path->steps[1].row;
     col = path->steps[1].col;
-    drop(node, pid, row, col);
-    crown(node, pid);
+    piece_drop(node, pid, row, col);
+    piece_crown(node, pid);
 }
 
 int find_moveable(NODE *node, TID tid)
@@ -205,7 +200,7 @@ int find_moveable(NODE *node, TID tid)
     node->npath = 0;
 
     for (pid = get_first(node, tid); PID_NIL != pid; pid = get_next(node, pid)) {
-        CHESS *piece = &node->pieces[pid];
+        PIECE *piece = &node->pieces[pid];
         if (piece->king) {
             i = 0;
             imax = 3;
@@ -272,11 +267,11 @@ static void dfs(NODE *node, PID pid)
 
         node->board[row0][col0] = PID_NIL;
         node->board[row1][col1] = PID_NIL;
-        drop(node, pid, row2, col2);
+        piece_drop(node, pid, row2, col2);
 
         dfs(node, pid);
 
-        drop(node, pid, row0, col0);
+        piece_drop(node, pid, row0, col0);
         node->board[row1][col1] = m;
         node->board[row2][col2] = PID_NIL;
     }
@@ -287,35 +282,31 @@ static void dfs(NODE *node, PID pid)
     }
 }
 
+static inline void node_free(NODE *node)
+{
+    node->next = head;
+    head = node;
+}
+
+static inline NODE *node_alloc(void)
+{
+    NODE *node = head;
+    head = node->next;
+    node->next = NULL;
+    return node;
+}
+
 NODE *init_nodes(void)
 {
-    NID nid;
+    NODE *node;
 
-    nodehead = 1;
     memset(nodes, 0, sizeof nodes);
 
-    for (nid = 0; nid < NNODE - 1; ++nid)
-        nodes[nid].next = nid + 1;
-    nodes[nid].next = NID_NIL;
+    head = NULL;
+    for (node = &nodes[NNODE - 1]; node >= &nodes[0]; --node)
+        node_free(node);
 
-    return &nodes[0];
-}
-
-NID node_alloc(void)
-{
-    NID nid = nodehead;
-
-    if (NID_NIL != nid) {
-	nodehead = nodes[nid].next;
-    }
-
-    return nid;
-}
-
-void node_free(NID nid)
-{
-    nodes[nid].next = nodehead;
-    nodehead = nid;
+    return node_alloc();
 }
 
 void delete_tree(NODE *root)
@@ -323,12 +314,12 @@ void delete_tree(NODE *root)
     char i;
 
     for (i = 0; i < root->npath; ++i) {
-        NID nid = root->child[i];
-	if (NID_NIL != nid)
-            delete_tree(&nodes[nid]);
+        NODE *node = root->children[i];
+	if (NULL != node)
+            delete_tree(node);
     }
 
-    node_free(root - nodes);
+    node_free(root);
 }
 
 void build_tree(NODE *root, int iteration)
@@ -336,33 +327,33 @@ void build_tree(NODE *root, int iteration)
     char i;
 
     for (i = 0; i < root->npath; ++i) {
-        NID nid = node_alloc();
-        root->child[i] = nid;
+        NODE *node = node_alloc();
+        root->children[i] = node;
         if (iteration > 0)
-            build_tree(&nodes[nid], iteration - 1);
+            build_tree(node, iteration - 1);
     }
 }
 
 void init_pieces(NODE *node)
 {
     PID pid;
-    TID tid = eDark;
-    CHESS *piece;
+    TID tid = 1;
+    PIECE *piece;
 
     memset(node->pieces, 0, sizeof node->pieces);
     for (pid = 1, piece = &node->pieces[1]; pid <= NTEAM * NP; ++pid, ++piece) {
         piece->prev = pid - 1;
         piece->next = pid + 1;
-        piece->tid  = eDark + (pid > NP);
+        piece->tid  = 1 + (pid > NP);
     }
 
     node->pieces[ 1].prev = PID_NIL;
     node->pieces[NP].next = PID_NIL;
-    node->head[tid++] = 1;
+    node->teams[tid++] = 1;
 
     node->pieces[NP +  1].prev = PID_NIL;
     node->pieces[NP + NP].next = PID_NIL;
-    node->head[tid] = NP + 1;
+    node->teams[tid] = NP + 1;
 }
 
 void init_board(NODE *node)
@@ -370,12 +361,12 @@ void init_board(NODE *node)
     char row;
     char col;
     PID  pid = 1;
-    TEAM *team = &teams[eDark];
+    TEAM *team = &teams[1];
 
     for (row = NROW - NP * 2 / NCOL; row < NROW; ++row) {
         for (col = (row & 1) ^ 1; col < NCOL; col += 2) {
-            drop(node, pid, row, col);
-            drop(node, NP + pid, NROW - 1 - row, NCOL - 1 - col);
+            piece_drop(node, pid, row, col);
+            piece_drop(node, NP + pid, NROW - 1 - row, NCOL - 1 - col);
             ++pid;
         }
     }
@@ -418,9 +409,9 @@ void place(NODE *node, const char *s)
     }
 
     if (path->nstep > 2 || 0 == ((path->steps[0].row ^ path->steps[1].row) & 1)) {
-	jump(node, path);
+	piece_jump(node, path);
     } else {
-	move(node, path);
+	piece_move(node, path);
     }
 }
 
@@ -428,7 +419,7 @@ void print_board(NODE *node)
 {
     char row;
     char col;
-    CHESS *piece;
+    PIECE *piece;
 
     for (row = 0; row < NROW; ++row) {
         for (col = 0; col < NCOL; ++col) {
@@ -439,14 +430,14 @@ void print_board(NODE *node)
 
             piece = node->pieces + node->board[row][col];
             switch (piece->tid) {
-            case eDark:
+            case 0:
+                putchar('0');
+                break;
+            case 1:
                 putchar(piece->king ? 'K' : 'M');
                 break;
-            case eLight:
-                putchar(piece->king ? 'k' : 'm');
-                break;
             default:
-                putchar('0');
+                putchar(piece->king ? 'k' : 'm');
                 break;
             }
         }
@@ -483,11 +474,11 @@ NODE * run(NODE *node, TID tid)
     if (0 != find_jumpable(node, tid)) {
         path = select_jumpable(node);
         print_path(path);
-        jump(node, path);
+        piece_jump(node, path);
     } else if (0 != find_moveable(node, tid)) {
         path = select_moveable(node);
         print_path(path);
-        move(node, path);
+        piece_move(node, path);
     } else {
         return 0;
     }
