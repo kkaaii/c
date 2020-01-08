@@ -1,5 +1,7 @@
 #include <string.h>
 
+#define	PLAYER
+
 #define NROW    8
 #define NCOL    8
 
@@ -458,25 +460,6 @@ void print_board(NODE *node)
     }
 }
 
-NODE *turn(NODE *root, TID tid)
-{
-    NODE *node = NULL;
-
-    build_tree(root, tid, 0);
-
-    if (0 != root->npath) {
-        char i = root->npath / 2; // TODO
-        char j = root->npath - 1;
-        node = root->children[i];
-	if (i != j)
-            root->children[i] = root->children[j];
-	--root->npath;
-	delete_tree(root);
-    }
-
-    return node;
-}
-
 const char START[] = "START";
 const char PLACE[] = "PLACE";
 const char TURN[] = "TURN\n";
@@ -491,6 +474,26 @@ void print_path(PATH *path)
     for (step = &path->steps[0]; step < &path->steps[path->nstep]; ++step)
         printf(" %d,%d", step->row, step->col);
     putchar('\n');
+}
+
+NODE *turn(NODE *root, TID tid)
+{
+    NODE *node = NULL;
+
+    build_tree(root, tid, 0);
+
+    if (0 != root->npath) {
+        char i = root->npath / 2; // TODO
+        char j = root->npath - 1;
+	print_path(&root->longest[i]);
+        node = root->children[i];
+	if (i != j)
+            root->children[i] = root->children[j];
+	--root->npath;
+	delete_tree(root);
+    }
+
+    return node;
 }
 
 int main(void)

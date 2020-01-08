@@ -1,5 +1,7 @@
 #include <string.h>
 
+#define	JUDGER
+
 #define NROW    8
 #define NCOL    8
 
@@ -151,6 +153,7 @@ void init_board(NODE *node)
     PID  pid = 1;
     TEAM *team = &teams[1];
 
+    memset(node->board, 0, sizeof node->board);
     for (row = NROW - NP * 2 / NCOL; row < NROW; ++row) {
         for (col = (row & 1) ^ 1; col < NCOL; col += 2) {
             piece_drop(node, pid, row, col);
@@ -300,13 +303,12 @@ int waitfor(int fd, char line[], const char *expected, int size)
     for (;;) {
         fgets(line, LINE_LEN, fp);
         if (0 == strncmp(line, expected, size))
-            return strlen(line);
+            break;
 
         if (0 == strncmp(line, DEBUG, sizeof DEBUG - 1))
             printf("%s", line);
     }
-
-    return 0;
+    return strlen(line);
 }
 
 int main(int argc, char *argv[])
@@ -345,7 +347,7 @@ int main(int argc, char *argv[])
         linelen = waitfor(channelA.usp[R], line, PLACE, sizeof PLACE - 1);
         write(channelB.dsp[W], line, linelen);
 
-        printf("\nPLAYER 1 - ROUND %d: %s", round, line);
+        fprintf(stderr, "\nPLAYER 1 - ROUND %d: %s", round, line);
         place(root, &line[sizeof PLACE - 1]);
         print_board(root);
 
@@ -353,7 +355,7 @@ int main(int argc, char *argv[])
         linelen = waitfor(channelB.usp[R], line, PLACE, sizeof PLACE - 1);
         write(channelA.dsp[W], line, linelen);
 
-        printf("\nPLAYER 2 - ROUND %d: %s", round, line);
+        fprintf(stderr, "\nPLAYER 2 - ROUND %d: %s", round, line);
         place(root, &line[sizeof PLACE - 1]);
         print_board(root);
     }
