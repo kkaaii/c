@@ -170,6 +170,8 @@ void init_board(NODE *node)
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/select.h>
+#include <sys/time.h>
 
 #define	LINE_LEN    80
 
@@ -299,8 +301,19 @@ const char DEBUG[] = "DEBUG";
 int waitfor(int fd, char line[], const char *expected, int size)
 {
     FILE *fp = fdopen(fd, "r");
+    struct timeval tv;
+    fd_set rfds;
+
+    FD_ZERO(&rfds);
+    FD_SET(fd, &rfds);
 
     for (;;) {
+        tv.tv_sec = 2;
+        tv.tv_usec = 0;
+
+        if (0 == select(fd + 1, &rfds, NULL, NULL, &tv))
+            return 0;
+
         fgets(line, LINE_LEN, fp);
         if (0 == strncmp(line, expected, size))
             break;
@@ -342,20 +355,22 @@ int main(int argc, char *argv[])
     init_board(root);
     print_board(root);
 
-    for (round = 0; round < MAX_ROUND; ++round) {
+    for (round = 1; round <= MAX_ROUND; ++round) {
         write(channelA.dsp[W], TURN, sizeof TURN - 1);
         linelen = waitfor(channelA.usp[R], line, PLACE, sizeof PLACE - 1);
+	if (0 == linelen) break;
         write(channelB.dsp[W], line, linelen);
 
-        fprintf(stderr, "\nPLAYER 1 - ROUND %d: %s", round, line);
+        printf("\nPLAYER 1 - ROUND %d: %s", round, line);
         place(root, &line[sizeof PLACE - 1]);
         print_board(root);
 
         write(channelB.dsp[W], TURN, sizeof TURN - 1);
         linelen = waitfor(channelB.usp[R], line, PLACE, sizeof PLACE - 1);
+	if (0 == linelen) break;
         write(channelA.dsp[W], line, linelen);
 
-        fprintf(stderr, "\nPLAYER 2 - ROUND %d: %s", round, line);
+        printf("\nPLAYER 2 - ROUND %d: %s", round, line);
         place(root, &line[sizeof PLACE - 1]);
         print_board(root);
     }
