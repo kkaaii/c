@@ -190,6 +190,14 @@ void piece_move(NODE *node, PATH *path)
     piece_crown(node, pid);
 }
 
+void piece_place(NODE *node, PATH *path)
+{
+    if (path->nstep > 2 || 0 == ((path->steps[0].row ^ path->steps[1].row) & 1))
+	piece_jump(node, path);
+    else
+	piece_move(node, path);
+}
+
 int find_moveable(NODE *node, TID tid)
 {
     PID pid;
@@ -322,15 +330,24 @@ void delete_tree(NODE *root)
     node_free(root);
 }
 
-void build_tree(NODE *root, int iteration)
+void build_tree(NODE *root, TID tid, int iteration)
 {
     char i;
+
+    if (0 == root->npath)
+        find_jumpable(root, tid);
+
+    if (0 == root->npath)
+        find_moveable(root, tid);
 
     for (i = 0; i < root->npath; ++i) {
         NODE *node = node_alloc();
         root->children[i] = node;
+	memcpy(node, root, sizeof *node);
+	piece_place(node, &root->longest[i]);
+	node->npath = 0;
         if (iteration > 0)
-            build_tree(node, iteration - 1);
+            build_tree(node, tid ^ 3, iteration - 1);
     }
 }
 
@@ -408,11 +425,7 @@ void place(NODE *node, const char *s)
 	}
     }
 
-    if (path->nstep > 2 || 0 == ((path->steps[0].row ^ path->steps[1].row) & 1)) {
-	piece_jump(node, path);
-    } else {
-	piece_move(node, path);
-    }
+    piece_place(node, path);
 }
 
 void print_board(NODE *node)
@@ -445,55 +458,49 @@ void print_board(NODE *node)
     }
 }
 
+NODE *turn(NODE *root, TID tid)
+{
+    NODE *node = NULL;
+
+    build_tree(root, tid, 0);
+
+    if (0 != root->npath) {
+        char i = root->npath / 2; // TODO
+        char j = root->npath - 1;
+        node = root->children[i];
+	if (i != j)
+            root->children[i] = root->children[j];
+	--root->npath;
+	delete_tree(root);
+    }
+
+    return node;
+}
+
+const char START[] = "START";
+const char PLACE[] = "PLACE";
+const char TURN[] = "TURN\n";
+const char END[] = "END\n";
+const char OK[] = "OK";
+
 void print_path(PATH *path)
 {
     POS *step;
 
-    printf("PLACE %d", path->nstep);
+    printf("%s %d", PLACE, path->nstep);
     for (step = &path->steps[0]; step < &path->steps[path->nstep]; ++step)
         printf(" %d,%d", step->row, step->col);
     putchar('\n');
-}
-
-PATH *select_jumpable(NODE *node)
-{
-    /* TODO */
-    return &node->longest[rand() % node->npath];
-}
-
-PATH *select_moveable(NODE *node)
-{
-    /* TODO */
-    return &node->longest[rand() % node->npath];
-}
-
-NODE * run(NODE *node, TID tid)
-{
-    PATH *path;
-
-    if (0 != find_jumpable(node, tid)) {
-        path = select_jumpable(node);
-        print_path(path);
-        piece_jump(node, path);
-    } else if (0 != find_moveable(node, tid)) {
-        path = select_moveable(node);
-        print_path(path);
-        piece_move(node, path);
-    } else {
-        return 0;
-    }
-
-    return node;
 }
 
 int main(void)
 {
     char line[LINE_LEN + 1];
     int  tid;
-    NODE *node = init_nodes();
+    NODE *root = init_nodes();
 
-    init_pieces(node);
-    init_board(node);
+    init_pieces(root);
+    init_board(root);
 
     setlinebuf(stdin);
     setlinebuf(stdout);
@@ -503,17 +510,17 @@ int main(void)
 	    continue;
 	}
 
-	if (0 == strncmp(line, "END", 3)) {
+	if (0 == strncmp(line, END, sizeof END - 1)) {
 	    break;
     	}
 
-        if (0 == strncmp(line, "TURN", 4)) {
-	    node = run(node, tid);
-        } else if (0 == strncmp(line, "PLACE", 5)) {
-            place(node, &line[5]);
-	} else if (0 == strncmp(line, "START", 5)) {
-	    sscanf(&line[5], "%d", &tid);
-            puts("OK");
+	if (0 == strncmp(line, START, sizeof START - 1)) {
+	    sscanf(&line[sizeof START - 1], "%d", &tid);
+            puts(OK);
+        } else if (0 == strncmp(line, PLACE, sizeof PLACE - 1)) {
+            place(root, &line[sizeof PLACE - 1]);
+        } else if (0 == strncmp(line, TURN, sizeof TURN - 1)) {
+	    root = turn(root, tid);
         } else {
             printf("DEBUG: Unknown command \"%s\"\n", line);
         }	    
