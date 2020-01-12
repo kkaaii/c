@@ -27,7 +27,6 @@ typedef struct piece {
     char    row;
     char    col;
     BOOL    king;
-    BOOL    dead;
 } PIECE;
 
 typedef struct dir {
@@ -99,7 +98,6 @@ static void piece_kill(NODE *node, PID pid)
     char row = piece->row;
     char col = piece->col;
 
-    piece->dead = TRUE;
     node->board[row][col] = PID_NIL;
 }
 
@@ -243,7 +241,7 @@ void print_board(NODE *node)
 #define R   0
 #define W   1
 
-#define MAX_ROUND   60
+#define MAX_ROUND   6
 
 typedef struct {
     pid_t   pid;
