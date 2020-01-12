@@ -241,7 +241,7 @@ void print_board(NODE *node)
 #define R   0
 #define W   1
 
-#define MAX_ROUND   6
+#define MAX_ROUND   60
 
 typedef struct {
     pid_t   pid;

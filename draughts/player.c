@@ -352,7 +352,7 @@ void build_tree(NODE *root, TID tid, int iteration)
         NODE *node = node_alloc();
         root->children[i] = node;
 	memcpy(&node->data, data, sizeof (DATA));
-	piece_place(data, &data->longest[i]);
+	piece_place(&node->data, &data->longest[i]);
 	node->data.npath = 0;
         if (iteration > 0)
             build_tree(node, tid ^ 3, iteration - 1);
