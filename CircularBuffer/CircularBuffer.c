@@ -44,14 +44,24 @@ bool CircularBuffer_IsFull(CircularBuffer *self)
 	return self->tail - self->head == self->mask + 1;
 }
 
-void CircularBuffer_Put(CircularBuffer *self, int value __attribute__((unused)))
+size_t CircularBuffer_GetCount(CircularBuffer *self)
 {
+	return self->tail - self->head;
+}
+
+void CircularBuffer_Enqueue(CircularBuffer *self, int value)
+{
+	self->data[self->tail & self->mask] = value;
 	++self->tail;
 }
 
-int CircularBuffer_Get(CircularBuffer *self)
+void CircularBuffer_Dequeue(CircularBuffer *self)
 {
 	++self->head;
-	return -1;
+}
+
+int CircularBuffer_GetData(CircularBuffer *self)
+{
+	return self->data[self->head & self->mask];
 }
 
